@@ -2,32 +2,40 @@
 
 import { useMemo } from 'react';
 import {
-  analyzeDeal,
   compareScenarios,
   computeLtv,
   computeSchedule,
-  validateRental,
+  computeValidSchedules,
   validateScenario,
-} from 'amortization-calculations';
+} from 'shared-calculations';
+import {
+  analyzeDeal,
+  validateRental,
+  withDealMetrics,
+  type DealAnalysis,
+} from 'deal-analyzer-calculations';
+import { useScenarios } from 'shared-data-access';
 import {
   ComparisonGrid,
-  IncomeExpenseCard,
+  CostBreakdownPanel,
+  currency,
+  LoanInputForm,
   MetricBadge,
   MetricBadgeGroup,
-  RuleIndicator,
   ScenarioTabs,
+} from 'shared-ui';
+import {
+  ExportScheduleButton,
+  ExtraPaymentPanel,
   ScheduleTable,
 } from 'amortization-ui';
-import { useScenarios } from './_hooks/use-scenarios';
-import { LoanInputForm } from './_components/loan-input-form';
-import { CostBreakdownPanel } from './_components/cost-breakdown-panel';
-import { ExtraPaymentPanel } from './_components/extra-payment-panel';
-import { ExportScheduleButton } from './_components/export-schedule-button';
-import { RentalInputsPanel } from './_components/rental-inputs-panel';
-
-const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
-const percent1 = new Intl.NumberFormat('en-US', { style: 'percent', minimumFractionDigits: 1, maximumFractionDigits: 1 });
-const percent2 = new Intl.NumberFormat('en-US', { style: 'percent', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+import {
+  DEAL_COMPARISON_COLUMNS,
+  DealMetrics,
+  IncomeExpenseCard,
+  RentalInputsPanel,
+  useRentalEditor,
+} from 'deal-analyzer-ui';
 
 export default function Page() {
   const {
@@ -36,10 +44,10 @@ export default function Page() {
     activeScenario,
     setActiveScenarioId,
     updateActiveScenario,
-    updateActiveRental,
     addScenario,
     removeScenario,
   } = useScenarios();
+  const { updateActiveRental } = useRentalEditor();
 
   const validation = validateScenario(activeScenario);
   const schedule = validation.valid ? computeSchedule(validation.scenario) : null;
@@ -55,18 +63,18 @@ export default function Page() {
 
   const comparison = useMemo(() => {
     if (scenarios.length < 2) return null;
-    const schedules: ReturnType<typeof computeSchedule>[] = [];
-    const analyses: Record<string, ReturnType<typeof analyzeDeal> | null> = {};
-    for (const scenario of scenarios) {
-      const result = validateScenario(scenario);
-      if (!result.valid) continue;
-      const scenarioSchedule = computeSchedule(result.scenario);
-      schedules.push(scenarioSchedule);
-      const rental = result.scenario.rental;
+    const entries = computeValidSchedules(scenarios);
+    if (entries.length < 2) return null;
+    const analyses: Record<string, DealAnalysis | null> = {};
+    for (const { scenario, schedule: entrySchedule } of entries) {
+      const rental = scenario.rental;
       analyses[scenario.id] =
-        rental && validateRental(rental).length === 0 ? analyzeDeal(result.scenario, scenarioSchedule) : null;
+        rental && validateRental(rental).length === 0 ? analyzeDeal(scenario, entrySchedule) : null;
     }
-    return schedules.length >= 2 ? compareScenarios(schedules, analyses) : null;
+    return withDealMetrics(
+      compareScenarios(entries.map((e) => e.schedule)),
+      analyses,
+    );
   }, [scenarios]);
 
   const scenarioNames = Object.fromEntries(scenarios.map((s) => [s.id, s.name]));
@@ -135,42 +143,7 @@ export default function Page() {
         {analysis ? (
           <>
             <IncomeExpenseCard analysis={analysis} />
-            <div data-testid="deal-metrics" className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <div
-                data-testid="cap-rate"
-                className="flex flex-col gap-1 rounded-md border border-neutral-200 bg-white p-3"
-              >
-                <span className="text-sm font-medium text-neutral-900">Cap rate</span>
-                <span className="text-lg font-semibold tabular-nums">
-                  {analysis.capRate.value != null ? percent2.format(analysis.capRate.value) : 'N/A'}
-                </span>
-                <span className="text-xs text-neutral-500">
-                  {analysis.capRate.naReason ?? 'Independent of financing'}
-                </span>
-              </div>
-              <RuleIndicator
-                name="1% Rule"
-                status={analysis.onePercentRule ? (analysis.onePercentRule.pass ? 'pass' : 'fail') : 'na'}
-                detail={
-                  analysis.onePercentRule
-                    ? `Rent ${currency.format(analysis.onePercentRule.actualRent)} vs. target ${currency.format(analysis.onePercentRule.targetRent)}`
-                    : 'Enter a purchase price to check the 1% Rule.'
-                }
-                explanation="Monthly rent should be at least 1% of the purchase price."
-              />
-              <RuleIndicator
-                name="50% Rule"
-                status={
-                  analysis.fiftyPercentRule ? (analysis.fiftyPercentRule.withinRule ? 'pass' : 'fail') : 'na'
-                }
-                detail={
-                  analysis.fiftyPercentRule
-                    ? `Expenses ${percent1.format(analysis.fiftyPercentRule.opexRatio)} of income · Rule estimate ${currency.format(analysis.fiftyPercentRule.estimatedMonthlyCashFlow)}/mo`
-                    : 'Enter rent above $0 to check the 50% Rule.'
-                }
-                explanation="Operating expenses (excluding the mortgage) typically run about 50% of gross rent."
-              />
-            </div>
+            <DealMetrics analysis={analysis} />
           </>
         ) : null}
       </section>
@@ -207,7 +180,11 @@ export default function Page() {
       {comparison ? (
         <section className="flex flex-col gap-4">
           <h2 className="text-lg font-medium text-neutral-800">Compare scenarios</h2>
-          <ComparisonGrid comparison={comparison} scenarioNames={scenarioNames} />
+          <ComparisonGrid
+            comparison={comparison}
+            columns={DEAL_COMPARISON_COLUMNS}
+            scenarioNames={scenarioNames}
+          />
         </section>
       ) : null}
     </main>

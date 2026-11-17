@@ -5,6 +5,10 @@
   "nx": {
     "implicitDependencies": [
       "amortization-calculator"
+    ],
+    "tags": [
+      "scope:app",
+      "type:e2e"
     ]
   }
 }

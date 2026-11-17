@@ -10,10 +10,25 @@
       "path": "./apps/amortization-calculator"
     },
     {
-      "path": "./libs/amortization-calculations"
+      "path": "./libs/amortization/calculations"
     },
     {
-      "path": "./libs/amortization-ui"
+      "path": "./libs/amortization/ui"
+    },
+    {
+      "path": "./libs/shared/calculations"
+    },
+    {
+      "path": "./libs/deal-analyzer/calculations"
+    },
+    {
+      "path": "./libs/shared/data-access"
+    },
+    {
+      "path": "./libs/shared/ui"
+    },
+    {
+      "path": "./libs/deal-analyzer/ui"
     }
   ],
   "compilerOptions": {}

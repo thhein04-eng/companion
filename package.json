@@ -51,7 +51,7 @@
   },
   "workspaces": [
     "apps/*",
-    "libs/*"
+    "libs/*/*"
   ],
   "packageManager": "npm@11.12.1",
   "dependencies": {

@@ -1,5 +1,7 @@
 @import 'tailwindcss';
-@source '../../../../libs/amortization-ui/src';
+@source '../../../../libs/shared/ui/src';
+@source '../../../../libs/amortization/ui/src';
+@source '../../../../libs/deal-analyzer/ui/src';
 
 :root {
   color-scheme: light dark;
