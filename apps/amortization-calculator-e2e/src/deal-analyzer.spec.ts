@@ -183,6 +183,7 @@ test.describe('Deal Analyzer', () => {
 
     await expect(page.getByText('Vacancy rate must be between 0% and 100%.')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Amortization schedule' })).toBeVisible();
-    await expect(page.locator('table').last().locator('tbody tr')).toHaveCount(360);
+    await expect(page.locator('table').last().locator('tbody tr')).toHaveCount(12);
+    await expect(page.getByText('Payments 1–12 of 360')).toBeVisible();
   });
 });

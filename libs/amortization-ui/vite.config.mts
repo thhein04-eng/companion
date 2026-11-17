@@ -13,8 +13,9 @@ export default defineConfig(() => ({
     watch: false,
     globals: true,
     environment: 'jsdom',
-    // These components are presentational wrappers over @ui-sdk/react;
-    // their behavior is covered by apps/amortization-calculator-e2e.
+    // Pure helpers (e.g. schedule-pagination.ts) have unit tests here. The
+    // components are presentational wrappers over @ui-sdk/react; their
+    // behavior is covered by apps/amortization-calculator-e2e.
     passWithNoTests: true,
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     reporters: ['default'],

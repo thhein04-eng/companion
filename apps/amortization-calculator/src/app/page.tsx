@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   analyzeDeal,
   compareScenarios,
@@ -11,12 +11,14 @@ import {
 } from 'amortization-calculations';
 import {
   ComparisonGrid,
+  DEFAULT_SCHEDULE_PAGE_SIZE,
   IncomeExpenseCard,
   MetricBadge,
   MetricBadgeGroup,
   RuleIndicator,
   ScenarioTabs,
   ScheduleTable,
+  type SchedulePaginationState,
 } from 'amortization-ui';
 import { useScenarios } from './_hooks/use-scenarios';
 import { LoanInputForm } from './_components/loan-input-form';
@@ -41,15 +43,34 @@ export default function Page() {
     removeScenario,
   } = useScenarios();
 
-  const validation = validateScenario(activeScenario);
-  const schedule = validation.valid ? computeSchedule(validation.scenario) : null;
+  // 004 FR-005: schedule paging lives here, outside the `schedule ? … : …`
+  // branch, so it survives the table unmounting while inputs are invalid.
+  const [schedulePagination, setSchedulePagination] = useState<SchedulePaginationState>({
+    page: 1,
+    pageSize: DEFAULT_SCHEDULE_PAGE_SIZE,
+  });
+  // A different scenario starts on page 1 and keeps the page size
+  // (adjusting state during render rather than in an effect).
+  const [paginationScenarioId, setPaginationScenarioId] = useState(activeScenarioId);
+  if (paginationScenarioId !== activeScenarioId) {
+    setPaginationScenarioId(activeScenarioId);
+    setSchedulePagination((current) => ({ ...current, page: 1 }));
+  }
 
-  // Deal Analyzer (FR-015): rental errors never block the amortization schedule.
-  const rentalErrors = activeScenario.rental ? validateRental(activeScenario.rental) : [];
-  const analysis =
-    validation.valid && schedule && activeScenario.rental && rentalErrors.length === 0
-      ? analyzeDeal(validation.scenario, schedule)
-      : null;
+  // Memoized on the scenario so paging (004), which re-renders this page,
+  // doesn't recompute the schedule or the deal analysis.
+  const { validation, schedule, rentalErrors, analysis } = useMemo(() => {
+    const validation = validateScenario(activeScenario);
+    const schedule = validation.valid ? computeSchedule(validation.scenario) : null;
+
+    // Deal Analyzer (FR-015): rental errors never block the amortization schedule.
+    const rentalErrors = activeScenario.rental ? validateRental(activeScenario.rental) : [];
+    const analysis =
+      validation.valid && schedule && activeScenario.rental && rentalErrors.length === 0
+        ? analyzeDeal(validation.scenario, schedule)
+        : null;
+    return { validation, schedule, rentalErrors, analysis };
+  }, [activeScenario]);
   const ltv = computeLtv(activeScenario);
   const coc = analysis?.cashOnCashReturn ?? null;
 
@@ -196,7 +217,11 @@ export default function Page() {
             <h2 className="text-lg font-medium text-neutral-800">Amortization schedule</h2>
             <ExportScheduleButton schedule={schedule} />
           </div>
-          <ScheduleTable periods={schedule.periods} />
+          <ScheduleTable
+            periods={schedule.periods}
+            pagination={schedulePagination}
+            onPaginationChange={setSchedulePagination}
+          />
         </section>
       ) : (
         <p className="text-sm text-red-600">
