@@ -6,3 +6,4 @@ export * from './lib/comparison-grid';
 export * from './lib/income-expense-card';
 export * from './lib/metric-badge';
 export * from './lib/rule-indicator';
+export * from './lib/schedule-pagination';
