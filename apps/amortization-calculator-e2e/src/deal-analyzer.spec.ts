@@ -125,6 +125,51 @@ test.describe('Deal Analyzer', () => {
     await expect(grid.locator('tbody tr').nth(2)).toContainText('—');
   });
 
+  test('a negative custom expense shows a field error and holds back the deal metrics', async ({ page }) => {
+    // The amount field clamps typed values at $0, so seed a saved session that has a negative one.
+    await page.goto('/');
+    await page.evaluate(() => {
+      const scenario = {
+        id: 'neg',
+        name: 'Negative expense',
+        principal: 187500,
+        annualInterestRatePct: 7,
+        termMonths: 360,
+        startDate: '2027-01-01',
+        paymentFrequency: 'monthly',
+        homePrice: 250000,
+        downPayment: { percent: 25 },
+        annualPropertyTax: 3000,
+        annualInsurance: 1200,
+        pmiAnnualRatePct: null,
+        monthlyHoa: null,
+        extraPayments: [],
+        principalIsOverridden: false,
+        rental: {
+          grossMonthlyRent: 2400,
+          otherMonthlyIncome: 0,
+          vacancyPct: 5,
+          managementPct: 8,
+          maintenanceReservePct: 5,
+          capexReservePct: 5,
+          closingCosts: 7500,
+          rehabBudget: 10000,
+          customExpenses: [{ id: 'water', label: 'Water', monthlyAmount: -50 }],
+        },
+      };
+      sessionStorage.setItem(
+        'amortization:scenarios',
+        JSON.stringify({ scenarios: [scenario], activeScenarioId: 'neg' })
+      );
+    });
+    await page.reload();
+
+    await expect(page.locator('[data-slot="field-error"]', { hasText: 'Water cannot be negative.' })).toBeVisible();
+    await expect(page.getByTestId('badge-cash-on-cash')).toHaveCount(0);
+    // Rental errors never block the amortization schedule (FR-015).
+    await expect(page.getByRole('heading', { name: 'Amortization schedule' })).toBeVisible();
+  });
+
   test('US4: a session saved before the Deal Analyzer loads without errors (FR-016)', async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));

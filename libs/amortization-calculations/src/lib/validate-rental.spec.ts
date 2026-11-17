@@ -49,6 +49,66 @@ describe('validateRental (FR-015)', () => {
     expect(validateRental({ ...valid, vacancyPct: 100 })).toEqual([]);
   });
 
+  describe('custom operating expenses', () => {
+    it('accepts zero and positive monthly amounts', () => {
+      expect(
+        validateRental({
+          ...valid,
+          customExpenses: [
+            { id: 'water', label: 'Water', monthlyAmount: 75.5 },
+            { label: 'Trash', monthlyAmount: 0 },
+          ],
+        })
+      ).toEqual([]);
+    });
+
+    it('rejects a negative amount with one error keyed by its index, named after the expense', () => {
+      const errors = validateRental({
+        ...valid,
+        customExpenses: [
+          { label: 'Water', monthlyAmount: 75.5 },
+          { label: '  Trash ', monthlyAmount: -0.01 },
+        ],
+      });
+      expect(errors).toEqual([
+        { field: 'rental.customExpenses.1.monthlyAmount', message: 'Trash cannot be negative.' },
+      ]);
+    });
+
+    it('falls back to "Custom expense N" for an unnamed expense', () => {
+      const errors = validateRental({
+        ...valid,
+        customExpenses: [{ label: '', monthlyAmount: -20 }],
+      });
+      expect(errors[0].message).toBe('Custom expense 1 cannot be negative.');
+    });
+
+    it('rejects a non-finite amount', () => {
+      const errors = validateRental({
+        ...valid,
+        customExpenses: [{ label: 'Water', monthlyAmount: Number.NaN }],
+      });
+      expect(errors.map((e) => e.field)).toEqual(['rental.customExpenses.0.monthlyAmount']);
+    });
+
+    it('reports each offending expense alongside other rental errors', () => {
+      const errors = validateRental({
+        ...valid,
+        grossMonthlyRent: -1,
+        customExpenses: [
+          { label: 'A', monthlyAmount: -1 },
+          { label: 'B', monthlyAmount: 10 },
+          { label: 'C', monthlyAmount: -2 },
+        ],
+      });
+      expect(errors.map((e) => e.field)).toEqual([
+        'rental.grossMonthlyRent',
+        'rental.customExpenses.0.monthlyAmount',
+        'rental.customExpenses.2.monthlyAmount',
+      ]);
+    });
+  });
+
   it('uses user-friendly messages', () => {
     expect(validateRental({ ...valid, vacancyPct: 101 })[0].message).toBe(
       'Vacancy rate must be between 0% and 100%.'

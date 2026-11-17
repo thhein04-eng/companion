@@ -39,5 +39,15 @@ export function validateRental(rental: RentalAssumptions): FieldError[] {
     }
   }
 
+  (rental.customExpenses ?? []).forEach((expense, index) => {
+    if (!(Number.isFinite(expense.monthlyAmount) && expense.monthlyAmount >= 0)) {
+      const name = expense.label.trim() || `Custom expense ${index + 1}`;
+      errors.push({
+        field: `rental.customExpenses.${index}.monthlyAmount`,
+        message: `${name} cannot be negative.`,
+      });
+    }
+  });
+
   return errors;
 }

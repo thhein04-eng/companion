@@ -153,6 +153,13 @@ export function RentalInputsPanel({
                     variant="currency"
                     min={0}
                     value={item.monthlyAmount}
+                    error={
+                      errors.find(
+                        (e) =>
+                          e.field ===
+                          `rental.customExpenses.${index}.monthlyAmount`,
+                      )?.message
+                    }
                     onValueChange={(val) => {
                       const updated = [...customExpenses];
                       updated[index] = {

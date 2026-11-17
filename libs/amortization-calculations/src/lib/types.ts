@@ -87,7 +87,8 @@ export interface FieldError {
   field:
     | keyof LoanScenario
     | `extraPayments.${number}.${string}`
-    | `rental.${keyof RentalAssumptions}`;
+    | `rental.${keyof RentalAssumptions}`
+    | `rental.customExpenses.${number}.monthlyAmount`;
   message: string;
 }
 
