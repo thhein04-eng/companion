@@ -8,3 +8,5 @@ export * from './lib/calculate-principal';
 export * from './lib/apply-scenario-patch';
 export * from './lib/validate-rental';
 export * from './lib/analyze-deal';
+export * from './lib/chart-data';
+export * from './lib/project-rental';

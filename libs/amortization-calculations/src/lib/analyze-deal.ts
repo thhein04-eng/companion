@@ -1,4 +1,5 @@
 import { roundCents } from './round';
+import { rentalLineItems } from './rental-line-items';
 import type {
   AmortizationSchedule,
   DealAnalysis,
@@ -6,7 +7,6 @@ import type {
   MonthlyAnnual,
   FiftyPercentRuleResult,
   OnePercentRuleResult,
-  OperatingExpenseCategory,
   OperatingExpenseLine,
   RatioResult,
   RentalAssumptions,
@@ -21,6 +21,9 @@ export const DEFAULT_RENTAL_ASSUMPTIONS: Omit<RentalAssumptions, 'grossMonthlyRe
   capexReservePct: 5,
   closingCosts: 0,
   rehabBudget: 0,
+  rentGrowthPct: 0,
+  expenseGrowthPct: 0,
+  appreciationPct: 0,
 };
 
 /** Rounds an unrounded monthly figure per the data-model rounding rule. */
@@ -62,29 +65,7 @@ export function analyzeDeal(scenario: LoanScenario, schedule: AmortizationSchedu
   const rental = scenario.rental as RentalAssumptions;
 
   const gsiMonthly = rental.grossMonthlyRent + rental.otherMonthlyIncome;
-  const pctOfGsi = (pct: number) => (gsiMonthly * pct) / 100;
-
-  const rawLines: { category: OperatingExpenseCategory; label: string; monthly: number }[] = [
-    { category: 'propertyTax', label: 'Property tax', monthly: (scenario.annualPropertyTax ?? 0) / 12 },
-    { category: 'insurance', label: 'Insurance', monthly: (scenario.annualInsurance ?? 0) / 12 },
-    { category: 'hoa', label: 'HOA fees', monthly: scenario.monthlyHoa ?? 0 },
-    { category: 'vacancy', label: `Vacancy (${rental.vacancyPct}%)`, monthly: pctOfGsi(rental.vacancyPct) },
-    {
-      category: 'management',
-      label: `Property management (${rental.managementPct}%)`,
-      monthly: pctOfGsi(rental.managementPct),
-    },
-    {
-      category: 'maintenance',
-      label: `Maintenance reserve (${rental.maintenanceReservePct}%)`,
-      monthly: pctOfGsi(rental.maintenanceReservePct),
-    },
-    {
-      category: 'capex',
-      label: `CapEx reserve (${rental.capexReservePct}%)`,
-      monthly: pctOfGsi(rental.capexReservePct),
-    },
-  ];
+  const rawLines = rentalLineItems(scenario, gsiMonthly, 1);
 
   const operatingExpenses: OperatingExpenseLine[] = rawLines.map(({ category, label, monthly }) => ({
     category,

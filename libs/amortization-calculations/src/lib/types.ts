@@ -45,6 +45,15 @@ export interface RentalAssumptions {
   capexReservePct: number;
   closingCosts: number;
   rehabBudget: number;
+  /**
+   * Annual growth of gross rent + other income, %. Optional; missing = 0. −10 ≤ x ≤ 25.
+   * Percentage-of-income expense lines (vacancy, management, …) grow with it.
+   */
+  rentGrowthPct?: number;
+  /** Annual growth of property tax, insurance and HOA, %. Optional; missing = 0. −10 ≤ x ≤ 25. */
+  expenseGrowthPct?: number;
+  /** Annual appreciation of the purchase price, %. Optional; missing = 0. −10 ≤ x ≤ 25. */
+  appreciationPct?: number;
 }
 
 /** A user-defined extra-principal-payment instruction applied when generating a schedule. */
@@ -152,4 +161,40 @@ export interface DealAnalysis {
   fiftyPercentRule: FiftyPercentRuleResult | null;
   pmiEndsInYearOne: boolean;
   pmiDropPeriod: number | null;
+}
+
+/** One loan year of a rental projection (data-model.md §C). Money is cents-rounded. */
+export interface RentalYear {
+  /** 1…ceil(termMonths / 12). */
+  year: number;
+  /** `"Yr N"`, a category label for bar charts. */
+  x: string;
+  grossIncome: number;
+  operatingExpenses: number;
+  noi: number;
+  /** Scheduled P&I plus PMI for the periods in this year (never extra principal); 0 after payoff. */
+  debtService: number;
+  cashFlow: number;
+  /** cashFlow ÷ initial total cash invested (unrounded), or null when cash invested is 0. */
+  cashOnCash: number | null;
+  /** End-of-year value at the appreciation rate, or null without a purchase price. */
+  homeValue: number | null;
+  /** Remaining balance at the year's last period; 0 after payoff. */
+  loanBalance: number;
+  /** Purchase price − loan amount, or null without a purchase price. */
+  initialEquity: number | null;
+  /** Cumulative principal paid (including extra principal) through this year. */
+  principalPaid: number;
+  /** homeValue − purchase price, or null without a purchase price. */
+  appreciation: number | null;
+}
+
+/** The derived (never stored) year-by-year projection of a rental scenario. */
+export interface RentalProjection {
+  years: RentalYear[];
+  totalCashInvested: number;
+  /** `analyzeDeal`'s reason when cash-on-cash is undefined. */
+  cashOnCashNaReason: string | null;
+  /** Set when there is no purchase price, so equity cannot be computed. */
+  equityNaReason: string | null;
 }

@@ -43,6 +43,9 @@
   "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
+      "path": "../charts/tsconfig.lib.json"
+    },
+    {
       "path": "../amortization-calculations/tsconfig.lib.json"
     }
   ]

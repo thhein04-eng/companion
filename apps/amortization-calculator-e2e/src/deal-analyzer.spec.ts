@@ -129,6 +129,9 @@ test.describe('Deal Analyzer', () => {
     page.on('pageerror', (error) => errors.push(error.message));
 
     await page.goto('/');
+    // Wait until the app has hydrated and persisted its own initial state; otherwise its mount
+    // effect can overwrite the legacy session we are about to seed (a race under load).
+    await page.waitForFunction(() => sessionStorage.getItem('amortization:scenarios') !== null);
     await page.evaluate(() => {
       const legacy = {
         id: 'legacy',

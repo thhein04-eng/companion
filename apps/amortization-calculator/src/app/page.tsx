@@ -15,6 +15,7 @@ import {
   MetricBadge,
   MetricBadgeGroup,
   RuleIndicator,
+  ScenarioBalanceChart,
   ScenarioTabs,
   ScheduleTable,
 } from 'amortization-ui';
@@ -24,6 +25,8 @@ import { CostBreakdownPanel } from './_components/cost-breakdown-panel';
 import { ExtraPaymentPanel } from './_components/extra-payment-panel';
 import { ExportScheduleButton } from './_components/export-schedule-button';
 import { RentalInputsPanel } from './_components/rental-inputs-panel';
+import { ChartsSection } from './_components/charts-section';
+import { RentalChartsSection } from './_components/rental-charts-section';
 
 const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
 const percent1 = new Intl.NumberFormat('en-US', { style: 'percent', minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -53,7 +56,8 @@ export default function Page() {
   const ltv = computeLtv(activeScenario);
   const coc = analysis?.cashOnCashReturn ?? null;
 
-  const comparison = useMemo(() => {
+  // Returns the valid scenarios' schedules too, so the scenario chart reuses them (no recompute).
+  const comparisonData = useMemo(() => {
     if (scenarios.length < 2) return null;
     const schedules: ReturnType<typeof computeSchedule>[] = [];
     const analyses: Record<string, ReturnType<typeof analyzeDeal> | null> = {};
@@ -66,8 +70,9 @@ export default function Page() {
       analyses[scenario.id] =
         rental && validateRental(rental).length === 0 ? analyzeDeal(result.scenario, scenarioSchedule) : null;
     }
-    return schedules.length >= 2 ? compareScenarios(schedules, analyses) : null;
+    return schedules.length >= 2 ? { schedules, comparison: compareScenarios(schedules, analyses) } : null;
   }, [scenarios]);
+  const comparison = comparisonData?.comparison ?? null;
 
   const scenarioNames = Object.fromEntries(scenarios.map((s) => [s.id, s.name]));
 
@@ -171,6 +176,9 @@ export default function Page() {
                 explanation="Operating expenses (excluding the mortgage) typically run about 50% of gross rent."
               />
             </div>
+            {validation.valid && schedule ? (
+              <RentalChartsSection scenario={validation.scenario} schedule={schedule} />
+            ) : null}
           </>
         ) : null}
       </section>
@@ -190,6 +198,8 @@ export default function Page() {
         ) : null}
       </section>
 
+      {schedule && validation.valid ? <ChartsSection scenario={validation.scenario} schedule={schedule} /> : null}
+
       {schedule ? (
         <section className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
@@ -208,6 +218,7 @@ export default function Page() {
         <section className="flex flex-col gap-4">
           <h2 className="text-lg font-medium text-neutral-800">Compare scenarios</h2>
           <ComparisonGrid comparison={comparison} scenarioNames={scenarioNames} />
+          <ScenarioBalanceChart schedules={comparisonData?.schedules ?? []} scenarios={scenarios} />
         </section>
       ) : null}
     </main>

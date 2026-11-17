@@ -55,3 +55,20 @@ describe('validateRental (FR-015)', () => {
     );
   });
 });
+
+describe('validateRental growth assumptions (FR-013)', () => {
+  const labels = { rentGrowthPct: 'Rent growth', expenseGrowthPct: 'Expense growth', appreciationPct: 'Appreciation' } as const;
+
+  it.each(Object.keys(labels) as (keyof typeof labels)[])('%s accepts the bounds -10 and 25, and undefined', (field) => {
+    expect(validateRental({ ...valid, [field]: 25 })).toEqual([]);
+    expect(validateRental({ ...valid, [field]: -10 })).toEqual([]);
+    expect(validateRental({ ...valid, [field]: undefined })).toEqual([]);
+  });
+
+  it.each(
+    (Object.keys(labels) as (keyof typeof labels)[]).flatMap((field) => [25.01, -10.01, Number.NaN].map((v) => [field, v] as const))
+  )('%s rejects %d with exactly one error', (field, value) => {
+    const errors = validateRental({ ...valid, [field]: value });
+    expect(errors).toEqual([{ field: `rental.${field}`, message: `${labels[field]} must be between -10% and 25%.` }]);
+  });
+});

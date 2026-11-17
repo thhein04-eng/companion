@@ -67,6 +67,9 @@
   ],
   "references": [
     {
+      "path": "../../libs/charts"
+    },
+    {
       "path": "../../libs/amortization-ui"
     },
     {

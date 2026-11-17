@@ -15,6 +15,15 @@ export interface RentalInputsPanelProps {
 
 const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
 
+type PercentFieldKey =
+  | 'vacancyPct'
+  | 'managementPct'
+  | 'maintenanceReservePct'
+  | 'capexReservePct'
+  | 'rentGrowthPct'
+  | 'expenseGrowthPct'
+  | 'appreciationPct';
+
 function errorFor(errors: FieldError[], field: keyof RentalAssumptions): string | undefined {
   return errors.find((e) => e.field === `rental.${field}`)?.message;
 }
@@ -49,18 +58,26 @@ export function RentalInputsPanel({ rental, errors, onChange, totalCashInvested 
 
   // Percentages are deliberately not clamped with `max`, so an out-of-range
   // value surfaces the field-level validation message (FR-015) instead of
-  // being silently corrected.
-  const percentField = (field: keyof RentalAssumptions, label: string) => (
+  // being silently corrected. The growth fields also omit `min` (they accept
+  // negatives): the SDK NumberInput clamps on commit, which would hide the
+  // -10…25 validation error (005 FR-013, research R14).
+  const percentField = (
+    field: PercentFieldKey,
+    label: string,
+    { min = 0, step = 0.5, description }: { min?: number | null; step?: number; description?: string } = {}
+  ) => (
     <NumberField
       label={label}
       suffix="%"
-      min={0}
-      step={0.5}
-      value={rental[field]}
+      min={min ?? undefined}
+      step={step}
+      description={description}
+      value={rental[field] ?? 0}
       onValueChange={(value) => onChange({ [field]: value ?? 0 })}
       error={errorFor(errors, field)}
     />
   );
+  const growthOptions = { min: null, step: 0.1, description: 'per year' };
 
   return (
     <div className="flex flex-col gap-4">
@@ -79,6 +96,14 @@ export function RentalInputsPanel({ rental, errors, onChange, totalCashInvested 
         {percentField('managementPct', 'Property management')}
         {percentField('maintenanceReservePct', 'Maintenance reserve')}
         {percentField('capexReservePct', 'CapEx reserve')}
+      </div>
+      <div className="flex flex-col gap-2">
+        <h3 className="text-sm font-medium text-neutral-800">Growth assumptions</h3>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {percentField('rentGrowthPct', 'Rent growth', growthOptions)}
+          {percentField('expenseGrowthPct', 'Expense growth', growthOptions)}
+          {percentField('appreciationPct', 'Appreciation', growthOptions)}
+        </div>
       </div>
       <div className="flex flex-col gap-2">
         <div className="flex items-baseline justify-between">
