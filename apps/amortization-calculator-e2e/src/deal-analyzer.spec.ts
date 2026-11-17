@@ -9,7 +9,8 @@ import { clearNumberField, fillNumberField } from './helpers';
 async function enterScenarioOne(page: Page, { withCashInvested = true } = {}) {
   await page.goto('/');
   await fillNumberField(page, 'Home price', '250000');
-  await fillNumberField(page, 'Down payment', '62500');
+  // Down payment defaults to percent mode: 25% of $250k = $62,500.
+  await fillNumberField(page, 'Down payment', '25');
   await fillNumberField(page, 'Annual interest rate', '7');
   await fillNumberField(page, 'Annual property tax', '3000');
   await fillNumberField(page, "Annual homeowner's insurance", '1200');

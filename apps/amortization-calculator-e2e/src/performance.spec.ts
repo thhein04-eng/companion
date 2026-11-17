@@ -32,7 +32,7 @@ test('recalculates a paginated schedule in under 1 second', async ({ page }) => 
 test('updates the Cash-on-Cash badge within 1 second of a rent change', async ({ page }) => {
   await page.goto('/');
   await fillNumberField(page, 'Home price', '250000');
-  await fillNumberField(page, 'Down payment', '62500');
+  await fillNumberField(page, 'Down payment', '25'); // percent mode: $62,500
   await fillNumberField(page, 'Annual interest rate', '7');
   await fillNumberField(page, 'Annual property tax', '3000');
   await fillNumberField(page, "Annual homeowner's insurance", '1200');

@@ -124,7 +124,8 @@ export type OperatingExpenseCategory =
   | 'management'
   | 'maintenance'
   | 'capex'
-  | 'custom';
+  /** A user-defined expense; the suffix (its id, or list index) keeps lines unique. */
+  | `custom-${string}`;
 
 export type OperatingExpenseLine = {
   category: OperatingExpenseCategory;
