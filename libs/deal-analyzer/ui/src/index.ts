@@ -4,3 +4,4 @@ export * from './lib/rental-inputs-panel';
 export * from './lib/use-rental-editor';
 export * from './lib/deal-metrics';
 export * from './lib/deal-comparison-columns';
+export * from './lib/deal-analyzer-view';

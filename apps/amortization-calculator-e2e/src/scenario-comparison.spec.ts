@@ -5,7 +5,7 @@ import { fillNumberField } from './helpers';
 test('duplicating a scenario and editing it independently shows a side-by-side comparison', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('/amortization');
 
   await page.getByRole('button', { name: '+ Add scenario' }).click();
 

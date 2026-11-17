@@ -7,7 +7,7 @@ import { clearNumberField, fillNumberField } from './helpers';
  * default 5/8/5/5% assumptions, $7,500 closing costs, $10,000 rehab.
  */
 async function enterScenarioOne(page: Page, { withCashInvested = true } = {}) {
-  await page.goto('/');
+  await page.goto('/deal-analyzer');
   await fillNumberField(page, 'Home price', '250000');
   await fillNumberField(page, 'Down payment', '62500');
   await fillNumberField(page, 'Annual interest rate', '7');
@@ -128,7 +128,7 @@ test.describe('Deal Analyzer', () => {
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
 
-    await page.goto('/');
+    await page.goto('/deal-analyzer');
     await page.evaluate(() => {
       const legacy = {
         id: 'legacy',
@@ -174,14 +174,22 @@ test.describe('Deal Analyzer', () => {
     await expect(page.getByTestId('total-cash-invested')).toContainText('$80,000.00');
   });
 
-  test('FR-015: invalid rental input shows a field error without hiding the schedule (quickstart Scenario 4)', async ({
+  test('FR-015: invalid rental input never blocks the loan figures or schedule (quickstart Scenario 4)', async ({
     page,
   }) => {
     await enterScenarioOne(page);
     await fillNumberField(page, 'Vacancy rate', '150');
     await page.keyboard.press('Tab');
 
+    // On the Deal Analyzer page: the rental error shows, deal metrics hide,
+    // and the loan's monthly payment is still computed.
     await expect(page.getByText('Vacancy rate must be between 0% and 100%.')).toBeVisible();
+    await expect(page.getByTestId('deal-metrics')).toHaveCount(0);
+    await expect(page.getByText('Total estimated monthly payment').locator('..')).toContainText('$1,597.44');
+
+    // The schedule itself now lives on the Amortization page (spec 003) and
+    // is still produced for the same session's scenario.
+    await page.goto('/amortization');
     await expect(page.getByRole('heading', { name: 'Amortization schedule' })).toBeVisible();
     await expect(page.locator('table').last().locator('tbody tr')).toHaveCount(360);
   });

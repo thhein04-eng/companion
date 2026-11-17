@@ -104,8 +104,8 @@ description: 'Task list for 003-feature-pages-navigation'
 
 ### Tests for User Story 1
 
-- [ ] T037 [P] [US1] Retarget existing e2e specs in `apps/amortization-calculator-e2e/src/` (change only `goto` targets): `baseline-schedule.spec.ts`, `real-estate-costs.spec.ts`, `extra-payments.spec.ts`, `export-schedule.spec.ts`, `principal-auto-calculation.spec.ts`, `scenario-comparison.spec.ts`, `validation-and-persistence.spec.ts` (both `goto('/')` calls) → `'/amortization'`; `deal-analyzer.spec.ts` (`enterScenarioOne` and the test at line ~131) → `'/deal-analyzer'`; `performance.spec.ts` first test → `'/amortization'`, second (Cash-on-Cash) test → `'/deal-analyzer'`. Also update `baseline-schedule.spec.ts:7` from `getByRole('heading', { name: 'Real Estate Amortization Calculator' })` to `{ name: 'Amortization Calculator', level: 1 }` (the h1 changes per FR-002; `level: 1` keeps it from matching the "Amortization schedule" h2). Rewrite the `deal-analyzer.spec.ts` test "FR-015: invalid rental input shows a field error without hiding the schedule" as a two-page flow. On `/deal-analyzer`, after `enterScenarioOne(page)` and Vacancy rate `150`: expect the text "Vacancy rate must be between 0% and 100%." to be visible, `data-testid="deal-metrics"` to be hidden, and the Real-estate costs total monthly payment to still show. Then `page.goto('/amortization')`: expect the heading "Amortization schedule" to be visible and `page.locator('table').last().locator('tbody tr')` to have 360 rows. Rename the test to "FR-015: invalid rental input never blocks the loan figures or schedule". Don't change any other assertion in that file
-- [ ] T038 [P] [US1] Create `apps/amortization-calculator-e2e/src/feature-pages.spec.ts` covering contracts/routes-and-navigation.md "Routes" and "Page section contract":
+- [X] T037 [P] [US1] Retarget existing e2e specs in `apps/amortization-calculator-e2e/src/` (change only `goto` targets): `baseline-schedule.spec.ts`, `real-estate-costs.spec.ts`, `extra-payments.spec.ts`, `export-schedule.spec.ts`, `principal-auto-calculation.spec.ts`, `scenario-comparison.spec.ts`, `validation-and-persistence.spec.ts` (both `goto('/')` calls) → `'/amortization'`; `deal-analyzer.spec.ts` (`enterScenarioOne` and the test at line ~131) → `'/deal-analyzer'`; `performance.spec.ts` first test → `'/amortization'`, second (Cash-on-Cash) test → `'/deal-analyzer'`. Also update `baseline-schedule.spec.ts:7` from `getByRole('heading', { name: 'Real Estate Amortization Calculator' })` to `{ name: 'Amortization Calculator', level: 1 }` (the h1 changes per FR-002; `level: 1` keeps it from matching the "Amortization schedule" h2). Rewrite the `deal-analyzer.spec.ts` test "FR-015: invalid rental input shows a field error without hiding the schedule" as a two-page flow. On `/deal-analyzer`, after `enterScenarioOne(page)` and Vacancy rate `150`: expect the text "Vacancy rate must be between 0% and 100%." to be visible, `data-testid="deal-metrics"` to be hidden, and the Real-estate costs total monthly payment to still show. Then `page.goto('/amortization')`: expect the heading "Amortization schedule" to be visible and `page.locator('table').last().locator('tbody tr')` to have 360 rows. Rename the test to "FR-015: invalid rental input never blocks the loan figures or schedule". Don't change any other assertion in that file
+- [X] T038 [P] [US1] Create `apps/amortization-calculator-e2e/src/feature-pages.spec.ts` covering contracts/routes-and-navigation.md "Routes" and "Page section contract":
   - (a) `goto('/')` ends at URL `/amortization`
   - (b) titles are `Amortization Calculator · Companion` and `Rental Deal Analyzer · Companion`, and each page's `h1` matches
   - (c) `/amortization` has h2 "Amortization schedule" and "Extra payments", and has no textbox "Monthly rent" and no h2 "Deal analyzer"
@@ -117,7 +117,7 @@ description: 'Task list for 003-feature-pages-navigation'
 
 ### Implementation for User Story 1
 
-- [ ] T039 [P] [US1] Create `libs/amortization/ui/src/lib/amortization-calculator-view.tsx` (`'use client'`) exporting `AmortizationCalculatorView`. Move into it the amortization parts of today's `page.tsx`, in this order:
+- [X] T039 [P] [US1] Create `libs/amortization/ui/src/lib/amortization-calculator-view.tsx` (`'use client'`) exporting `AmortizationCalculatorView`. Move into it the amortization parts of today's `page.tsx`, in this order:
   - `<h1 tabIndex={-1}>` "Amortization Calculator", plus the subtitle "Model a mortgage payment, its full schedule, real-estate costs, and early-payoff savings."
   - `MetricBadgeGroup` with only the LTV badge, rendered when `activeScenario.homePrice != null`
   - `ScenarioTabs`
@@ -128,7 +128,7 @@ description: 'Task list for 003-feature-pages-navigation'
   - "Compare scenarios" (when `computeValidSchedules(scenarios).length >= 2`): `<ComparisonGrid comparison={compareScenarios(...)} columns={LOAN_COMPARISON_COLUMNS} …/>`, memoized on `scenarios`
 
   Use `useScenarios()` from `shared-data-access`. Do not render `<main>`: the layout owns `<main id="main-content">` (T044/T055), so the view's root is a fragment. Export it from `libs/amortization/ui/src/index.ts`
-- [ ] T040 [P] [US1] Create `libs/deal-analyzer/ui/src/lib/deal-analyzer-view.tsx` (`'use client'`) exporting `DealAnalyzerView`, in this order:
+- [X] T040 [P] [US1] Create `libs/deal-analyzer/ui/src/lib/deal-analyzer-view.tsx` (`'use client'`) exporting `DealAnalyzerView`, in this order:
   - `<h1 tabIndex={-1}>` "Rental Deal Analyzer", plus the subtitle "Analyze a rental's cash flow, returns, and rules of thumb."
   - `MetricBadgeGroup` with the LTV and Cash-on-Cash badges, rendered with the same conditions and tone logic as today
   - `ScenarioTabs`
@@ -138,12 +138,12 @@ description: 'Task list for 003-feature-pages-navigation'
   - "Compare scenarios" using `computeValidSchedules` → `compareScenarios` → `withDealMetrics` (analysis per scenario only when its rental passes `validateRental`) with `DEAL_COMPARISON_COLUMNS`, memoized on `scenarios`
 
   Do not render `<main>`: the layout owns `<main id="main-content">`, so the view's root is a fragment. Export it from `libs/deal-analyzer/ui/src/index.ts`
-- [ ] T041 [P] [US1] Create `apps/amortization-calculator/src/app/amortization/page.tsx`: `export const metadata = { title: 'Amortization Calculator', description: '…' }` plus `export default function Page() { return <AmortizationCalculatorView />; }`
-- [ ] T042 [P] [US1] Create `apps/amortization-calculator/src/app/deal-analyzer/page.tsx`: `metadata.title = 'Rental Deal Analyzer'` plus `<DealAnalyzerView />`
-- [ ] T043 [US1] Replace `apps/amortization-calculator/src/app/page.tsx` with a server component: `import { redirect } from 'next/navigation'; export default function Page() { redirect('/amortization'); }`
-- [ ] T044 [US1] Update `apps/amortization-calculator/src/app/layout.tsx`: `metadata = { title: { default: 'Companion', template: '%s · Companion' }, description: '…' }`. Keep `<ScenariosProvider>` around `{children}` and wrap the content in `<main id="main-content" className="mx-auto flex max-w-4xl flex-col gap-8 px-4 py-10">` (moved from the old page). The views render sections only, not `<main>`
-- [ ] T045 [US1] Create `apps/amortization-calculator/src/app/not-found.tsx`: `metadata.title = 'Not found'`, `<h1>Page not found</h1>` (no `<main>` of its own; the layout provides it), and a `next/link` to `/amortization`
-- [ ] T046 [US1] Run `npm exec nx -- run-many -t lint,typecheck,test` and `npm exec nx -- e2e amortization-calculator-e2e`; all must pass, including T037 and T038
+- [X] T041 [P] [US1] Create `apps/amortization-calculator/src/app/amortization/page.tsx`: `export const metadata = { title: 'Amortization Calculator', description: '…' }` plus `export default function Page() { return <AmortizationCalculatorView />; }`
+- [X] T042 [P] [US1] Create `apps/amortization-calculator/src/app/deal-analyzer/page.tsx`: `metadata.title = 'Rental Deal Analyzer'` plus `<DealAnalyzerView />`
+- [X] T043 [US1] Replace `apps/amortization-calculator/src/app/page.tsx` with a server component: `import { redirect } from 'next/navigation'; export default function Page() { redirect('/amortization'); }`
+- [X] T044 [US1] Update `apps/amortization-calculator/src/app/layout.tsx`: `metadata = { title: { default: 'Companion', template: '%s · Companion' }, description: '…' }`. Keep `<ScenariosProvider>` around `{children}` and wrap the content in `<main id="main-content" className="mx-auto flex max-w-4xl flex-col gap-8 px-4 py-10">` (moved from the old page). The views render sections only, not `<main>`
+- [X] T045 [US1] Create `apps/amortization-calculator/src/app/not-found.tsx`: `metadata.title = 'Not found'`, `<h1>Page not found</h1>` (no `<main>` of its own; the layout provides it), and a `next/link` to `/amortization`
+- [X] T046 [US1] Run `npm exec nx -- run-many -t lint,typecheck,test` and `npm exec nx -- e2e amortization-calculator-e2e`; all must pass, including T037 and T038
 
 **Checkpoint**: Two pages reachable by URL, shared state across them, all prior behavior intact. This is a shippable MVP, even though nothing in the UI links between the pages yet.
 

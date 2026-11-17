@@ -5,7 +5,7 @@ import { fillNumberField } from './helpers';
 test('auto-calculates the loan amount, keeps a manual override, then discards it when inputs change again', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('/amortization');
 
   const loanAmount = page.getByRole('textbox', { name: 'Loan amount', exact: true });
 

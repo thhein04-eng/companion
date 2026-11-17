@@ -3,7 +3,7 @@ import { fillNumberField } from './helpers';
 
 // SC-005: a 360-period schedule stays responsive to input changes (<1s).
 test('recalculates and re-renders a 360-period schedule in under 1 second', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/amortization');
   await expect(page.locator('table').last().locator('tbody tr')).toHaveCount(360);
 
   const start = Date.now();
@@ -15,7 +15,7 @@ test('recalculates and re-renders a 360-period schedule in under 1 second', asyn
 
 // SC-003: Deal Analyzer badges reflect an input change within 1 second.
 test('updates the Cash-on-Cash badge within 1 second of a rent change', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/deal-analyzer');
   await fillNumberField(page, 'Home price', '250000');
   await fillNumberField(page, 'Down payment', '62500');
   await fillNumberField(page, 'Annual interest rate', '7');

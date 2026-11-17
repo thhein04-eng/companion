@@ -5,7 +5,7 @@ import { fillNumberField } from './helpers';
 test('separates total estimated monthly payment from principal & interest, and PMI drops off', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('/amortization');
 
   await fillNumberField(page, 'Home price', '350000');
   await fillNumberField(page, 'Annual property tax', '4200');
