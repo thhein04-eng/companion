@@ -1,6 +1,11 @@
 'use client';
 
-import { Field, FieldDescription, FieldError, FieldLabel } from '@ui-sdk/react/field';
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from '@ui-sdk/react/field';
 import {
   NumberInput,
   NumberInputControl,
@@ -48,7 +53,13 @@ export function NumberField({
 }: NumberFieldProps) {
   return (
     <Field invalid={error ? true : undefined} className="flex flex-col gap-1">
-      <FieldLabel className={visuallyHiddenLabel ? 'sr-only' : 'text-sm font-medium text-neutral-700'}>
+      <FieldLabel
+        className={
+          visuallyHiddenLabel
+            ? 'sr-only'
+            : 'text-sm font-medium text-neutral-700'
+        }
+      >
         {label}
       </FieldLabel>
       <NumberInput
@@ -57,7 +68,11 @@ export function NumberField({
         min={min}
         max={max}
         step={step}
-        format={variant === 'currency' ? { style: 'currency', currency: 'USD' } : undefined}
+        format={
+          variant === 'currency'
+            ? { style: 'currency', currency: 'USD' }
+            : undefined
+        }
       >
         <NumberInputGroup className="flex items-center gap-1 rounded-md border border-neutral-300 bg-white px-1 focus-within:ring-2 focus-within:ring-neutral-400 data-[invalid]:border-red-500">
           <NumberInputDecrement
@@ -66,8 +81,10 @@ export function NumberField({
           >
             −
           </NumberInputDecrement>
-          <NumberInputControl className="w-full flex-1 bg-transparent px-1 py-1.5 text-sm outline-none" />
-          {suffix ? <span className="pr-1 text-sm text-neutral-500">{suffix}</span> : null}
+          <NumberInputControl className="min-w-0 flex-1 bg-transparent px-1 py-1.5 text-sm outline-none" />
+          {suffix ? (
+            <span className="pr-1 text-sm text-neutral-500">{suffix}</span>
+          ) : null}
           <NumberInputIncrement
             aria-label={`Increase ${label}`}
             className="rounded px-2 py-1 text-neutral-500 hover:bg-neutral-100 data-[disabled]:opacity-40"
@@ -77,7 +94,9 @@ export function NumberField({
         </NumberInputGroup>
       </NumberInput>
       {description ? (
-        <FieldDescription className="text-xs text-neutral-500">{description}</FieldDescription>
+        <FieldDescription className="text-xs text-neutral-500">
+          {description}
+        </FieldDescription>
       ) : null}
       {error ? (
         <FieldError match className="text-xs text-red-600">

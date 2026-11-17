@@ -45,6 +45,7 @@ export interface RentalAssumptions {
   capexReservePct: number;
   closingCosts: number;
   rehabBudget: number;
+  customExpenses?: CustomExpenseItem[];
 }
 
 /** A user-defined extra-principal-payment instruction applied when generating a schedule. */
@@ -122,14 +123,28 @@ export type OperatingExpenseCategory =
   | 'vacancy'
   | 'management'
   | 'maintenance'
-  | 'capex';
+  | 'capex'
+  | 'custom';
 
-export type OperatingExpenseLine = { category: OperatingExpenseCategory; label: string } & MonthlyAnnual;
+export type OperatingExpenseLine = {
+  category: OperatingExpenseCategory;
+  label: string;
+} & MonthlyAnnual;
+
+export interface CustomExpenseItem {
+  id?: string;
+  label: string; // e.g., "Utilities (Water/Trash)", "Landscaping"
+  monthlyAmount: number;
+}
 
 /** An unrounded ratio (fraction, e.g. `0.0376`), or `null` with a human-readable reason when not applicable. */
 export type RatioResult = { value: number | null; naReason: string | null };
 
-export type OnePercentRuleResult = { pass: boolean; targetRent: number; actualRent: number };
+export type OnePercentRuleResult = {
+  pass: boolean;
+  targetRent: number;
+  actualRent: number;
+};
 
 export type FiftyPercentRuleResult = {
   opexRatio: number;
