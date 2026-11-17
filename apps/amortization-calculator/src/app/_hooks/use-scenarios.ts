@@ -46,13 +46,16 @@ export function useScenarios() {
   const [scenarios, setScenarios] = useState<LoanScenario[]>(() => [
     createDefaultScenario(INITIAL_SCENARIO_ID),
   ]);
-  const [activeScenarioId, setActiveScenarioId] = useState<string>(INITIAL_SCENARIO_ID);
+  const [activeScenarioId, setActiveScenarioId] =
+    useState<string>(INITIAL_SCENARIO_ID);
   const [hasLoadedPersisted, setHasLoadedPersisted] = useState(false);
 
   // Runs once, client-only, after the server-rendered markup has already
   // hydrated against the deterministic placeholder above.
   useEffect(() => {
-    const persisted = deserializeScenarios(window.sessionStorage.getItem(STORAGE_KEY));
+    const persisted = deserializeScenarios(
+      window.sessionStorage.getItem(STORAGE_KEY),
+    );
     if (persisted?.scenarios?.length) {
       setScenarios(persisted.scenarios);
       setActiveScenarioId(persisted.activeScenarioId);
@@ -62,7 +65,10 @@ export function useScenarios() {
 
   useEffect(() => {
     if (!hasLoadedPersisted) return;
-    window.sessionStorage.setItem(STORAGE_KEY, serializeScenarios(scenarios, activeScenarioId));
+    window.sessionStorage.setItem(
+      STORAGE_KEY,
+      serializeScenarios(scenarios, activeScenarioId),
+    );
   }, [scenarios, activeScenarioId, hasLoadedPersisted]);
 
   const activeScenario =
@@ -71,10 +77,12 @@ export function useScenarios() {
   const updateActiveScenario = useCallback(
     (patch: Partial<LoanScenario>) => {
       setScenarios((prev) =>
-        prev.map((s) => (s.id === activeScenarioId ? applyScenarioPatch(s, patch) : s))
+        prev.map((s) =>
+          s.id === activeScenarioId ? applyScenarioPatch(s, patch) : s,
+        ),
       );
     },
-    [activeScenarioId]
+    [activeScenarioId],
   );
 
   /**
@@ -90,14 +98,18 @@ export function useScenarios() {
           if (s.rental == null) {
             if (patch.grossMonthlyRent == null) return s;
             return applyScenarioPatch(s, {
-              rental: { ...DEFAULT_RENTAL_ASSUMPTIONS, grossMonthlyRent: patch.grossMonthlyRent, ...patch },
+              rental: {
+                ...DEFAULT_RENTAL_ASSUMPTIONS,
+                grossMonthlyRent: patch.grossMonthlyRent,
+                ...patch,
+              },
             });
           }
           return applyScenarioPatch(s, { rental: patch as RentalAssumptions });
-        })
+        }),
       );
     },
-    [activeScenarioId]
+    [activeScenarioId],
   );
 
   // State updaters must stay pure: React StrictMode invokes them twice in
@@ -108,7 +120,7 @@ export function useScenarios() {
     const id = crypto.randomUUID();
     setScenarios((prev) => {
       const source = prev.find((s) => s.id === activeScenarioId) ?? prev[0];
-      return [...prev, { ...source, id, name: `${source.name} (copy)` }];
+      return [...prev, { ...source, id, name: `Scenario ${prev.length + 1}` }];
     });
     setActiveScenarioId(id);
   }, [activeScenarioId]);
@@ -116,11 +128,18 @@ export function useScenarios() {
   const removeScenario = useCallback(
     (id: string) => {
       const remaining = scenarios.filter((s) => s.id !== id);
-      const next = remaining.length > 0 ? remaining : [createDefaultScenario(crypto.randomUUID())];
+      const next =
+        remaining.length > 0
+          ? remaining
+          : [createDefaultScenario(crypto.randomUUID())];
       setScenarios(next);
-      setActiveScenarioId((current) => (current === id || !next.some((s) => s.id === current) ? next[0].id : current));
+      setActiveScenarioId((current) =>
+        current === id || !next.some((s) => s.id === current)
+          ? next[0].id
+          : current,
+      );
     },
-    [scenarios]
+    [scenarios],
   );
 
   return {
