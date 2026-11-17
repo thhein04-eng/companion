@@ -25,9 +25,20 @@ import { ExtraPaymentPanel } from './_components/extra-payment-panel';
 import { ExportScheduleButton } from './_components/export-schedule-button';
 import { RentalInputsPanel } from './_components/rental-inputs-panel';
 
-const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
-const percent1 = new Intl.NumberFormat('en-US', { style: 'percent', minimumFractionDigits: 1, maximumFractionDigits: 1 });
-const percent2 = new Intl.NumberFormat('en-US', { style: 'percent', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const currency = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+});
+const percent1 = new Intl.NumberFormat('en-US', {
+  style: 'percent',
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+});
+const percent2 = new Intl.NumberFormat('en-US', {
+  style: 'percent',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
 
 export default function Page() {
   const {
@@ -42,12 +53,19 @@ export default function Page() {
   } = useScenarios();
 
   const validation = validateScenario(activeScenario);
-  const schedule = validation.valid ? computeSchedule(validation.scenario) : null;
+  const schedule = validation.valid
+    ? computeSchedule(validation.scenario)
+    : null;
 
   // Deal Analyzer (FR-015): rental errors never block the amortization schedule.
-  const rentalErrors = activeScenario.rental ? validateRental(activeScenario.rental) : [];
+  const rentalErrors = activeScenario.rental
+    ? validateRental(activeScenario.rental)
+    : [];
   const analysis =
-    validation.valid && schedule && activeScenario.rental && rentalErrors.length === 0
+    validation.valid &&
+    schedule &&
+    activeScenario.rental &&
+    rentalErrors.length === 0
       ? analyzeDeal(validation.scenario, schedule)
       : null;
   const ltv = computeLtv(activeScenario);
@@ -64,21 +82,26 @@ export default function Page() {
       schedules.push(scenarioSchedule);
       const rental = result.scenario.rental;
       analyses[scenario.id] =
-        rental && validateRental(rental).length === 0 ? analyzeDeal(result.scenario, scenarioSchedule) : null;
+        rental && validateRental(rental).length === 0
+          ? analyzeDeal(result.scenario, scenarioSchedule)
+          : null;
     }
     return schedules.length >= 2 ? compareScenarios(schedules, analyses) : null;
   }, [scenarios]);
 
-  const scenarioNames = Object.fromEntries(scenarios.map((s) => [s.id, s.name]));
+  const scenarioNames = Object.fromEntries(
+    scenarios.map((s) => [s.id, s.name]),
+  );
 
   return (
-    <main className="mx-auto flex max-w-4xl flex-col gap-8 px-4 py-10">
+    <main className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-10">
       <header>
         <h1 className="text-2xl font-semibold text-neutral-900">
           Real Estate Amortization Calculator
         </h1>
         <p className="mt-1 text-sm text-neutral-500">
-          Model a mortgage payment, its full schedule, real-estate costs, early-payoff savings, and rental cash flow and returns.
+          Model a mortgage payment, its full schedule, real-estate costs,
+          early-payoff savings, and rental cash flow and returns.
         </p>
       </header>
 
@@ -90,7 +113,13 @@ export default function Page() {
               label="Cash-on-Cash"
               value={coc.value}
               naReason={coc.naReason}
-              tone={coc.value == null ? 'neutral' : coc.value < 0 ? 'negative' : 'positive'}
+              tone={
+                coc.value == null
+                  ? 'neutral'
+                  : coc.value < 0
+                    ? 'negative'
+                    : 'positive'
+              }
             />
           ) : null}
         </MetricBadgeGroup>
@@ -114,11 +143,15 @@ export default function Page() {
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium text-neutral-800">Real-estate costs</h2>
+        <h2 className="text-lg font-medium text-neutral-800">
+          Real-estate costs
+        </h2>
         <CostBreakdownPanel
           scenario={activeScenario}
           onChange={updateActiveScenario}
-          monthlyPrincipalAndInterest={schedule?.summary.monthlyPrincipalAndInterest ?? 0}
+          monthlyPrincipalAndInterest={
+            schedule?.summary.monthlyPrincipalAndInterest ?? 0
+          }
           totalMonthlyPayment={schedule?.summary.totalMonthlyPayment ?? 0}
           pmiDropPeriod={schedule?.summary.pmiDropPeriod ?? null}
         />
@@ -135,14 +168,21 @@ export default function Page() {
         {analysis ? (
           <>
             <IncomeExpenseCard analysis={analysis} />
-            <div data-testid="deal-metrics" className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div
+              data-testid="deal-metrics"
+              className="grid grid-cols-1 gap-3 sm:grid-cols-3"
+            >
               <div
                 data-testid="cap-rate"
                 className="flex flex-col gap-1 rounded-md border border-neutral-200 bg-white p-3"
               >
-                <span className="text-sm font-medium text-neutral-900">Cap rate</span>
+                <span className="text-sm font-medium text-neutral-900">
+                  Cap rate
+                </span>
                 <span className="text-lg font-semibold tabular-nums">
-                  {analysis.capRate.value != null ? percent2.format(analysis.capRate.value) : 'N/A'}
+                  {analysis.capRate.value != null
+                    ? percent2.format(analysis.capRate.value)
+                    : 'N/A'}
                 </span>
                 <span className="text-xs text-neutral-500">
                   {analysis.capRate.naReason ?? 'Independent of financing'}
@@ -150,7 +190,13 @@ export default function Page() {
               </div>
               <RuleIndicator
                 name="1% Rule"
-                status={analysis.onePercentRule ? (analysis.onePercentRule.pass ? 'pass' : 'fail') : 'na'}
+                status={
+                  analysis.onePercentRule
+                    ? analysis.onePercentRule.pass
+                      ? 'pass'
+                      : 'fail'
+                    : 'na'
+                }
                 detail={
                   analysis.onePercentRule
                     ? `Rent ${currency.format(analysis.onePercentRule.actualRent)} vs. target ${currency.format(analysis.onePercentRule.targetRent)}`
@@ -161,7 +207,11 @@ export default function Page() {
               <RuleIndicator
                 name="50% Rule"
                 status={
-                  analysis.fiftyPercentRule ? (analysis.fiftyPercentRule.withinRule ? 'pass' : 'fail') : 'na'
+                  analysis.fiftyPercentRule
+                    ? analysis.fiftyPercentRule.withinRule
+                      ? 'pass'
+                      : 'fail'
+                    : 'na'
                 }
                 detail={
                   analysis.fiftyPercentRule
@@ -183,9 +233,10 @@ export default function Page() {
         />
         {schedule?.baselineComparison ? (
           <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-            Paying extra saves {currency.format(schedule.baselineComparison.interestSaved)} in
-            interest and {schedule.baselineComparison.periodsSaved} payments versus the baseline
-            schedule.
+            Paying extra saves{' '}
+            {currency.format(schedule.baselineComparison.interestSaved)} in
+            interest and {schedule.baselineComparison.periodsSaved} payments
+            versus the baseline schedule.
           </p>
         ) : null}
       </section>
@@ -193,7 +244,9 @@ export default function Page() {
       {schedule ? (
         <section className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-medium text-neutral-800">Amortization schedule</h2>
+            <h2 className="text-lg font-medium text-neutral-800">
+              Amortization schedule
+            </h2>
             <ExportScheduleButton schedule={schedule} />
           </div>
           <ScheduleTable periods={schedule.periods} />
@@ -206,8 +259,13 @@ export default function Page() {
 
       {comparison ? (
         <section className="flex flex-col gap-4">
-          <h2 className="text-lg font-medium text-neutral-800">Compare scenarios</h2>
-          <ComparisonGrid comparison={comparison} scenarioNames={scenarioNames} />
+          <h2 className="text-lg font-medium text-neutral-800">
+            Compare scenarios
+          </h2>
+          <ComparisonGrid
+            comparison={comparison}
+            scenarioNames={scenarioNames}
+          />
         </section>
       ) : null}
     </main>
