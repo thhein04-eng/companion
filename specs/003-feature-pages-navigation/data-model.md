@@ -6,21 +6,21 @@ This feature adds **no new financial data**. It (a) redistributes the existing t
 
 ### `shared-calculations` (scope:shared)
 
-| Type | Change |
-|---|---|
-| `LoanScenario` | Unchanged shape, including the optional `rental?: RentalAssumptions \| null` slot (research R2). |
-| `RentalAssumptions` | Unchanged shape. Data only: validation, defaults, and analysis are **not** here. |
-| `DownPayment`, `ExtraPaymentRule`, `SchedulePeriod`, `AmortizationSchedule`, `FieldError`, `PersistedState`, `MonthlyAnnual`, `RatioResult` | Unchanged; moved only. |
-| `ScenarioComparison` | **Narrowed** to loan columns: `rows: { scenarioId; monthlyPayment; totalInterest; totalCost; payoffDate }[]`. |
-| `ComparisonRow` | New alias for `ScenarioComparison['rows'][number]`, used as the base row type for column definitions. |
+| Type                                                                                                                                        | Change                                                                                                        |
+| ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `LoanScenario`                                                                                                                              | Unchanged shape, including the optional `rental?: RentalAssumptions \| null` slot (research R2).              |
+| `RentalAssumptions`                                                                                                                         | Unchanged shape. Data only: validation, defaults, and analysis are **not** here.                              |
+| `DownPayment`, `ExtraPaymentRule`, `SchedulePeriod`, `AmortizationSchedule`, `FieldError`, `PersistedState`, `MonthlyAnnual`, `RatioResult` | Unchanged; moved only.                                                                                        |
+| `ScenarioComparison`                                                                                                                        | **Narrowed** to loan columns: `rows: { scenarioId; monthlyPayment; totalInterest; totalCost; payoffDate }[]`. |
+| `ComparisonRow`                                                                                                                             | New alias for `ScenarioComparison['rows'][number]`, used as the base row type for column definitions.         |
 
 ### `deal-analyzer-calculations` (scope:deal-analyzer)
 
-| Type | Change |
-|---|---|
-| `OperatingExpenseCategory`, `OperatingExpenseLine`, `OnePercentRuleResult`, `FiftyPercentRuleResult`, `DealAnalysis` | Unchanged; moved out of shared. |
-| `DealComparisonRow` | New: `ComparisonRow & { monthlyCashFlow: number \| null; annualNoi: number \| null; capRate: number \| null; cashOnCashReturn: number \| null }`. These are exactly the four fields removed from `ScenarioComparison`. |
-| `DealScenarioComparison` | New: `{ scenarioIds: string[]; rows: DealComparisonRow[] }`. |
+| Type                                                                                                                 | Change                                                                                                                                                                                                                 |
+| -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `OperatingExpenseCategory`, `OperatingExpenseLine`, `OnePercentRuleResult`, `FiftyPercentRuleResult`, `DealAnalysis` | Unchanged; moved out of shared.                                                                                                                                                                                        |
+| `DealComparisonRow`                                                                                                  | New: `ComparisonRow & { monthlyCashFlow: number \| null; annualNoi: number \| null; capRate: number \| null; cashOnCashReturn: number \| null }`. These are exactly the four fields removed from `ScenarioComparison`. |
+| `DealScenarioComparison`                                                                                             | New: `{ scenarioIds: string[]; rows: DealComparisonRow[] }`.                                                                                                                                                           |
 
 ### `amortization-calculations` (scope:amortization)
 
@@ -37,13 +37,13 @@ No types of its own. It consumes `AmortizationSchedule` from shared.
 
 ### Store API (shared `useScenarios()` return value)
 
-| Member | Notes |
-|---|---|
-| `scenarios`, `activeScenarioId`, `activeScenario` | as today |
-| `setActiveScenarioId(id)` | as today |
-| `updateActiveScenario(patch: Partial<LoanScenario>)` | as today. This is the only write path for every field, including `rental`. |
-| `addScenario()`, `removeScenario(id)` | as today; StrictMode-safe |
-| ~~`updateActiveRental`~~ | **Removed from shared.** Replaced by `useRentalEditor()` in `deal-analyzer-ui`, which wraps `updateActiveScenario` and applies `DEFAULT_RENTAL_ASSUMPTIONS` on first rent entry. Same behavior as today. |
+| Member                                               | Notes                                                                                                                                                                                                    |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scenarios`, `activeScenarioId`, `activeScenario`    | as today                                                                                                                                                                                                 |
+| `setActiveScenarioId(id)`                            | as today                                                                                                                                                                                                 |
+| `updateActiveScenario(patch: Partial<LoanScenario>)` | as today. This is the only write path for every field, including `rental`.                                                                                                                               |
+| `addScenario()`, `removeScenario(id)`                | as today; StrictMode-safe                                                                                                                                                                                |
+| ~~`updateActiveRental`~~                             | **Removed from shared.** Replaced by `useRentalEditor()` in `deal-analyzer-ui`, which wraps `updateActiveScenario` and applies `DEFAULT_RENTAL_ASSUMPTIONS` on first rent entry. Same behavior as today. |
 
 ## 3. New UI entities
 
@@ -51,12 +51,12 @@ No types of its own. It consumes `AmortizationSchedule` from shared.
 
 Defined in `shared-ui`. Instances are owned by the app in `app/_nav.ts`.
 
-| Field | Type | Rules |
-|---|---|---|
-| `id` | `string` | unique; used as the React key and `data-testid="nav-<id>"` |
-| `label` | `string` | non-empty; this is the link's accessible name in every state |
-| `href` | `` `/${string}` `` | an app route; also used for the active-state match (`pathname === href \|\| pathname.startsWith(href + '/')`) |
-| `icon` | `ReactNode` (a rendered element, e.g. `<CalculatorIcon />`) | decorative only (always `aria-hidden`). An element, not a component, because the item list is passed from the server-rendered layout to the client menu and functions can't cross that boundary. |
+| Field   | Type                                                        | Rules                                                                                                                                                                                            |
+| ------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `id`    | `string`                                                    | unique; used as the React key and `data-testid="nav-<id>"`                                                                                                                                       |
+| `label` | `string`                                                    | non-empty; this is the link's accessible name in every state                                                                                                                                     |
+| `href`  | `` `/${string}` ``                                          | an app route; also used for the active-state match (`pathname === href \|\| pathname.startsWith(href + '/')`)                                                                                    |
+| `icon`  | `ReactNode` (a rendered element, e.g. `<CalculatorIcon />`) | decorative only (always `aria-hidden`). An element, not a component, because the item list is passed from the server-rendered layout to the client menu and functions can't cross that boundary. |
 
 App instances:
 
@@ -71,8 +71,8 @@ The icons are small inline SVG components in `shared-ui`, so no icon dependency 
 
 Owned by `useNavPreference()` in `shared-ui`.
 
-| Field | Type | Default |
-|---|---|---|
+| Field       | Type      | Default |
+| ----------- | --------- | ------- |
 | `collapsed` | `boolean` | `false` |
 
 - Storage: `localStorage['companion:nav']` = `JSON.stringify({ collapsed })`. Any read, write, or parse error falls back to the default without throwing.

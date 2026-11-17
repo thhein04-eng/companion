@@ -29,12 +29,32 @@ async function openDrawer(page: Page) {
   return dialog;
 }
 
+/**
+ * Sets the docked menu's collapsed state with its toggle button. Retries,
+ * clicking only while the state still differs, because a press that lands
+ * before React hydrates the server-rendered button does nothing.
+ */
+async function setNavCollapsed(page: Page, collapsed: boolean) {
+  const shell = page.getByTestId('app-shell');
+  const want = String(collapsed);
+  await expect(async () => {
+    if ((await shell.getAttribute('data-nav-collapsed')) !== want) {
+      await page.locator('button[aria-controls="primary-nav"]').click();
+    }
+    await expect(shell).toHaveAttribute('data-nav-collapsed', want, {
+      timeout: 1_000,
+    });
+  }).toPass();
+}
+
 test.describe('Navigation — desktop', () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize(DESKTOP);
   });
 
-  test('(a)(b) one docked Primary nav with both links; the current page is marked', async ({ page }) => {
+  test('(a)(b) one docked Primary nav with both links; the current page is marked', async ({
+    page,
+  }) => {
     await page.goto('/amortization');
     await expect(primaryNav(page)).toHaveCount(1);
     const nav = primaryNav(page);
@@ -44,31 +64,48 @@ test.describe('Navigation — desktop', () => {
     const deal = nav.getByRole('link', { name: 'Rental Deal Analyzer' });
     await expect(amort).toHaveAttribute('aria-current', 'page');
     await expect(deal).not.toHaveAttribute('aria-current', 'page');
-    await expect(page.getByRole('button', { name: 'Open navigation' })).toBeHidden();
+    await expect(
+      page.getByRole('button', { name: 'Open navigation' }),
+    ).toBeHidden();
   });
 
-  test('(c)(d) collapses to a rail, keeps link names, and remembers the choice', async ({ page }) => {
+  test('(c)(d) collapses to a rail, keeps link names, and remembers the choice', async ({
+    page,
+  }) => {
     await page.goto('/amortization');
     const shell = page.getByTestId('app-shell');
     const collapse = page.getByRole('button', { name: 'Collapse navigation' });
     await expect(collapse).toHaveAttribute('aria-expanded', 'true');
     await expect(shell).toHaveAttribute('data-nav-collapsed', 'false');
 
-    await collapse.click();
+    await setNavCollapsed(page, true);
     const expand = page.getByRole('button', { name: 'Expand navigation' });
     await expect(expand).toHaveAttribute('aria-expanded', 'false');
     await expect(shell).toHaveAttribute('data-nav-collapsed', 'true');
-    await expect(primaryNav(page).getByRole('link', { name: 'Rental Deal Analyzer' })).toBeVisible();
+    await expect(
+      primaryNav(page).getByRole('link', { name: 'Rental Deal Analyzer' }),
+    ).toBeVisible();
 
     await page.reload();
-    await expect(page.getByTestId('app-shell')).toHaveAttribute('data-nav-collapsed', 'true');
-    await page.getByRole('button', { name: 'Expand navigation' }).click();
-    await expect(page.getByTestId('app-shell')).toHaveAttribute('data-nav-collapsed', 'false');
+    await expect(page.getByTestId('app-shell')).toHaveAttribute(
+      'data-nav-collapsed',
+      'true',
+    );
+    await expect(
+      page.getByRole('button', { name: 'Expand navigation' }),
+    ).toBeVisible();
+    await setNavCollapsed(page, false);
   });
 
-  test('(e) the toggle works from the keyboard with Enter and Space', async ({ page }) => {
+  test('(e) the toggle works from the keyboard with Enter and Space', async ({
+    page,
+  }) => {
     await page.goto('/amortization');
     const shell = page.getByTestId('app-shell');
+    // Round-trip once with the hydration-safe helper so the key presses
+    // below reach a hydrated button.
+    await setNavCollapsed(page, true);
+    await setNavCollapsed(page, false);
     await page.getByRole('button', { name: 'Collapse navigation' }).focus();
     await page.keyboard.press('Enter');
     await expect(shell).toHaveAttribute('data-nav-collapsed', 'true');
@@ -76,18 +113,23 @@ test.describe('Navigation — desktop', () => {
     await expect(shell).toHaveAttribute('data-nav-collapsed', 'false');
   });
 
-  test('(f) following a menu link keeps unsaved in-memory state and moves aria-current', async ({ page }) => {
+  test('(f) following a menu link keeps unsaved in-memory state and moves aria-current', async ({
+    page,
+  }) => {
     await page.goto('/amortization');
     await fillNumberField(page, 'Home price', '250000');
     await page.keyboard.press('Tab');
 
-    await primaryNav(page).getByRole('link', { name: 'Rental Deal Analyzer' }).click();
+    await primaryNav(page)
+      .getByRole('link', { name: 'Rental Deal Analyzer' })
+      .click();
     await expect(page).toHaveURL(/\/deal-analyzer$/);
-    await expect(page.getByRole('textbox', { name: 'Home price', exact: true })).toHaveValue('$250,000.00');
-    await expect(primaryNav(page).getByRole('link', { name: 'Rental Deal Analyzer' })).toHaveAttribute(
-      'aria-current',
-      'page',
-    );
+    await expect(
+      page.getByRole('textbox', { name: 'Home price', exact: true }),
+    ).toHaveValue('$250,000.00');
+    await expect(
+      primaryNav(page).getByRole('link', { name: 'Rental Deal Analyzer' }),
+    ).toHaveAttribute('aria-current', 'page');
   });
 });
 
@@ -96,17 +138,25 @@ test.describe('Navigation — mobile', () => {
     await page.setViewportSize(MOBILE);
   });
 
-  test('(g) the docked nav is hidden behind an "Open navigation" button', async ({ page }) => {
+  test('(g) the docked nav is hidden behind an "Open navigation" button', async ({
+    page,
+  }) => {
     await page.goto('/amortization');
     await expect(primaryNav(page)).toBeHidden();
-    await expect(page.getByRole('button', { name: 'Open navigation' })).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Open navigation' }),
+    ).toBeVisible();
   });
 
-  test('(h) the drawer traps focus, closes on Escape, and returns focus to the button', async ({ page }) => {
+  test('(h) the drawer traps focus, closes on Escape, and returns focus to the button', async ({
+    page,
+  }) => {
     await page.goto('/amortization');
     const open = page.getByRole('button', { name: 'Open navigation' });
     const dialog = await openDrawer(page);
-    await expect(dialog.getByRole('navigation', { name: 'Primary' })).toBeVisible();
+    await expect(
+      dialog.getByRole('navigation', { name: 'Primary' }),
+    ).toBeVisible();
 
     // Focus must never reach anything outside the drawer. (WebKit, like
     // Safari's default "Tab skips links" setting, can park focus on <body>
@@ -115,7 +165,9 @@ test.describe('Navigation — mobile', () => {
     for (let i = 0; i < 6; i++) {
       await page.keyboard.press('Tab');
       const escaped = await dialog.evaluate(
-        (el) => document.activeElement !== document.body && !el.contains(document.activeElement),
+        (el) =>
+          document.activeElement !== document.body &&
+          !el.contains(document.activeElement),
       );
       expect(escaped).toBe(false);
     }
@@ -125,14 +177,21 @@ test.describe('Navigation — mobile', () => {
     await expect(open).toBeFocused();
   });
 
-  test('(i) following a link closes the drawer and focuses the new page heading', async ({ page }) => {
+  test('(i) following a link closes the drawer and focuses the new page heading', async ({
+    page,
+  }) => {
     await page.goto('/amortization');
     await openDrawer(page);
-    await page.getByRole('dialog').getByRole('link', { name: 'Rental Deal Analyzer' }).click();
+    await page
+      .getByRole('dialog')
+      .getByRole('link', { name: 'Rental Deal Analyzer' })
+      .click();
 
     await expect(page).toHaveURL(/\/deal-analyzer$/);
     await expect(page.getByRole('dialog')).toBeHidden();
-    await expect(page.getByRole('heading', { name: 'Rental Deal Analyzer', level: 1 })).toBeFocused();
+    await expect(
+      page.getByRole('heading', { name: 'Rental Deal Analyzer', level: 1 }),
+    ).toBeFocused();
   });
 
   test('(j) the close button closes the drawer', async ({ page }) => {
@@ -151,7 +210,9 @@ test.describe('Navigation — mobile', () => {
     await expect(page.getByRole('dialog')).toBeHidden();
   });
 
-  test('(k) widening past the breakpoint closes the drawer and shows the docked nav', async ({ page }) => {
+  test('(k) widening past the breakpoint closes the drawer and shows the docked nav', async ({
+    page,
+  }) => {
     await page.goto('/amortization');
     await openDrawer(page);
     await expect(page.getByRole('dialog')).toBeVisible();
@@ -164,12 +225,16 @@ test.describe('Navigation — mobile', () => {
 
 test.describe('Navigation — narrow layout', () => {
   for (const path of ['/amortization', '/deal-analyzer']) {
-    test(`(l) no horizontal page scroll at 320px on ${path}`, async ({ page }) => {
+    test(`(l) no horizontal page scroll at 320px on ${path}`, async ({
+      page,
+    }) => {
       await page.setViewportSize({ width: 320, height: 800 });
       await page.goto(path);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
       const overflow = await page.evaluate(
-        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        () =>
+          document.documentElement.scrollWidth -
+          document.documentElement.clientWidth,
       );
       expect(overflow).toBeLessThanOrEqual(0);
     });
@@ -179,6 +244,10 @@ test.describe('Navigation — narrow layout', () => {
 test('not-found renders inside the shell', async ({ page }) => {
   await page.setViewportSize(DESKTOP);
   await page.goto('/nope');
-  await expect(page.getByRole('heading', { name: 'Page not found', level: 1 })).toBeVisible();
-  await expect(primaryNav(page).getByRole('link', { name: 'Amortization Calculator' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Page not found', level: 1 }),
+  ).toBeVisible();
+  await expect(
+    primaryNav(page).getByRole('link', { name: 'Amortization Calculator' }),
+  ).toBeVisible();
 });

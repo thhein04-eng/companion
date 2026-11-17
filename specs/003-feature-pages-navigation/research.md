@@ -8,43 +8,46 @@ All Technical Context unknowns are resolved below. Findings come from reading th
 
 **Decision**: Use seven Nx libraries in three scope folders, each tagged `scope:*` + `type:*`:
 
-| Path | Package / import | Tags | Holds |
-|---|---|---|---|
-| `libs/shared/calculations` | `shared-calculations` | `scope:shared`, `type:calc` | Loan scenario types, `roundCents`, `validateScenario`, `computeSchedule`, `calculatePrincipal…`, `applyScenarioPatch`, persistence, `computeLtv`, `computeValidSchedules`, loan-only `compareScenarios` |
-| `libs/shared/data-access` | `shared-data-access` | `scope:shared`, `type:data-access` | `ScenariosProvider` + `useScenarios` (the single session-backed scenario store) |
-| `libs/shared/ui` | `shared-ui` | `scope:shared`, `type:ui` | `NumberField`, `DateField`, `ScenarioTabs`, `MetricBadge(Group)`, generic `ComparisonGrid` + `LOAN_COMPARISON_COLUMNS`, `LoanInputForm`, `CostBreakdownPanel`, `AppShell`, `SideNav`, `useNavPreference` |
-| `libs/amortization/calculations` | `amortization-calculations` | `scope:amortization`, `type:calc` | `scheduleToCsv` |
-| `libs/amortization/ui` | `amortization-ui` | `scope:amortization`, `type:ui` | `ScheduleTable`, `ExtraPaymentPanel`, `ExportScheduleButton`, `AmortizationCalculatorView` |
-| `libs/deal-analyzer/calculations` | `deal-analyzer-calculations` | `scope:deal-analyzer`, `type:calc` | `analyzeDeal`, `validateRental`, `DEFAULT_RENTAL_ASSUMPTIONS`, `withDealMetrics`, deal result types |
-| `libs/deal-analyzer/ui` | `deal-analyzer-ui` | `scope:deal-analyzer`, `type:ui` | `RentalInputsPanel`, `IncomeExpenseCard`, `RuleIndicator`, `DealMetrics`, `DEAL_COMPARISON_COLUMNS`, `useRentalEditor`, `DealAnalyzerView` |
+| Path                              | Package / import             | Tags                               | Holds                                                                                                                                                                                                    |
+| --------------------------------- | ---------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `libs/shared/calculations`        | `shared-calculations`        | `scope:shared`, `type:calc`        | Loan scenario types, `roundCents`, `validateScenario`, `computeSchedule`, `calculatePrincipal…`, `applyScenarioPatch`, persistence, `computeLtv`, `computeValidSchedules`, loan-only `compareScenarios`  |
+| `libs/shared/data-access`         | `shared-data-access`         | `scope:shared`, `type:data-access` | `ScenariosProvider` + `useScenarios` (the single session-backed scenario store)                                                                                                                          |
+| `libs/shared/ui`                  | `shared-ui`                  | `scope:shared`, `type:ui`          | `NumberField`, `DateField`, `ScenarioTabs`, `MetricBadge(Group)`, generic `ComparisonGrid` + `LOAN_COMPARISON_COLUMNS`, `LoanInputForm`, `CostBreakdownPanel`, `AppShell`, `SideNav`, `useNavPreference` |
+| `libs/amortization/calculations`  | `amortization-calculations`  | `scope:amortization`, `type:calc`  | `scheduleToCsv`                                                                                                                                                                                          |
+| `libs/amortization/ui`            | `amortization-ui`            | `scope:amortization`, `type:ui`    | `ScheduleTable`, `ExtraPaymentPanel`, `ExportScheduleButton`, `AmortizationCalculatorView`                                                                                                               |
+| `libs/deal-analyzer/calculations` | `deal-analyzer-calculations` | `scope:deal-analyzer`, `type:calc` | `analyzeDeal`, `validateRental`, `DEFAULT_RENTAL_ASSUMPTIONS`, `withDealMetrics`, deal result types                                                                                                      |
+| `libs/deal-analyzer/ui`           | `deal-analyzer-ui`           | `scope:deal-analyzer`, `type:ui`   | `RentalInputsPanel`, `IncomeExpenseCard`, `RuleIndicator`, `DealMetrics`, `DEAL_COMPARISON_COLUMNS`, `useRentalEditor`, `DealAnalyzerView`                                                               |
 
 `shared-data-access` exists to hold the one stateful store (see R4).
 
-**Rationale**: This matches Nx's recommended "scope × type" grouping, which lets `@nx/enforce-module-boundaries` *enforce* the user's two requirements: feature isolation (scope rule) and logic-below-UI (type rule). Keeping `calc` libraries separate from `ui` libraries is what Constitution I/II already require (pure functions testable without a DOM). The existing two libraries are moved, not recreated, so git history follows the files.
+**Rationale**: This matches Nx's recommended "scope × type" grouping, which lets `@nx/enforce-module-boundaries` _enforce_ the user's two requirements: feature isolation (scope rule) and logic-below-UI (type rule). Keeping `calc` libraries separate from `ui` libraries is what Constitution I/II already require (pure functions testable without a DOM). The existing two libraries are moved, not recreated, so git history follows the files.
 
 **Alternatives considered**:
-- *One lib per feature (calc + UI mixed)*: fewer projects, but violates Constitution II (calc code must be testable without DOM/React) and makes type-based boundary rules impossible.
-- *Keep the existing two libs, add folders inside them*: no enforceable boundary between features; the user explicitly asked for separation "in the project itself".
-- *Put shared code in the app*: would force both feature libs to import from the app (circular, forbidden) or duplicate it.
+
+- _One lib per feature (calc + UI mixed)_: fewer projects, but violates Constitution II (calc code must be testable without DOM/React) and makes type-based boundary rules impossible.
+- _Keep the existing two libs, add folders inside them_: no enforceable boundary between features; the user explicitly asked for separation "in the project itself".
+- _Put shared code in the app_: would force both feature libs to import from the app (circular, forbidden) or duplicate it.
 
 ---
 
 ## R2. Where the `rental` slot and `RentalAssumptions` type live
 
-**Decision**: `RentalAssumptions` (the *data shape* only) and `LoanScenario.rental?` stay in `shared-calculations/types`. All rental *behavior* — `validateRental`, `DEFAULT_RENTAL_ASSUMPTIONS`, `analyzeDeal`, rule checks, deal result types (`DealAnalysis`, `OperatingExpenseLine`, rule results) — moves to `deal-analyzer-calculations`.
+**Decision**: `RentalAssumptions` (the _data shape_ only) and `LoanScenario.rental?` stay in `shared-calculations/types`. All rental _behavior_ — `validateRental`, `DEFAULT_RENTAL_ASSUMPTIONS`, `analyzeDeal`, rule checks, deal result types (`DealAnalysis`, `OperatingExpenseLine`, rule results) — moves to `deal-analyzer-calculations`.
 
 **Rationale**: The scenario is one persisted entity (spec 002 FR-016 stores rental inside each scenario under the same session key). Persistence and `applyScenarioPatch` already need to know the field exists (merge semantics, back-fill `rental: null`). If the type lived in the deal-analyzer lib, shared code would have to import a feature lib, which the boundary rules forbid. A data-shape type is not duplicated functionality, and it keeps the stored format unchanged (FR-003).
 
 **Alternatives considered**:
-- *Generic `LoanScenario<TExt>` with feature extensions*: clean in theory, but spreads type parameters through every shared function and component for one optional field.
-- *TypeScript module augmentation from the deal-analyzer lib*: hidden coupling, order-dependent, and hard to read.
-- *Store rental data under a separate session key*: changes the persisted format, so existing sessions would lose data; also spec 002 tests depend on the current shape.
+
+- _Generic `LoanScenario<TExt>` with feature extensions_: clean in theory, but spreads type parameters through every shared function and component for one optional field.
+- _TypeScript module augmentation from the deal-analyzer lib_: hidden coupling, order-dependent, and hard to read.
+- _Store rental data under a separate session key_: changes the persisted format, so existing sessions would lose data; also spec 002 tests depend on the current shape.
 
 ---
 
 ## R3. Scenario comparison without duplication
 
 **Decision**: Split the current mixed `compareScenarios(schedules, analyses)` in two:
+
 - `shared-calculations`: `computeValidSchedules(scenarios)` (the validate-then-compute loop both pages need) and `compareScenarios(schedules): ScenarioComparison`, which returns loan columns only.
 - `deal-analyzer-calculations`: `withDealMetrics(comparison, analyses): DealScenarioComparison`, which adds `monthlyCashFlow`, `annualNoi`, `capRate`, `cashOnCashReturn` to each row.
 - `shared-ui`: `ComparisonGrid<Row>` renders any `ComparisonColumn<Row>[]`. Shared exports `LOAN_COMPARISON_COLUMNS`. Deal UI exports `DEAL_COMPARISON_COLUMNS = [...LOAN_COMPARISON_COLUMNS, ...dealColumns]`.
@@ -62,15 +65,17 @@ All Technical Context unknowns are resolved below. Findings come from reading th
 **Rationale**: App Router layouts persist across client-side navigation, so a provider in the layout keeps in-memory state when switching pages, with no reload-from-storage flash. `sessionStorage` still covers full reloads (FR-003, Constitution III). A dedicated `data-access` lib keeps stateful React code out of the pure `calc` lib and out of the presentational `ui` lib, which keeps the dependency direction one-way: `ui → data-access → calc`.
 
 **Alternatives considered**:
-- *Each page calls the hook independently (today's model)*: works, but each mount re-reads storage, and an edit followed by fast navigation can race the write effect.
-- *Put the provider in `shared-ui`*: workable, but it mixes state with presentational components.
-- *An external state library (Zustand, etc.)*: a new dependency for something React context already handles.
+
+- _Each page calls the hook independently (today's model)_: works, but each mount re-reads storage, and an edit followed by fast navigation can race the write effect.
+- _Put the provider in `shared-ui`_: workable, but it mixes state with presentational components.
+- _An external state library (Zustand, etc.)_: a new dependency for something React context already handles.
 
 ---
 
 ## R5. Routing structure
 
 **Decision**: App Router routes:
+
 - `app/layout.tsx`: `<ScenariosProvider><AppShell navItems={NAV_ITEMS}>{children}</AppShell></ScenariosProvider>`
 - `app/page.tsx`: server component that calls `redirect('/amortization')`
 - `app/amortization/page.tsx` and `app/deal-analyzer/page.tsx`: each exports `metadata` and renders its feature view (`<AmortizationCalculatorView />` / `<DealAnalyzerView />`)
@@ -86,6 +91,7 @@ All Technical Context unknowns are resolved below. Findings come from reading th
 ## R6. Responsive collapsible side menu: behavior primitives
 
 **Decision**:
+
 - **≥ 1024px (Tailwind `lg`)**: a docked `<nav aria-label="Primary">` in a CSS-grid shell. A plain `<button>` toggle (`@ui-sdk/react/button`) sets `aria-expanded` and `aria-controls`. Its accessible name switches between "Collapse navigation" and "Expand navigation". Collapsed width is a 4rem icon rail. Expanded width is 16rem. Labels stay in the DOM: they are visually hidden with `sr-only` when collapsed, and a `@ui-sdk/react/tooltip` shows the label on hover/focus. Width animates with `transition-[width]`, which is turned off under `prefers-reduced-motion`.
 - **< 1024px**: a header bar with an "Open navigation" `DrawerTrigger`. The menu content renders inside `@ui-sdk/react/drawer` with `side="left"`, `preventEdgeSwipe`, `modal` (default), and a controlled `open`/`onOpenChange`. The drawer closes when `usePathname()` changes, which covers link activation (FR-009). Escape, backdrop press, and focus trap/restore come from the Drawer (it shares Dialog's focus and dismissal behavior).
 - **Links**: Next `<Link>` with `aria-current="page"` when `usePathname()` starts with the item's `href`.
@@ -95,9 +101,10 @@ All Technical Context unknowns are resolved below. Findings come from reading th
 **Rationale**: Constitution IV requires the ui-sdk for interactive primitives wherever it can do the job. The installed beta provides `drawer` (left side, controlled, modal focus trap), `tooltip`, and `button`, which is everything needed. `navigation-menu` is for flyout panels with triggers and does not fit a flat list of two links, so a semantic `<nav>` + `<ul>` + `<a>` is the correct, accessible pattern there.
 
 **Alternatives considered**:
-- *`@ui-sdk/react/collapsible` for the desktop rail*: Collapsible hides panel content, but the rail must keep icons visible and labels readable by screen readers. A toggle button with `aria-expanded` gives the right semantics.
-- *Hand-rolled mobile overlay*: would re-solve focus trap and Escape handling, which Constitution IV forbids.
-- *CSS-only checkbox hack*: no focus management.
+
+- _`@ui-sdk/react/collapsible` for the desktop rail_: Collapsible hides panel content, but the rail must keep icons visible and labels readable by screen readers. A toggle button with `aria-expanded` gives the right semantics.
+- _Hand-rolled mobile overlay_: would re-solve focus trap and Escape handling, which Constitution IV forbids.
+- _CSS-only checkbox hack_: no focus management.
 
 ---
 
@@ -114,6 +121,7 @@ All Technical Context unknowns are resolved below. Findings come from reading th
 ## R8. Executing the move with Nx generators
 
 **Decision**:
+
 1. `nx g @nx/workspace:move --projectName=amortization-calculations --destination=libs/amortization/calculations` (and the same for `amortization-ui` → `libs/amortization/ui`). This keeps the package names.
 2. `nx g @nx/js:lib libs/shared/calculations --name=shared-calculations --unitTestRunner=vitest --bundler=none`
 3. `nx g @nx/react:lib` for `libs/shared/ui`, `libs/shared/data-access`, `libs/deal-analyzer/ui`; `nx g @nx/js:lib` for `libs/deal-analyzer/calculations`.

@@ -2,27 +2,27 @@
 
 ## Routes
 
-| Path | Behavior | `<title>` | `<h1>` |
-|---|---|---|---|
-| `/` | Server redirect (307) to `/amortization` | — | — |
-| `/amortization` | `AmortizationCalculatorView` | `Amortization Calculator · Companion` | "Amortization Calculator" |
-| `/deal-analyzer` | `DealAnalyzerView` | `Rental Deal Analyzer · Companion` | "Rental Deal Analyzer" |
-| any other path | `not-found.tsx` rendered inside the shell | `Not found · Companion` | "Page not found" |
+| Path             | Behavior                                  | `<title>`                             | `<h1>`                    |
+| ---------------- | ----------------------------------------- | ------------------------------------- | ------------------------- |
+| `/`              | Server redirect (307) to `/amortization`  | —                                     | —                         |
+| `/amortization`  | `AmortizationCalculatorView`              | `Amortization Calculator · Companion` | "Amortization Calculator" |
+| `/deal-analyzer` | `DealAnalyzerView`                        | `Rental Deal Analyzer · Companion`    | "Rental Deal Analyzer"    |
+| any other path   | `not-found.tsx` rendered inside the shell | `Not found · Companion`               | "Page not found"          |
 
 ### Page section contract
 
 The headings below are `<h2>` and are the e2e selectors. Existing section headings and field labels are kept word for word.
 
-| Section | `/amortization` | `/deal-analyzer` |
-|---|---|---|
-| Metric badges | LTV (when a home price is set) | LTV + Cash-on-Cash |
-| Scenario tabs | ✓ | ✓ |
-| "Loan" (`LoanInputForm`) | ✓ | ✓ |
-| "Real-estate costs" (`CostBreakdownPanel`) | ✓ | ✓ |
-| "Deal analyzer" (rental inputs, income/expense card, cap rate, rules) | ✗ | ✓ |
-| "Extra payments" | ✓ | ✗ |
-| "Amortization schedule" + Export CSV | ✓ | ✗ |
-| "Compare scenarios" | loan columns | loan + deal columns |
+| Section                                                               | `/amortization`                | `/deal-analyzer`    |
+| --------------------------------------------------------------------- | ------------------------------ | ------------------- |
+| Metric badges                                                         | LTV (when a home price is set) | LTV + Cash-on-Cash  |
+| Scenario tabs                                                         | ✓                              | ✓                   |
+| "Loan" (`LoanInputForm`)                                              | ✓                              | ✓                   |
+| "Real-estate costs" (`CostBreakdownPanel`)                            | ✓                              | ✓                   |
+| "Deal analyzer" (rental inputs, income/expense card, cap rate, rules) | ✗                              | ✓                   |
+| "Extra payments"                                                      | ✓                              | ✗                   |
+| "Amortization schedule" + Export CSV                                  | ✓                              | ✗                   |
+| "Compare scenarios"                                                   | loan columns                   | loan + deal columns |
 
 ## Shell DOM / ARIA contract
 

@@ -1,4 +1,39 @@
-# New Nx Repository
+# Companion: real-estate calculators
+
+A Next.js app (`apps/amortization-calculator`) with two features, each on its own page, behind a responsive, collapsible left-side menu:
+
+| Route            | Feature                                                                                        |
+| ---------------- | ---------------------------------------------------------------------------------------------- |
+| `/amortization`  | Amortization Calculator: payment, full schedule, real-estate costs, extra payments, CSV export |
+| `/deal-analyzer` | Rental Deal Analyzer: cash flow, NOI, cap rate, cash-on-cash, 1% and 50% rules                 |
+
+`/` redirects to `/amortization`. Both pages share one session-scoped set of loan scenarios.
+
+## Library layout
+
+Code is split by feature, with shared code in one place (spec 003):
+
+```text
+libs/shared/calculations        shared-calculations         loan model + math (pure)
+libs/shared/data-access         shared-data-access          the scenario store
+libs/shared/ui                  shared-ui                   fields, forms, comparison grid, app shell
+libs/amortization/calculations  amortization-calculations   amortization-only math
+libs/amortization/ui            amortization-ui             /amortization page
+libs/deal-analyzer/calculations deal-analyzer-calculations  rental analysis (pure)
+libs/deal-analyzer/ui           deal-analyzer-ui            /deal-analyzer page
+```
+
+The two features never import each other, and shared code never imports a feature. `@nx/enforce-module-boundaries` enforces this using the tags described in [module-boundaries.md](specs/003-feature-pages-navigation/contracts/module-boundaries.md). Each library's README lists its public API.
+
+```sh
+npm exec nx -- dev amortization-calculator     # run the app
+npm exec nx -- run-many -t lint,typecheck,test # static checks + unit tests
+npm exec nx -- e2e amortization-calculator-e2e # Playwright
+```
+
+---
+
+# Nx workspace reference
 
 <a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
 

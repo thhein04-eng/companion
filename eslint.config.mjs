@@ -25,7 +25,11 @@ export default [
           depConstraints: [
             {
               sourceTag: 'scope:app',
-              onlyDependOnLibsWithTags: ['scope:shared', 'scope:amortization', 'scope:deal-analyzer'],
+              onlyDependOnLibsWithTags: [
+                'scope:shared',
+                'scope:amortization',
+                'scope:deal-analyzer',
+              ],
             },
             {
               sourceTag: 'scope:amortization',
@@ -41,11 +45,19 @@ export default [
             },
             {
               sourceTag: 'type:app',
-              onlyDependOnLibsWithTags: ['type:ui', 'type:data-access', 'type:calc'],
+              onlyDependOnLibsWithTags: [
+                'type:ui',
+                'type:data-access',
+                'type:calc',
+              ],
             },
             {
               sourceTag: 'type:ui',
-              onlyDependOnLibsWithTags: ['type:ui', 'type:data-access', 'type:calc'],
+              onlyDependOnLibsWithTags: [
+                'type:ui',
+                'type:data-access',
+                'type:calc',
+              ],
             },
             {
               sourceTag: 'type:data-access',

@@ -1,7 +1,13 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import { Button } from '@ui-sdk/react/button';
 import {
   Drawer,
@@ -146,7 +152,8 @@ export function AppShell({
               {appName}
             </span>
           </header>
-          <DrawerBackdrop className="bg-black/30" />
+          {/* ui-sdk positions the sheet but not the backdrop; size it to the viewport. */}
+          <DrawerBackdrop className="fixed inset-0 bg-black/30" />
           <DrawerContent className="flex h-full w-72 max-w-[85vw] flex-col gap-4 bg-white p-4 shadow-xl">
             <div className="flex items-center justify-between pl-3">
               <DrawerTitle className="text-sm font-semibold text-neutral-900">

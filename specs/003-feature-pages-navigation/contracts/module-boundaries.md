@@ -18,17 +18,17 @@ depConstraints:
   type:e2e             → (none)
 ```
 
-| Project | Tags |
-|---|---|
-| `amortization-calculator` (app) | `scope:app`, `type:app` |
-| `amortization-calculator-e2e` | `scope:app`, `type:e2e` |
-| `shared-calculations` | `scope:shared`, `type:calc` |
-| `shared-data-access` | `scope:shared`, `type:data-access` |
-| `shared-ui` | `scope:shared`, `type:ui` |
-| `amortization-calculations` | `scope:amortization`, `type:calc` |
-| `amortization-ui` | `scope:amortization`, `type:ui` |
-| `deal-analyzer-calculations` | `scope:deal-analyzer`, `type:calc` |
-| `deal-analyzer-ui` | `scope:deal-analyzer`, `type:ui` |
+| Project                         | Tags                               |
+| ------------------------------- | ---------------------------------- |
+| `amortization-calculator` (app) | `scope:app`, `type:app`            |
+| `amortization-calculator-e2e`   | `scope:app`, `type:e2e`            |
+| `shared-calculations`           | `scope:shared`, `type:calc`        |
+| `shared-data-access`            | `scope:shared`, `type:data-access` |
+| `shared-ui`                     | `scope:shared`, `type:ui`          |
+| `amortization-calculations`     | `scope:amortization`, `type:calc`  |
+| `amortization-ui`               | `scope:amortization`, `type:ui`    |
+| `deal-analyzer-calculations`    | `scope:deal-analyzer`, `type:calc` |
+| `deal-analyzer-ui`              | `scope:deal-analyzer`, `type:ui`   |
 
 ## Allowed dependency graph (expected `nx graph`)
 

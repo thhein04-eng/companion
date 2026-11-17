@@ -3,11 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@ui-sdk/react/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@ui-sdk/react/tooltip';
 
 /** One feature entry in the menu (spec 003 data-model "NavItem"). */
 export interface NavItem {
@@ -53,7 +49,9 @@ export function SideNav({ items, collapsed, onNavigate }: SideNavProps) {
         const linkProps = {
           href,
           'data-testid': `nav-${id}`,
-          'aria-current': isActive(pathname, href) ? ('page' as const) : undefined,
+          'aria-current': isActive(pathname, href)
+            ? ('page' as const)
+            : undefined,
           onClick: () => onNavigate?.(href),
           className: collapsed ? `${linkClass} justify-center px-0` : linkClass,
         };

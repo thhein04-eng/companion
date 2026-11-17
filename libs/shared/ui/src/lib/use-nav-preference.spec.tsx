@@ -21,11 +21,15 @@ describe('useNavPreference', () => {
     const { result } = renderHook(() => useNavPreference());
     act(() => result.current.setCollapsed(true));
     expect(result.current.collapsed).toBe(true);
-    expect(window.localStorage.getItem(NAV_PREFERENCE_KEY)).toBe('{"collapsed":true}');
+    expect(window.localStorage.getItem(NAV_PREFERENCE_KEY)).toBe(
+      '{"collapsed":true}',
+    );
 
     act(() => result.current.toggle());
     expect(result.current.collapsed).toBe(false);
-    expect(window.localStorage.getItem(NAV_PREFERENCE_KEY)).toBe('{"collapsed":false}');
+    expect(window.localStorage.getItem(NAV_PREFERENCE_KEY)).toBe(
+      '{"collapsed":false}',
+    );
   });
 
   it('falls back to the default on invalid JSON', () => {
