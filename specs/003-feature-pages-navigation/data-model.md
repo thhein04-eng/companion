@@ -56,13 +56,13 @@ Defined in `shared-ui`. Instances are owned by the app in `app/_nav.ts`.
 | `id` | `string` | unique; used as the React key and `data-testid="nav-<id>"` |
 | `label` | `string` | non-empty; this is the link's accessible name in every state |
 | `href` | `` `/${string}` `` | an app route; also used for the active-state match (`pathname === href \|\| pathname.startsWith(href + '/')`) |
-| `icon` | `ComponentType<{ className?: string; 'aria-hidden'?: boolean }>` | decorative only (always `aria-hidden`) |
+| `icon` | `ReactNode` (a rendered element, e.g. `<CalculatorIcon />`) | decorative only (always `aria-hidden`). An element, not a component, because the item list is passed from the server-rendered layout to the client menu and functions can't cross that boundary. |
 
 App instances:
 
 ```text
-[{ id: 'amortization',  label: 'Amortization Calculator', href: '/amortization',  icon: CalculatorIcon },
- { id: 'deal-analyzer', label: 'Rental Deal Analyzer',    href: '/deal-analyzer', icon: BuildingIcon }]
+[{ id: 'amortization',  label: 'Amortization Calculator', href: '/amortization',  icon: <CalculatorIcon /> },
+ { id: 'deal-analyzer', label: 'Rental Deal Analyzer',    href: '/deal-analyzer', icon: <BuildingIcon /> }]
 ```
 
 The icons are small inline SVG components in `shared-ui`, so no icon dependency is added.

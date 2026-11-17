@@ -21,6 +21,8 @@
   "dependencies": {
     "shared-calculations": "*",
     "@ui-sdk/core": "0.1.0-beta.1",
-    "@ui-sdk/react": "0.1.0-beta.1"
+    "@ui-sdk/react": "0.1.0-beta.1",
+    "next": "~16.1.6",
+    "react": "^19.0.0"
   }
 }

@@ -6,3 +6,7 @@ export * from './lib/metric-badge';
 export * from './lib/comparison-grid';
 export * from './lib/loan-input-form';
 export * from './lib/cost-breakdown-panel';
+export * from './lib/icons';
+export * from './lib/use-nav-preference';
+export * from './lib/side-nav';
+export * from './lib/app-shell';

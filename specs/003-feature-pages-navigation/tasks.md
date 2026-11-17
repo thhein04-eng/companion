@@ -157,13 +157,13 @@ description: 'Task list for 003-feature-pages-navigation'
 
 ### Tests for User Story 2
 
-- [ ] T047 [P] [US2] Create `libs/shared/ui/src/lib/use-nav-preference.spec.tsx` (jsdom, `renderHook` from `@testing-library/react`) covering these cases:
+- [X] T047 [P] [US2] Create `libs/shared/ui/src/lib/use-nav-preference.spec.tsx` (jsdom, `renderHook` from `@testing-library/react`) covering these cases:
   - default `collapsed === false` with empty storage
   - reads `{"collapsed":true}` from `localStorage['companion:nav']` after mount
   - `setCollapsed(true)` writes `{"collapsed":true}`
   - invalid JSON → default with no throw
   - `localStorage.getItem`/`setItem` throwing (`vi.spyOn(Storage.prototype, …)`) → default with no throw
-- [ ] T048 [P] [US2] Create `apps/amortization-calculator-e2e/src/navigation.spec.ts` covering contracts/routes-and-navigation.md "Behavior guarantees".
+- [X] T048 [P] [US2] Create `apps/amortization-calculator-e2e/src/navigation.spec.ts` covering contracts/routes-and-navigation.md "Behavior guarantees".
 
   **Desktop (`page.setViewportSize({ width: 1280, height: 800 })`)**:
   - (a) exactly one `getByRole('navigation', { name: 'Primary' })` is visible, with links "Amortization Calculator" and "Rental Deal Analyzer"
@@ -185,10 +185,10 @@ description: 'Task list for 003-feature-pages-navigation'
 
 ### Implementation for User Story 2
 
-- [ ] T049 [P] [US2] Create `libs/shared/ui/src/lib/icons.tsx` exporting `CalculatorIcon` and `BuildingIcon`. These are inline 24×24 stroke SVGs (`stroke="currentColor"`, `fill="none"`) that accept `className` and default `aria-hidden="true"`. Don't add an icon dependency
-- [ ] T050 [P] [US2] Create `libs/shared/ui/src/lib/use-nav-preference.ts` (`'use client'`) exporting `useNavPreference(): { collapsed: boolean; setCollapsed(next: boolean): void; toggle(): void }`. It stores `localStorage['companion:nav'] = JSON.stringify({ collapsed })`, defaults to `collapsed: false`, reads only in a `useEffect` after mount (the server render is always expanded), and wraps every read, write, and parse in try/catch
-- [ ] T051 [P] [US2] Create `libs/shared/ui/src/lib/side-nav.tsx` (`'use client'`) exporting `interface NavItem { id: string; label: string; href: \`/${string}\`; icon: ComponentType<{ className?: string; 'aria-hidden'?: boolean }> }` and `SideNav({ items, collapsed, onNavigate? })`. It renders `<ul>` of `<li><Link href data-testid={\`nav-${id}\`} aria-current={active ? 'page' : undefined}>`, where active is `pathname === href || pathname.startsWith(href + '/')` via `usePathname()`. Each link holds `<Icon aria-hidden className="size-5 shrink-0"/>` and `<span className={collapsed ? 'sr-only' : ''}>{label}</span>`. When `collapsed`, wrap each link in `@ui-sdk/react/tooltip` showing `label` (check `node_modules/@ui-sdk/react/docs/components/tooltip.md` for the part names and that it shows on keyboard focus). The active style is `bg-neutral-100 font-medium` plus a 3px left border indicator (not color alone), with a visible `focus-visible:outline` on links
-- [ ] T052 [US2] Create `libs/shared/ui/src/lib/app-shell.tsx` (`'use client'`) exporting `AppShell({ navItems, children })` per the contracts/routes-and-navigation.md DOM contract:
+- [X] T049 [P] [US2] Create `libs/shared/ui/src/lib/icons.tsx` exporting `CalculatorIcon` and `BuildingIcon`. These are inline 24×24 stroke SVGs (`stroke="currentColor"`, `fill="none"`) that accept `className` and default `aria-hidden="true"`. Don't add an icon dependency
+- [X] T050 [P] [US2] Create `libs/shared/ui/src/lib/use-nav-preference.ts` (`'use client'`) exporting `useNavPreference(): { collapsed: boolean; setCollapsed(next: boolean): void; toggle(): void }`. It stores `localStorage['companion:nav'] = JSON.stringify({ collapsed })`, defaults to `collapsed: false`, reads only in a `useEffect` after mount (the server render is always expanded), and wraps every read, write, and parse in try/catch
+- [X] T051 [P] [US2] Create `libs/shared/ui/src/lib/side-nav.tsx` (`'use client'`) exporting `interface NavItem { id: string; label: string; href: \`/${string}\`; icon: ComponentType<{ className?: string; 'aria-hidden'?: boolean }> }` and `SideNav({ items, collapsed, onNavigate? })`. It renders `<ul>` of `<li><Link href data-testid={\`nav-${id}\`} aria-current={active ? 'page' : undefined}>`, where active is `pathname === href || pathname.startsWith(href + '/')` via `usePathname()`. Each link holds `<Icon aria-hidden className="size-5 shrink-0"/>` and `<span className={collapsed ? 'sr-only' : ''}>{label}</span>`. When `collapsed`, wrap each link in `@ui-sdk/react/tooltip` showing `label` (check `node_modules/@ui-sdk/react/docs/components/tooltip.md` for the part names and that it shows on keyboard focus). The active style is `bg-neutral-100 font-medium` plus a 3px left border indicator (not color alone), with a visible `focus-visible:outline` on links
+- [X] T052 [US2] Create `libs/shared/ui/src/lib/app-shell.tsx` (`'use client'`) exporting `AppShell({ navItems, children })` per the contracts/routes-and-navigation.md DOM contract:
   - root is `<div data-testid="app-shell" data-nav-collapsed={String(collapsed)} className="min-h-screen lg:grid lg:grid-cols-[auto_1fr]">`
   - docked `<aside id="primary-nav" className="hidden lg:flex lg:flex-col sticky top-0 h-screen border-r bg-white transition-[width] motion-reduce:transition-none w-64 data-[collapsed=true]:w-16">`. It contains a `@ui-sdk/react/button` toggle with `aria-controls="primary-nav"`, `aria-expanded={!collapsed}`, and `aria-label={collapsed ? 'Expand navigation' : 'Collapse navigation'}`, then `<nav aria-label="Primary"><SideNav items={navItems} collapsed={collapsed}/></nav>`
   - mobile `<header className="lg:hidden sticky top-0 flex items-center gap-2 border-b bg-white px-4 py-2">` with a `DrawerTrigger` labeled "Open navigation" and the app name
@@ -196,10 +196,10 @@ description: 'Task list for 003-feature-pages-navigation'
   - close the drawer on `usePathname()` change. If it was open at that moment, focus `document.querySelector('#main-content h1')` after the navigation
   - a `matchMedia('(min-width: 1024px)')` change listener closes the drawer when the viewport becomes desktop size
   - `{children}` are rendered after the nav
-- [ ] T053 [US2] Export icons, use-nav-preference, side-nav, and app-shell from `libs/shared/ui/src/index.ts`
-- [ ] T054 [US2] Create `apps/amortization-calculator/src/app/_nav.ts` exporting `NAV_ITEMS: NavItem[] = [{ id: 'amortization', label: 'Amortization Calculator', href: '/amortization', icon: CalculatorIcon }, { id: 'deal-analyzer', label: 'Rental Deal Analyzer', href: '/deal-analyzer', icon: BuildingIcon }]`. This is the only place a future feature is registered (FR-013)
-- [ ] T055 [US2] Update `apps/amortization-calculator/src/app/layout.tsx` to `<ScenariosProvider><AppShell navItems={NAV_ITEMS}><main id="main-content" …>{children}</main></AppShell></ScenariosProvider>`. Make sure the not-found page also renders inside it
-- [ ] T056 [US2] Run `npm exec nx -- run-many -t lint,typecheck,test` and `npm exec nx -- e2e amortization-calculator-e2e`; all must pass, including T047 and T048, in chromium, firefox, and webkit
+- [X] T053 [US2] Export icons, use-nav-preference, side-nav, and app-shell from `libs/shared/ui/src/index.ts`
+- [X] T054 [US2] Create `apps/amortization-calculator/src/app/_nav.ts` exporting `NAV_ITEMS: NavItem[] = [{ id: 'amortization', label: 'Amortization Calculator', href: '/amortization', icon: CalculatorIcon }, { id: 'deal-analyzer', label: 'Rental Deal Analyzer', href: '/deal-analyzer', icon: BuildingIcon }]`. This is the only place a future feature is registered (FR-013)
+- [X] T055 [US2] Update `apps/amortization-calculator/src/app/layout.tsx` to `<ScenariosProvider><AppShell navItems={NAV_ITEMS}><main id="main-content" …>{children}</main></AppShell></ScenariosProvider>`. Make sure the not-found page also renders inside it
+- [X] T056 [US2] Run `npm exec nx -- run-many -t lint,typecheck,test` and `npm exec nx -- e2e amortization-calculator-e2e`; all must pass, including T047 and T048, in chromium, firefox, and webkit
 
 **Checkpoint**: US1 and US2 both work; the app is fully navigable at all widths.
 
