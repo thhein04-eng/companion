@@ -122,7 +122,7 @@ export function ScenariosProvider({ children }: { children: ReactNode }) {
     const id = crypto.randomUUID();
     setScenarios((prev) => {
       const source = prev.find((s) => s.id === activeScenarioId) ?? prev[0];
-      return [...prev, { ...source, id, name: `${source.name} (copy)` }];
+      return [...prev, { ...source, id, name: `Scenario ${prev.length + 1}` }];
     });
     setActiveScenarioId(id);
   }, [activeScenarioId]);

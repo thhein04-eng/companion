@@ -8,7 +8,7 @@ Framework-free loan math and the scenario model used by both features. Pure func
 
 ## Public API (`src/index.ts`)
 
-- Types: `LoanScenario`, `RentalAssumptions` (data shape only), `DownPayment`, `ExtraPaymentRule`, `SchedulePeriod`, `AmortizationSchedule`, `FieldError`, `PersistedState`, `MonthlyAnnual`, `RatioResult`, `ScenarioComparison`, `ComparisonRow`
+- Types: `LoanScenario`, `RentalAssumptions` and `CustomExpenseItem` (data shape only), `DownPayment`, `ExtraPaymentRule`, `SchedulePeriod`, `AmortizationSchedule`, `FieldError`, `PersistedState`, `MonthlyAnnual`, `RatioResult`, `ScenarioComparison`, `ComparisonRow`
 - `roundCents`, `validateScenario`, `computeSchedule`, `calculatePrincipalFromHomePriceAndDownPayment`, `applyScenarioPatch`
 - `serializeScenarios`, `deserializeScenarios` (the `sessionStorage` format)
 - `computeLtv`, `computeValidSchedules`, `compareScenarios` (loan columns only)

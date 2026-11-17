@@ -26,6 +26,7 @@ export const DEFAULT_RENTAL_ASSUMPTIONS: Omit<
   capexReservePct: 5,
   closingCosts: 0,
   rehabBudget: 0,
+  customExpenses: [],
 };
 
 /** Rounds an unrounded monthly figure per the data-model rounding rule. */
@@ -106,6 +107,22 @@ export function analyzeDeal(
       monthly: pctOfGsi(rental.capexReservePct),
     },
   ];
+
+  // Dynamically append any user-defined custom expenses (utilities, trash, landscaping, etc.)
+  if (rental.customExpenses && rental.customExpenses.length > 0) {
+    rental.customExpenses.forEach(
+      (
+        custom: { id?: string; label: string; monthlyAmount: number },
+        index: number,
+      ) => {
+        rawLines.push({
+          category: `custom-${custom.id ?? index}`,
+          label: custom.label,
+          monthly: custom.monthlyAmount,
+        });
+      },
+    );
+  }
 
   const operatingExpenses: OperatingExpenseLine[] = rawLines.map(
     ({ category, label, monthly }) => ({

@@ -81,7 +81,7 @@ export function NumberField({
           >
             −
           </NumberInputDecrement>
-          <NumberInputControl className="w-full flex-1 bg-transparent px-1 py-1.5 text-sm outline-none" />
+          <NumberInputControl className="min-w-0 flex-1 bg-transparent px-1 py-1.5 text-sm outline-none" />
           {suffix ? (
             <span className="pr-1 text-sm text-neutral-500">{suffix}</span>
           ) : null}

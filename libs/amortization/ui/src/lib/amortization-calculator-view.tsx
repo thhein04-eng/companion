@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   compareScenarios,
   computeLtv,
@@ -21,6 +21,10 @@ import {
 } from 'shared-ui';
 import { ExportScheduleButton } from './export-schedule-button';
 import { ExtraPaymentPanel } from './extra-payment-panel';
+import {
+  DEFAULT_SCHEDULE_PAGE_SIZE,
+  type SchedulePaginationState,
+} from './schedule-pagination';
 import { ScheduleTable } from './schedule-table';
 
 /** The Amortization Calculator page (spec 001), rendered at `/amortization`. */
@@ -35,10 +39,31 @@ export function AmortizationCalculatorView() {
     removeScenario,
   } = useScenarios();
 
-  const validation = validateScenario(activeScenario);
-  const schedule = validation.valid
-    ? computeSchedule(validation.scenario)
-    : null;
+  // 004 FR-005: schedule paging lives here, outside the `schedule ? … : …`
+  // branch, so it survives the table unmounting while inputs are invalid.
+  const [schedulePagination, setSchedulePagination] =
+    useState<SchedulePaginationState>({
+      page: 1,
+      pageSize: DEFAULT_SCHEDULE_PAGE_SIZE,
+    });
+  // A different scenario starts on page 1 and keeps the page size
+  // (adjusting state during render rather than in an effect).
+  const [paginationScenarioId, setPaginationScenarioId] =
+    useState(activeScenarioId);
+  if (paginationScenarioId !== activeScenarioId) {
+    setPaginationScenarioId(activeScenarioId);
+    setSchedulePagination((current) => ({ ...current, page: 1 }));
+  }
+
+  // Memoized on the scenario so paging (004), which re-renders this view,
+  // doesn't recompute the schedule.
+  const { validation, schedule } = useMemo(() => {
+    const validation = validateScenario(activeScenario);
+    const schedule = validation.valid
+      ? computeSchedule(validation.scenario)
+      : null;
+    return { validation, schedule };
+  }, [activeScenario]);
   const ltv = computeLtv(activeScenario);
 
   const comparison = useMemo(() => {
@@ -129,7 +154,11 @@ export function AmortizationCalculatorView() {
             </h2>
             <ExportScheduleButton schedule={schedule} />
           </div>
-          <ScheduleTable periods={schedule.periods} />
+          <ScheduleTable
+            periods={schedule.periods}
+            pagination={schedulePagination}
+            onPaginationChange={setSchedulePagination}
+          />
         </section>
       ) : (
         <p className="text-sm text-red-600">

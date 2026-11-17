@@ -92,6 +92,28 @@ describe('analyzeDeal — User Story 1: NOI and cash flow', () => {
     ]);
   });
 
+  it('vector A + custom expenses: appends each as its own uniquely keyed line and flows into NOI and cash flow to the cent', () => {
+    const a = analyze(
+      scenarioA(
+        {},
+        {
+          customExpenses: [
+            { id: 'water', label: 'Water', monthlyAmount: 75.5 },
+            { label: 'Trash', monthlyAmount: 24.5 },
+          ],
+        }
+      )
+    );
+
+    expect(a.operatingExpenses.slice(7)).toEqual([
+      { category: 'custom-water', label: 'Water', monthly: 75.5, annual: 906 },
+      { category: 'custom-1', label: 'Trash', monthly: 24.5, annual: 294 },
+    ]);
+    expect(a.totalOperatingExpenses).toEqual({ monthly: 1_002, annual: 12_024 });
+    expect(a.netOperatingIncome).toEqual({ monthly: 1_398, annual: 16_776 });
+    expect(a.cashFlow).toEqual({ monthly: 150.56, annual: 1_806.72 });
+  });
+
   it('vector C: debt service includes PMI for every year-1 month it applies (FR-005)', () => {
     const scenario = scenarioA({
       principal: 225_000,

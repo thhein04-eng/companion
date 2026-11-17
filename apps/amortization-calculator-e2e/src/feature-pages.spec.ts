@@ -144,7 +144,7 @@ test.describe('Feature pages', () => {
       .getByRole('tablist', { name: 'Loan scenarios' })
       .getByRole('tab');
     await expect(tabs).toHaveCount(1);
-    await expect(tabs.first()).toHaveText('Scenario 1 (copy)');
+    await expect(tabs.first()).toHaveText('Scenario 2');
     await expect(
       page.getByRole('textbox', { name: 'Home price', exact: true }),
     ).toHaveValue('$400,000.00');

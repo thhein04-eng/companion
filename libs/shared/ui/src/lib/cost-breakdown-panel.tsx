@@ -27,7 +27,9 @@ export function CostBreakdownPanel({
   totalMonthlyPayment,
   pmiDropPeriod,
 }: CostBreakdownPanelProps) {
-  const [downPaymentMode, setDownPaymentMode] = useState<'amount' | 'percent'>('amount');
+  const [downPaymentMode, setDownPaymentMode] = useState<'amount' | 'percent'>(
+    'percent',
+  );
   const downPaymentValue =
     scenario.downPayment && 'amount' in scenario.downPayment
       ? scenario.downPayment.amount
@@ -47,7 +49,9 @@ export function CostBreakdownPanel({
         />
         <div className="flex flex-col gap-1">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-neutral-700">Down payment</span>
+            <span className="text-sm font-medium text-neutral-700">
+              Down payment
+            </span>
             <Tabs
               value={downPaymentMode}
               onValueChange={(mode) => {
@@ -56,7 +60,10 @@ export function CostBreakdownPanel({
                 onChange({ downPayment: null });
               }}
             >
-              <TabsList aria-label="Down payment mode" className="flex gap-1 text-xs">
+              <TabsList
+                aria-label="Down payment mode"
+                className="flex gap-1 text-xs"
+              >
                 <TabsTab
                   value="amount"
                   className="rounded px-2 py-0.5 text-neutral-500 data-selected:bg-neutral-900 data-selected:text-white"
@@ -125,18 +132,25 @@ export function CostBreakdownPanel({
 
       <div className="flex flex-col gap-1 rounded-md border border-neutral-200 bg-neutral-50 p-3">
         <div className="flex items-baseline justify-between">
-          <span className="text-sm text-neutral-600">Principal &amp; interest only</span>
-          <span className="text-sm">{currency.format(monthlyPrincipalAndInterest)}</span>
+          <span className="text-sm text-neutral-600">
+            Principal &amp; interest only
+          </span>
+          <span className="text-sm">
+            {currency.format(monthlyPrincipalAndInterest)}
+          </span>
         </div>
         <div className="flex items-baseline justify-between">
           <span className="text-sm font-semibold text-neutral-900">
             Total estimated monthly payment
           </span>
-          <span className="text-lg font-semibold">{currency.format(totalMonthlyPayment)}</span>
+          <span className="text-lg font-semibold">
+            {currency.format(totalMonthlyPayment)}
+          </span>
         </div>
         {pmiDropPeriod != null ? (
           <p className="text-xs text-neutral-500">
-            PMI drops off automatically at payment #{pmiDropPeriod}, once equity reaches 20%.
+            PMI drops off automatically at payment #{pmiDropPeriod}, once equity
+            reaches 20%.
           </p>
         ) : null}
       </div>

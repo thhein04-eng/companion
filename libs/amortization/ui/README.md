@@ -9,7 +9,8 @@ The Amortization Calculator page (`/amortization`) and its own components.
 ## Public API (`src/index.ts`)
 
 - `AmortizationCalculatorView`
-- `ScheduleTable`, `ExtraPaymentPanel`, `ExportScheduleButton`
+- `ScheduleTable` (paginated), `ExtraPaymentPanel`, `ExportScheduleButton`
+- Schedule paging helpers: `getSchedulePage`, `pageContainingRow`, `SCHEDULE_PAGE_SIZES`, `DEFAULT_SCHEDULE_PAGE_SIZE`, `SchedulePaginationState` (spec 004)
 
 Import only from the package name (`'amortization-ui'`), never from a deep path.
 

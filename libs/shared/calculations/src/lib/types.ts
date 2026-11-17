@@ -45,6 +45,7 @@ export interface RentalAssumptions {
   capexReservePct: number;
   closingCosts: number;
   rehabBudget: number;
+  customExpenses?: CustomExpenseItem[];
 }
 
 /** A user-defined extra-principal-payment instruction applied when generating a schedule. */
@@ -86,7 +87,8 @@ export interface FieldError {
   field:
     | keyof LoanScenario
     | `extraPayments.${number}.${string}`
-    | `rental.${keyof RentalAssumptions}`;
+    | `rental.${keyof RentalAssumptions}`
+    | `rental.customExpenses.${number}.monthlyAmount`;
   message: string;
 }
 
@@ -113,6 +115,13 @@ export interface PersistedState {
 
 /** A cents-rounded figure expressed both per month and per year. */
 export type MonthlyAnnual = { monthly: number; annual: number };
+
+/** A user-defined operating expense on a rental (part of the persisted `RentalAssumptions` shape). */
+export interface CustomExpenseItem {
+  id?: string;
+  label: string; // e.g., "Utilities (Water/Trash)", "Landscaping"
+  monthlyAmount: number;
+}
 
 /** An unrounded ratio (fraction, e.g. `0.0376`), or `null` with a human-readable reason when not applicable. */
 export type RatioResult = { value: number | null; naReason: string | null };

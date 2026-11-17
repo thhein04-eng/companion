@@ -42,22 +42,27 @@ export function DealAnalyzerView() {
   } = useScenarios();
   const { updateActiveRental } = useRentalEditor();
 
-  const validation = validateScenario(activeScenario);
-  const schedule = validation.valid
-    ? computeSchedule(validation.scenario)
-    : null;
-
-  // Spec 002 FR-015: rental errors never block the loan figures.
-  const rentalErrors = activeScenario.rental
-    ? validateRental(activeScenario.rental)
-    : [];
-  const analysis =
-    validation.valid &&
-    schedule &&
-    activeScenario.rental &&
-    rentalErrors.length === 0
-      ? analyzeDeal(validation.scenario, schedule)
+  // Memoized on the scenario so unrelated re-renders don't recompute the
+  // schedule or the deal analysis.
+  const { validation, schedule, rentalErrors, analysis } = useMemo(() => {
+    const validation = validateScenario(activeScenario);
+    const schedule = validation.valid
+      ? computeSchedule(validation.scenario)
       : null;
+
+    // Spec 002 FR-015: rental errors never block the loan figures.
+    const rentalErrors = activeScenario.rental
+      ? validateRental(activeScenario.rental)
+      : [];
+    const analysis =
+      validation.valid &&
+      schedule &&
+      activeScenario.rental &&
+      rentalErrors.length === 0
+        ? analyzeDeal(validation.scenario, schedule)
+        : null;
+    return { validation, schedule, rentalErrors, analysis };
+  }, [activeScenario]);
   const ltv = computeLtv(activeScenario);
   const coc = analysis?.cashOnCashReturn ?? null;
 

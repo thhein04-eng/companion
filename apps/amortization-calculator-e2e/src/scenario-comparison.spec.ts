@@ -16,6 +16,7 @@ test('duplicating a scenario and editing it independently shows a side-by-side c
   await expect(grid.locator('tbody tr')).toHaveCount(2);
 
   // Removing a scenario drops the comparison back to a single scenario.
-  await page.getByRole('button', { name: /Remove Scenario 1 \(copy\)/ }).click();
+  // New scenarios are named "Scenario N" (c18b68f), not "<name> (copy)".
+  await page.getByRole('button', { name: 'Remove Scenario 2', exact: true }).click();
   await expect(page.getByText('Compare scenarios')).toBeHidden();
 });

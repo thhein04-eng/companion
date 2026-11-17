@@ -1,13 +1,16 @@
 import type { FieldError, RentalAssumptions } from 'shared-calculations';
 
-const DOLLAR_FIELDS: { field: keyof RentalAssumptions; label: string }[] = [
+/** The single-number rental inputs (everything except the custom-expense list). */
+type NumericRentalField = Exclude<keyof RentalAssumptions, 'customExpenses'>;
+
+const DOLLAR_FIELDS: { field: NumericRentalField; label: string }[] = [
   { field: 'grossMonthlyRent', label: 'Monthly rent' },
   { field: 'otherMonthlyIncome', label: 'Other monthly income' },
   { field: 'closingCosts', label: 'Closing costs' },
   { field: 'rehabBudget', label: 'Rehab budget' },
 ];
 
-const PERCENT_FIELDS: { field: keyof RentalAssumptions; label: string }[] = [
+const PERCENT_FIELDS: { field: NumericRentalField; label: string }[] = [
   { field: 'vacancyPct', label: 'Vacancy rate' },
   { field: 'managementPct', label: 'Property management fee' },
   { field: 'maintenanceReservePct', label: 'Maintenance reserve' },
@@ -41,6 +44,16 @@ export function validateRental(rental: RentalAssumptions): FieldError[] {
       });
     }
   }
+
+  (rental.customExpenses ?? []).forEach((expense, index) => {
+    if (!(Number.isFinite(expense.monthlyAmount) && expense.monthlyAmount >= 0)) {
+      const name = expense.label.trim() || `Custom expense ${index + 1}`;
+      errors.push({
+        field: `rental.customExpenses.${index}.monthlyAmount`,
+        message: `${name} cannot be negative.`,
+      });
+    }
+  });
 
   return errors;
 }
