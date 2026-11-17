@@ -32,7 +32,7 @@ from there, using `npx nx …` (npm workspace).
 
 - **Color tokens**: Series take a `ColorToken` (`1`–`8` or `'muted'`) and render as
   `var(--chart-series-N)` / `var(--chart-muted)`. Raw hex values never appear outside
-  `libs/charts/src/theme.css`.
+  `libs/shared/charts/src/theme.css`.
 - **Marks**:
   - Lines are 2px; `context` lines are 1.5px and muted.
   - Columns are `min(bandwidth, 24px)` wide. The outermost segment in each direction gets a 4px
@@ -43,9 +43,9 @@ from there, using `npx nx …` (npm workspace).
   - Hover dots are at least 8px, with a 2px `var(--chart-surface)` ring.
 - **Text color**: Text uses `var(--chart-ink)`, `var(--chart-ink-secondary)` or
   `var(--chart-muted)`, never a series color.
-- **Client components**: Every `.tsx` file in `libs/charts` and in the presets starts with
+- **Client components**: Every `.tsx` file in `libs/shared/charts` and in the presets starts with
   `'use client'`.
-- **Boundaries**: `libs/charts` never imports `amortization-*`. `amortization-calculations`
+- **Boundaries**: `libs/shared/charts` never imports `amortization-*`. `amortization-calculations`
   never imports React or `@companion/charts`.
 
 ---
@@ -54,15 +54,15 @@ from there, using `npx nx …` (npm workspace).
 
 **Purpose**: Create `@companion/charts` and wire it into the workspace and its lint boundaries.
 
-- [X] T001 Generate the library `libs/charts` (project name `charts`, import path `@companion/charts`) with `@nx/react:library`. Check the flags with `npx nx g @nx/react:library --help` first, because CLAUDE.md says never to guess flags. The intended command is `npx nx g @nx/react:library --directory=libs/charts --name=charts --importPath=@companion/charts --bundler=none --unitTestRunner=vitest --linter=eslint --component=false --no-interactive`; rename any flag `--help` reports differently. Delete any placeholder component or spec the generator creates.
-- [X] T002 Edit `libs/charts/package.json` to follow the source-first pattern of `libs/amortization-ui/package.json`:
+- [X] T001 Generate the library `libs/shared/charts` (project name `charts`, import path `@companion/charts`) with `@nx/react:library`. Check the flags with `npx nx g @nx/react:library --help` first, because CLAUDE.md says never to guess flags. The intended command is `npx nx g @nx/react:library --directory=libs/shared/charts --name=charts --importPath=@companion/charts --bundler=none --unitTestRunner=vitest --linter=eslint --component=false --no-interactive`; rename any flag `--help` reports differently. Delete any placeholder component or spec the generator creates.
+- [X] T002 Edit `libs/shared/charts/package.json` to follow the source-first pattern of `libs/amortization-ui/package.json`:
   - `"name": "@companion/charts"` and `"private": true`
   - `main`/`types` set to `./src/index.ts`
   - `exports`: `{ ".": { "types": "./src/index.ts", "import": "./src/index.ts", "default": "./src/index.ts" }, "./theme.css": "./src/theme.css", "./package.json": "./package.json" }`
   - `"dependencies": { "@ui-sdk/react": "0.1.0-beta.1" }`
   - `"peerDependencies": { "react": "^19.0.0", "react-dom": "^19.0.0" }`
   - `"nx": { "tags": ["scope:shared", "type:ui"] }`
-- [X] T003 [P] Make the test block in `libs/charts/vite.config.mts` match `libs/amortization-ui/vite.config.mts`: jsdom, `globals: true`, include `src/**/*.{test,spec}.{ts,tsx}`. Do **not** set `passWithNoTests`.
+- [X] T003 [P] Make the test block in `libs/shared/charts/vite.config.mts` match `libs/amortization-ui/vite.config.mts`: jsdom, `globals: true`, include `src/**/*.{test,spec}.{ts,tsx}`. Do **not** set `passWithNoTests`.
 - [X] T004 [P] Add Nx tags in the `"nx"` block of each `package.json`. Merge with existing keys such as the app's `sourceRoot`.
 
   | File | Tags |
@@ -73,7 +73,7 @@ from there, using `npx nx …` (npm workspace).
   | `apps/amortization-calculator-e2e/package.json` | `["scope:amortization","type:e2e"]` |
 - [X] T005 In the root `eslint.config.mjs`, replace the catch-all `depConstraints` with `[{ sourceTag: 'scope:shared', onlyDependOnLibsWithTags: ['scope:shared'] }, { sourceTag: 'scope:amortization', onlyDependOnLibsWithTags: ['scope:amortization', 'scope:shared'] }]`. Depends on T002 and T004.
 - [X] T006 Add `"@companion/charts": "*"` to `dependencies` in `libs/amortization-ui/package.json` and `apps/amortization-calculator/package.json`. Run `npm install` at the worktree root. Confirm that `node_modules/@companion/charts` is a symlink and that `npx nx show projects` lists `charts`.
-- [X] T007 In `apps/amortization-calculator/src/app/global.css`, add `@import '@companion/charts/theme.css';` after `@import 'tailwindcss';`, and add `@source '../../../../libs/charts/src';` next to the existing `@source`.
+- [X] T007 In `apps/amortization-calculator/src/app/global.css`, add `@import '@companion/charts/theme.css';` after `@import 'tailwindcss';`, and add `@source '../../../../libs/shared/charts/src';` next to the existing `@source`.
 
 **Checkpoint**: `npx nx lint charts amortization-ui amortization-calculator` passes.
 
@@ -88,7 +88,7 @@ depends on these.
 
 ### Tests (write first and make sure they fail)
 
-- [X] T008 [P] Write `libs/charts/src/lib/scales.spec.ts`. Cover:
+- [X] T008 [P] Write `libs/shared/charts/src/lib/scales.spec.ts`. Cover:
   - `linearScale([0,100],[0,200])` maps 50 to 100, and `.invert(100)` returns 50.
   - A domain `[5,5]` maps to the middle of the range.
   - `bandScale(['a','b','c'],[0,300],0.2)` gives 3 equal-width bands in order.
@@ -100,21 +100,21 @@ depends on these.
   - `yExtent([-3,5],'auto')` returns `[-3,5]`.
   - `yExtent([2,5],'auto')` returns `[0,5]`.
   - `yExtent([null,null],'auto')` and `yExtent([0,0],'zero-based')` return `[0,1]`.
-- [X] T009 [P] Write `libs/charts/src/lib/paths.spec.ts`. Cover:
+- [X] T009 [P] Write `libs/shared/charts/src/lib/paths.spec.ts`. Cover:
   - `linePath([{x:0,y:0},{x:10,y:5}])` returns `"M0,0L10,5"`.
   - A `null` in the middle starts a new `M` subpath.
   - All-null input returns `""`.
   - `roundedTopRect(0,0,24,100,4)` rounds the top and leaves the bottom square.
   - `roundedTopRect(0,0,24,100,4,'down')` rounds the bottom and leaves the top square.
   - When `h < r`, the radius is clamped to `min(r, w/2, h)`.
-- [X] T010 [P] Write `libs/charts/src/lib/format.spec.ts`. Cover:
+- [X] T010 [P] Write `libs/shared/charts/src/lib/format.spec.ts`. Cover:
   - `formatCompactCurrency(1_234_567)` returns `"$1.2M"`; `350_000` returns `"$350K"`; `900` returns `"$900"`; `0` returns `"$0"`; `-12_000` returns `"-$12K"`.
   - `capSeries(nine, 8)` returns `{ shown: the first 8 in order, hiddenCount: 1 }`.
   - `capSeries(three)` returns `hiddenCount: 0`.
 
 ### Implementation
 
-- [X] T011 [P] Write `libs/charts/src/lib/types.ts` with exactly the types in `contracts/charts-api.md § Types`:
+- [X] T011 [P] Write `libs/shared/charts/src/lib/types.ts` with exactly the types in `contracts/charts-api.md § Types`:
   - `SeriesSlot = 1|2|3|4|5|6|7|8` and `ColorToken = SeriesSlot | 'muted'`.
   - `SeriesDef<K>`: `key`, `label`, `color`, and `emphasis?: 'primary' | 'context'` ("Default `'primary'`").
   - `Datum<K> = { x: number | string } & { [P in K]: number | null }`. Values may be negative.
@@ -123,18 +123,18 @@ depends on these.
   - `TooltipExtra = { label: string; value: string }`.
   - `ChartBaseProps`: `title`, `description?`, `height?` (default 240), `showDataTable?` (default true), `tooltipExtras?: (index: number) => TooltipExtra[]`, `className?` and `'data-testid'?`.
   - `colorVar(token: ColorToken): string`.
-- [X] T012 [P] Write `libs/charts/src/lib/scales.ts`. Make T008 pass. It contains:
+- [X] T012 [P] Write `libs/shared/charts/src/lib/scales.ts`. Make T008 pass. It contains:
   - `linearScale(domain, range)`: callable, with `.invert`, `.domain` and `.range`.
   - `bandScale(keys, range, paddingInner)`, with `.bandwidth`.
   - `niceTicks(min, max, count, opts?: { integer?: boolean })`: 1/2/5×10ⁿ steps, always includes 0 when `min ≤ 0 ≤ max`, never duplicates.
   - `yExtent(values, mode: 'zero-based' | 'auto')`: `'zero-based'` returns `[0, max(0,…)]`; `'auto'` returns `[min(0,…), max(0,…)]`; all-null or all-zero returns `[0,1]`.
-- [X] T013 [P] Write `libs/charts/src/lib/paths.ts`. Make T009 pass. It contains:
+- [X] T013 [P] Write `libs/shared/charts/src/lib/paths.ts`. Make T009 pass. It contains:
   - `linePath(points)`, which starts a new `M` after each `null`.
   - `roundedTopRect(x, y, w, h, r, direction: 'up' | 'down' = 'up')`. The outer end gets radius `min(r, w/2, h)`; the end at the baseline is square.
-- [X] T014 [P] Write `libs/charts/src/lib/format.ts`. Make T010 pass. It contains:
+- [X] T014 [P] Write `libs/shared/charts/src/lib/format.ts`. Make T010 pass. It contains:
   - `formatCompactCurrency(n)`, using `Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 1 })`.
   - `capSeries(series, max = 8)`, which returns `{ shown, hiddenCount }`.
-- [X] T015 [P] Write `libs/charts/src/theme.css` with tokens scoped to `.chart-root`.
+- [X] T015 [P] Write `libs/shared/charts/src/theme.css` with tokens scoped to `.chart-root`.
 
   Light values:
 
@@ -167,22 +167,22 @@ depends on these.
   Base rule: `.chart-root { color-scheme: light; background: var(--chart-surface); color: var(--chart-ink); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-variant-numeric: tabular-nums; }`.
 
   Add a comment citing the research.md R6 validation result.
-- [X] T016 [P] Write `libs/charts/src/lib/use-element-width.ts`: `useElementWidth<T extends HTMLElement>()` returns `[ref, width: number | null]`. Use `ResizeObserver`, round to an integer, and disconnect on unmount. Return `null` before the first measurement or during SSR.
-- [X] T017 [P] Write `libs/charts/src/lib/use-plot-keyboard.ts`: `usePlotKeyboard(count)` returns `{ activeIndex, setActiveIndex, onKeyDown, onBlur }`. Keys:
+- [X] T016 [P] Write `libs/shared/charts/src/lib/use-element-width.ts`: `useElementWidth<T extends HTMLElement>()` returns `[ref, width: number | null]`. Use `ResizeObserver`, round to an integer, and disconnect on unmount. Return `null` before the first measurement or during SSR.
+- [X] T017 [P] Write `libs/shared/charts/src/lib/use-plot-keyboard.ts`: `usePlotKeyboard(count)` returns `{ activeIndex, setActiveIndex, onKeyDown, onBlur }`. Keys:
   - ←/→ move ±1, clamped.
   - Shift+←/→ move ±12.
   - Home/End jump to the ends.
   - Esc clears to null.
   - The first arrow press from null goes to 0.
   - The index is clamped when `count` shrinks.
-- [X] T018 [P] Write `libs/charts/src/lib/legend.tsx`: `Legend({ items: { label; color: ColorToken; emphasis? }[] })`. Render a wrapping `<ul aria-label="Legend">` with a 10px swatch per item (a 2px line swatch for `context` items) and labels in `var(--chart-ink-secondary)`.
-- [X] T019 [P] Write `libs/charts/src/lib/chart-tooltip.tsx`: `ChartTooltip({ left, top, containerWidth, heading, rows: { label; color: ColorToken; value: string }[], extras?: TooltipExtra[] })`. It is an absolutely positioned HTML box:
+- [X] T018 [P] Write `libs/shared/charts/src/lib/legend.tsx`: `Legend({ items: { label; color: ColorToken; emphasis? }[] })`. Render a wrapping `<ul aria-label="Legend">` with a 10px swatch per item (a 2px line swatch for `context` items) and labels in `var(--chart-ink-secondary)`.
+- [X] T019 [P] Write `libs/shared/charts/src/lib/chart-tooltip.tsx`: `ChartTooltip({ left, top, containerWidth, heading, rows: { label; color: ColorToken; value: string }[], extras?: TooltipExtra[] })`. It is an absolutely positioned HTML box:
   - `pointer-events:none`, a 1px `var(--chart-border)` ring, surface background, 12px text.
   - It flips left when it would overflow.
   - Each row shows a swatch, the label in secondary ink and the value in primary ink.
   - `extras` render below a hairline, with no swatch.
-- [X] T020 [P] Write `libs/charts/src/lib/chart-data-table.tsx`: `ChartDataTable({ caption, columns: { key; label; format? }[], rows })`. Put a "Show data" toggle on `Collapsible` from `@ui-sdk/react/collapsible`. It reveals a real `<table>` with a `<caption>`, `<th scope="col">` headers and right-aligned numbers. Do not render the table while it is collapsed.
-- [X] T021 Write `libs/charts/src/lib/chart-frame.tsx`: `ChartFrame({ title, description?, legend?, height, dataTable?, className?, 'data-testid'?, children: (width) => ReactNode })`. It renders a `<figure className="chart-root rounded-md border …">` containing:
+- [X] T020 [P] Write `libs/shared/charts/src/lib/chart-data-table.tsx`: `ChartDataTable({ caption, columns: { key; label; format? }[], rows })`. Put a "Show data" toggle on `Collapsible` from `@ui-sdk/react/collapsible`. It reveals a real `<table>` with a `<caption>`, `<th scope="col">` headers and right-aligned numbers. Do not render the table while it is collapsed.
+- [X] T021 Write `libs/shared/charts/src/lib/chart-frame.tsx`: `ChartFrame({ title, description?, legend?, height, dataTable?, className?, 'data-testid'?, children: (width) => ReactNode })`. It renders a `<figure className="chart-root rounded-md border …">` containing:
   - an `<h3>` title,
   - the description in secondary ink,
   - the legend above the plot,
@@ -190,7 +190,7 @@ depends on these.
   - the data table below the plot.
 
   Depends on T016, T018 and T020.
-- [X] T022 Write `libs/charts/src/index.ts`. Export all the types plus `colorVar`, `linearScale`, `bandScale`, `niceTicks`, `yExtent`, `linePath`, `roundedTopRect`, `formatCompactCurrency`, `capSeries`, `useElementWidth`, `usePlotKeyboard`, `ChartFrame`, `Legend`, `ChartTooltip` and `ChartDataTable`. Export nothing else. Later phases add the chart components.
+- [X] T022 Write `libs/shared/charts/src/index.ts`. Export all the types plus `colorVar`, `linearScale`, `bandScale`, `niceTicks`, `yExtent`, `linePath`, `roundedTopRect`, `formatCompactCurrency`, `capSeries`, `useElementWidth`, `usePlotKeyboard`, `ChartFrame`, `Legend`, `ChartTooltip` and `ChartDataTable`. Export nothing else. Later phases add the chart components.
 
 **Checkpoint**: `npx nx test charts` and `npx nx lint charts` both pass.
 
@@ -221,7 +221,7 @@ lines and a legend appear, and the blue line reaches $0 earlier (quickstart §3)
   - `buildBalanceSeries(R2, baseline(R1))` returns 361 rows. The balance is 0 at R2's payoff period and `null` after it. `baseline` equals R1's rows exactly.
   - `computeBaselineSchedule(R1)` returns `null`.
   - `computeBaselineSchedule(R2)` deep-equals `computeSchedule({ ...R2, extraPayments: [] })`.
-- [X] T024 [P] [US1] Write `libs/charts/src/lib/line-chart.spec.tsx`. Use non-amortization fixtures (12 months of temperatures for two cities, including negative values) and stub `ResizeObserver` to report 600. Assert:
+- [X] T024 [P] [US1] Write `libs/shared/charts/src/lib/line-chart.spec.tsx`. Use non-amortization fixtures (12 months of temperatures for two cities, including negative values) and stub `ResizeObserver` to report 600. Assert:
   - 2 series produce 2 `<path>` elements and a legend with both labels.
   - 1 series produces no legend.
   - Focusing the plot group (`role="group"`, `aria-roledescription="chart"`) and pressing ArrowRight puts the x label and both values in the `aria-live` region.
@@ -247,7 +247,7 @@ lines and a legend appear, and the blue line reaches $0 earlier (quickstart §3)
     - `baseline` is `null` everywhere when `baseline` is `null`.
   - Export `computeBaselineSchedule(scenario)`. It returns `null` when `scenario.extraPayments.length === 0`; otherwise it returns `computeSchedule({ ...scenario, extraPayments: [] })`.
   - Add `export * from './lib/chart-data';` to `libs/amortization-calculations/src/index.ts`.
-- [X] T027 [US1] Write `libs/charts/src/lib/line-chart.tsx`: `LineChart<K>`, per `contracts/charts-api.md`. Make T024 pass.
+- [X] T027 [US1] Write `libs/shared/charts/src/lib/line-chart.tsx`: `LineChart<K>`, per `contracts/charts-api.md`. Make T024 pass.
   - **Props**: `data`, `series`, `formatters?`, `yDomain?: [n,n] | 'zero-based' | 'auto'` (default `'zero-based'`), `xTickValues?`, `directLabels?` (default `series.length <= 4`), plus `ChartBaseProps`.
   - **Frame**: use `ChartFrame`, with a `Legend` only when there are 2 or more series.
   - **Axes and grid**: margins are about `{ top:8, right: directLabels ? 96 : 12, bottom:24, left:56 }`. The y-axis uses `niceTicks(...yExtent(values, mode), 5)` with hairline gridlines; the 0 line uses `var(--chart-axis)` when the domain spans 0. There are `clamp(2, floor(width/80), 8)` x ticks, or `xTickValues` when given.
@@ -257,7 +257,7 @@ lines and a legend appear, and the blue line reaches $0 earlier (quickstart §3)
   - **Accessibility**: a visually hidden `aria-live="polite"` region mirrors the tooltip text. The plot wrapper is `<div role="group" aria-roledescription="chart" aria-label={title} tabIndex={0}>` with a visible focus ring.
   - **Data table**: when `showDataTable`, render `ChartDataTable` with x, each series, and each `tooltipExtras` label as columns.
 
-  Export it from `libs/charts/src/index.ts`.
+  Export it from `libs/shared/charts/src/index.ts`.
 - [X] T028 [US1] Write `libs/amortization-ui/src/lib/charts/balance-chart.tsx`: `BalanceChart({ schedule, baseline = null })`.
   - Build the data with `buildBalanceSeries`. Render `LineChart` with `title="Remaining balance"` and `data-testid="chart-balance"`.
   - Series:
@@ -303,7 +303,7 @@ Yr 30 the reverse. Tooltip sums match the schedule to the cent (quickstart §4).
     - There are `ceil(periods.length/12)` rows.
   - **R1 with `{ groupBy: 'calendarYear' }`**: labels run `"2027"…"2056"`, and the first row covers 12 periods.
   - **R4**: 1 row, with interest 0 and principal 12000.
-- [X] T033 [P] [US2] Write `libs/charts/src/lib/stacked-bar-chart.spec.tsx`. Use non-amortization fixtures (quarterly profit and loss by product, with series `apples`/`pears` in slots 1 and 2, including one negative value) and stub `ResizeObserver` to report 600. Assert:
+- [X] T033 [P] [US2] Write `libs/shared/charts/src/lib/stacked-bar-chart.spec.tsx`. Use non-amortization fixtures (quarterly profit and loss by product, with series `apples`/`pears` in slots 1 and 2, including one negative value) and stub `ResizeObserver` to report 600. Assert:
   - There is one column group per category, and each column is at most 24 wide.
   - Only the outermost non-zero positive segment is rounded at the top, and the negative segment sits below the 0 baseline and is rounded at the bottom.
   - The 0 line uses `var(--chart-axis)`.
@@ -325,7 +325,7 @@ Yr 30 the reverse. Tooltip sums match the schedule to the cent (quickstart §4).
     - `extraPrincipal` = Σ`extraPrincipalApplied`
     - `interest` = Σ`interestPortion`
     - `total` = Σ`paymentAmount`
-- [X] T036 [US2] Write `libs/charts/src/lib/stacked-bar-chart.tsx`: `StackedBarChart<K>`, per `contracts/charts-api.md`. Make T033 pass.
+- [X] T036 [US2] Write `libs/shared/charts/src/lib/stacked-bar-chart.tsx`: `StackedBarChart<K>`, per `contracts/charts-api.md`. Make T033 pass.
   - **Props**: `data` (string `x`), `series` (stack order = array order), `formatters?`, `showTotalInTooltip?` (default true), plus `ChartBaseProps`.
   - **Frame**: use `ChartFrame` and `Legend` (only when there are 2 or more series).
   - **Scales**: use `bandScale(categories, [0, plotWidth], 0.3)`. The y-domain is `[min(0, Σneg), max(0, Σpos)]` per category, rounded with `niceTicks(..., 5)`. Gridlines are hairlines, and the 0 line uses `var(--chart-axis)` when the domain spans 0.
@@ -339,7 +339,7 @@ Yr 30 the reverse. Tooltip sums match the schedule to the cent (quickstart §4).
   - **Hover and keyboard**: the whole band is the hit target, with ←/→ through `usePlotKeyboard`. The active band gets a `var(--chart-grid)` highlight. The tooltip lists series top to bottom as drawn, then "Total" (the signed sum) when enabled, then `tooltipExtras`.
   - **Accessibility and data table**: an `aria-live` region mirrors the tooltip. The `ChartDataTable` columns are x, each series, Total, and the extras.
 
-  Export it from `libs/charts/src/index.ts`.
+  Export it from `libs/shared/charts/src/index.ts`.
 - [X] T037 [US2] Write `libs/amortization-ui/src/lib/charts/principal-interest-chart.tsx`: `PrincipalInterestChart({ schedule, groupBy = 'loanYear' })`.
   - Render `StackedBarChart` with `title="Principal vs. interest by year"` and `data-testid="chart-principal-interest"`.
   - Series, bottom to top:
@@ -363,8 +363,8 @@ anywhere in the workspace (the clarified meaning of "reimportable").
 **Independent Test**: `nx graph` shows no `amortization-*` dependencies for `charts`, a forbidden
 import fails lint, and the render tests with non-loan data pass (quickstart §2).
 
-- [X] T040 [P] [US5] Write `libs/charts/src/lib/public-api.spec.ts`. Import `* as api from '../index'` and assert that the runtime exports are exactly: `LineChart`, `StackedBarChart`, `ChartFrame`, `Legend`, `ChartTooltip`, `ChartDataTable`, `useElementWidth`, `usePlotKeyboard`, `linearScale`, `bandScale`, `niceTicks`, `yExtent`, `linePath`, `roundedTopRect`, `formatCompactCurrency`, `capSeries` and `colorVar`. `SegmentedBar` is added in T047.
-- [X] T041 [P] [US5] Write `libs/charts/README.md`. Cover:
+- [X] T040 [P] [US5] Write `libs/shared/charts/src/lib/public-api.spec.ts`. Import `* as api from '../index'` and assert that the runtime exports are exactly: `LineChart`, `StackedBarChart`, `ChartFrame`, `Legend`, `ChartTooltip`, `ChartDataTable`, `useElementWidth`, `usePlotKeyboard`, `linearScale`, `bandScale`, `niceTicks`, `yExtent`, `linePath`, `roundedTopRect`, `formatCompactCurrency`, `capSeries` and `colorVar`. `SegmentedBar` is added in T047.
+- [X] T041 [P] [US5] Write `libs/shared/charts/README.md`. Cover:
   - its purpose: domain-free SVG charts for this workspace (not published);
   - the three setup steps for consumers (the dependency, `@import '@companion/charts/theme.css'`, Tailwind `@source`);
   - minimal `LineChart` and `StackedBarChart` examples using non-loan data, one with negative values;
@@ -373,7 +373,7 @@ import fails lint, and the render tests with non-loan data pass (quickstart §2)
   - the stability rule: only `src/index.ts` is public.
 - [X] T042 [US5] Verify the boundaries (quickstart §2):
   1. Confirm `npx nx graph --print` shows no `amortization-*` dependency for `charts`.
-  2. Temporarily add `import 'amortization-calculations';` to `libs/charts/src/lib/format.ts`. `npx nx lint charts` must fail with `enforce-module-boundaries`. Revert the change.
+  2. Temporarily add `import 'amortization-calculations';` to `libs/shared/charts/src/lib/format.ts`. `npx nx lint charts` must fail with `enforce-module-boundaries`. Revert the change.
   3. Temporarily add a deep import of `@companion/charts/src/lib/paths` in `apps/amortization-calculator/src/app/page.tsx`. Lint or typecheck must fail. Revert the change.
   4. Record "Verified on <date>" under §2 of `specs/005-amortization-charts/quickstart.md`.
 
@@ -395,7 +395,7 @@ bar has 4 segments, and the legend total equals the total monthly payment (quick
   - **R1**: exactly 1 component (`principalAndInterest`), and `total === summary.totalMonthlyPayment`.
   - **R3**: the order is P&I, `propertyTax` 300.00, `insurance` 100.00, `pmi` = `summary.monthlyPmiAmount`, `hoa` 50.00, and `|Σ − total| ≤ 0.01`.
   - Components with a value of 0 are left out (R3 without HOA has no `hoa`).
-- [X] T044 [P] [US3] Write `libs/charts/src/lib/segmented-bar.spec.tsx` using a non-loan budget fixture. Assert:
+- [X] T044 [P] [US3] Write `libs/shared/charts/src/lib/segmented-bar.spec.tsx` using a non-loan budget fixture. Assert:
   - A segment with value 0 is dropped.
   - The legend shows the label, value and percent of `total` for each segment.
   - Segments use a roving tabIndex, and arrow keys show the tooltip.
@@ -417,7 +417,7 @@ bar has 4 segments, and the legend total equals the total monthly payment (quick
   | HOA | `roundCents(monthlyHoa ?? 0)` | "HOA" |
 
   "Components with value `0` are omitted." Set `total = summary.totalMonthlyPayment`.
-- [X] T047 [US3] Write `libs/charts/src/lib/segmented-bar.tsx`: `SegmentedBar({ segments, total, formatValue, ...ChartBaseProps })`. Make T044 pass, and add `SegmentedBar` to the T040 export list.
+- [X] T047 [US3] Write `libs/shared/charts/src/lib/segmented-bar.tsx`: `SegmentedBar({ segments, total, formatValue, ...ChartBaseProps })`. Make T044 pass, and add `SegmentedBar` to the T040 export list.
   - Drop segments with value 0. In development, throw if more than 6 remain.
   - Draw a 32px-tall horizontal bar where each segment's width is `value/Σ`. Leave 2px surface gaps between segments, and round the two outer ends with a 4px radius.
   - Print the value inside a segment only when it fits. Use white text, except `#0b0b0b` on slot 4.
@@ -425,7 +425,7 @@ bar has 4 segments, and the legend total equals the total monthly payment (quick
   - The segments are a `role="list"` with a roving tabIndex and ←/→ navigation. Show a `ChartTooltip` on hover or focus. There is no axis.
   - Add an optional `ChartDataTable` with Component, Amount and Share columns.
 
-  Export it from `libs/charts/src/index.ts`.
+  Export it from `libs/shared/charts/src/index.ts`.
 - [X] T048 [US3] Write `libs/amortization-ui/src/lib/charts/payment-composition-bar.tsx`: `PaymentCompositionBar({ scenario, schedule })`.
   - Return `null` when there are fewer than 2 components.
   - Otherwise render `SegmentedBar` with `title="Monthly payment breakdown"` and `data-testid="chart-payment-composition"`.
@@ -583,7 +583,7 @@ colors (quickstart §6).
 
 ## Phase 9: Polish & Cross-Cutting Concerns
 
-- [X] T074 [P] Add edge-case tests to `libs/charts/src/lib/line-chart.spec.tsx` and `libs/charts/src/lib/stacked-bar-chart.spec.tsx`:
+- [X] T074 [P] Add edge-case tests to `libs/shared/charts/src/lib/line-chart.spec.tsx` and `libs/shared/charts/src/lib/stacked-bar-chart.spec.tsx`:
   - A single point or category renders with no `NaN` in any attribute.
   - At a width of 300, there are at most 3 x ticks.
   - An all-zero series (the 0% interest case) produces no `NaN` in any path.
@@ -594,7 +594,7 @@ colors (quickstart §6).
   1. Start the app with `npx nx dev amortization-calculator`.
   2. With Playwright, take screenshots of the Charts section, the Deal Analyzer's rental charts and the comparison chart, in light mode and in dark mode (`emulateMedia({ colorScheme: 'dark' })`).
   3. Check for label collisions, tooltip overflow, direct-label overlap on the 3-series cash-flow chart, and the weight of the negative baseline.
-  4. Fix any problems in `libs/charts`.
+  4. Fix any problems in `libs/shared/charts`.
 - [X] T078 Run the whole of `specs/005-amortization-charts/quickstart.md` (§1–§8), including `npx nx run-many -t lint test -p charts amortization-calculations amortization-ui amortization-calculator` and `npx nx e2e amortization-calculator-e2e`. Tick off each scenario.
 
 ---
@@ -624,7 +624,7 @@ colors (quickstart §6).
 | `chart-data.spec.ts` | T023 → T032 → T043 → T068 |
 | `libs/amortization-calculations/src/lib/types.ts` | T056 (only) |
 | `libs/amortization-calculations/src/index.ts` | T026 → T059 |
-| `libs/charts/src/index.ts` | T022 → T027 → T036 → T047 |
+| `libs/shared/charts/src/index.ts` | T022 → T027 → T036 → T047 |
 | `libs/amortization-ui/src/index.ts` | T028 → T037 → T048 → T060–T063 (one at a time) → T071 |
 | `charts-section.tsx` | T029 → T038 → T049 |
 | `page.tsx` | T030 → T066 → T072 |

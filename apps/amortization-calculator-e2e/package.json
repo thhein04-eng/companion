@@ -7,7 +7,7 @@
       "amortization-calculator"
     ],
     "tags": [
-      "scope:amortization",
+      "scope:app",
       "type:e2e"
     ]
   }

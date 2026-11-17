@@ -33,7 +33,7 @@ Each item below resolves an unknown from the plan's Technical Context.
 ## R2. Where things live: lib boundaries for reuse
 
 - **Decision**: Three layers.
-  1. **`libs/charts`** (new, package `@companion/charts`, Nx tags `scope:shared`, `type:ui`):
+  1. **`libs/shared/charts`** (new, package `@companion/charts`, Nx tags `scope:shared`, `type:ui`):
      domain-free chart primitives and chrome (`LineChart`, `StackedBarChart`, `SegmentedBar`,
      `ChartFrame`, `Legend`, `ChartTooltip`, `ChartDataTable`, theme tokens). It knows nothing
      about loans.
@@ -52,7 +52,7 @@ Each item below resolves an unknown from the plan's Technical Context.
 
 ## R3. Package name and how consumers import it
 
-- **Decision**: Generate with `nx g @nx/react:library` using `directory=libs/charts`, `name=charts`,
+- **Decision**: Generate with `nx g @nx/react:library` using `directory=libs/shared/charts`, `name=charts`,
   `importPath=@companion/charts`, `bundler=none`, `unitTestRunner=vitest`, `linter=eslint`. Use the
   same source-first `package.json` `exports` pattern as the existing libs
   (`"." → ./src/index.ts`) and add a CSS entry `"./theme.css" → ./src/theme.css` for the color
@@ -61,7 +61,7 @@ Each item below resolves an unknown from the plan's Technical Context.
 - **Rationale**: The scoped name avoids a clash with the unrelated public npm package `charts`, and
   makes it obvious that this is a workspace package. A source-first export with no build step
   matches `amortization-ui`, so Next and Vitest transpile it directly. Because of the Tailwind
-  `@source` directive, the app must also scan `libs/charts/src` for class names.
+  `@source` directive, the app must also scan `libs/shared/charts/src` for class names.
 - **Alternatives considered**:
   - Bare name `charts`, which risks a name collision. Rejected.
   - A buildable/publishable lib (`bundler=vite`). This is not needed until something outside the
@@ -104,7 +104,7 @@ Each item below resolves an unknown from the plan's Technical Context.
 ## R6. Palette and theming
 
 - **Decision**: Use the data-viz reference palette as CSS custom properties in
-  `libs/charts/src/theme.css`, scoped to `.chart-root`, with selected dark steps under both
+  `libs/shared/charts/src/theme.css`, scoped to `.chart-root`, with selected dark steps under both
   `@media (prefers-color-scheme: dark)` and `[data-theme="dark"]`. Series refer to a **slot number**
   (1–8) or the `muted` role, never a raw hex value.
   - Light: `#2a78d6 #eb6834 #1baf7a #eda100 #e87ba4 #008300 #6250d6 #e34948`; surface `#fcfcfb`.

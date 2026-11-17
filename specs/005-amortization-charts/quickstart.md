@@ -30,7 +30,7 @@ npx nx e2e amortization-calculator-e2e
 npx nx graph --print | grep -A5 '"charts"'   # charts must list no amortization-* deps
 ```
 
-- Temporarily add `import 'amortization-calculations'` to any file in `libs/charts/src`.
+- Temporarily add `import 'amortization-calculations'` to any file in `libs/shared/charts/src`.
   `npx nx lint charts` **must fail** with an `enforce-module-boundaries` / `scope:shared` error.
   Then revert the change.
 - Temporarily add `import { linePath } from '@companion/charts/src/lib/paths'` in the app.
@@ -38,7 +38,7 @@ npx nx graph --print | grep -A5 '"charts"'   # charts must list no amortization-
 
 **Verified on 2026-11-17 (T042):**
 - `nx graph`: `charts` has no dependencies; `amortization-ui` → `amortization-calculations`, `charts`.
-- Importing `amortization-calculations` from `libs/charts` fails `nx lint charts`: "A project
+- Importing `amortization-calculations` from `libs/shared/charts` fails `nx lint charts`: "A project
   tagged with "scope:shared" can only depend on libs tagged with "scope:shared""
   (`@nx/enforce-module-boundaries`).
 - A deep import of `@companion/charts/src/lib/paths` from the app passes lint but fails

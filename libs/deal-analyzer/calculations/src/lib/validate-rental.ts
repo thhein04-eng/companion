@@ -1,0 +1,90 @@
+import type { FieldError, RentalAssumptions } from 'shared-calculations';
+
+/** The optional annual growth assumptions (spec 005 FR-013); a missing value means 0%. */
+type GrowthField = 'rentGrowthPct' | 'expenseGrowthPct' | 'appreciationPct';
+
+/** The always-present single-number rental inputs (not the custom-expense list or growth). */
+type NumericRentalField = Exclude<
+  keyof RentalAssumptions,
+  'customExpenses' | GrowthField
+>;
+
+const GROWTH_FIELDS: { field: GrowthField; label: string }[] = [
+  { field: 'rentGrowthPct', label: 'Rent growth' },
+  { field: 'expenseGrowthPct', label: 'Expense growth' },
+  { field: 'appreciationPct', label: 'Appreciation' },
+];
+const GROWTH_MIN = -10;
+const GROWTH_MAX = 25;
+
+const DOLLAR_FIELDS: { field: NumericRentalField; label: string }[] = [
+  { field: 'grossMonthlyRent', label: 'Monthly rent' },
+  { field: 'otherMonthlyIncome', label: 'Other monthly income' },
+  { field: 'closingCosts', label: 'Closing costs' },
+  { field: 'rehabBudget', label: 'Rehab budget' },
+];
+
+const PERCENT_FIELDS: { field: NumericRentalField; label: string }[] = [
+  { field: 'vacancyPct', label: 'Vacancy rate' },
+  { field: 'managementPct', label: 'Property management fee' },
+  { field: 'maintenanceReservePct', label: 'Maintenance reserve' },
+  { field: 'capexReservePct', label: 'CapEx reserve' },
+];
+
+/**
+ * Validates Deal Analyzer inputs (FR-015). Returns one error per offending
+ * field, keyed `rental.<field>`. Kept separate from `validateScenario` so
+ * invalid rental inputs never block the amortization schedule.
+ */
+export function validateRental(rental: RentalAssumptions): FieldError[] {
+  const errors: FieldError[] = [];
+
+  for (const { field, label } of DOLLAR_FIELDS) {
+    const value = rental[field];
+    if (!(Number.isFinite(value) && value >= 0)) {
+      errors.push({
+        field: `rental.${field}`,
+        message: `${label} cannot be negative.`,
+      });
+    }
+  }
+
+  for (const { field, label } of PERCENT_FIELDS) {
+    const value = rental[field];
+    if (!(Number.isFinite(value) && value >= 0 && value <= 100)) {
+      errors.push({
+        field: `rental.${field}`,
+        message: `${label} must be between 0% and 100%.`,
+      });
+    }
+  }
+
+  for (const { field, label } of GROWTH_FIELDS) {
+    const value = rental[field];
+    if (value === undefined) continue;
+    if (!(
+      Number.isFinite(value) &&
+      value >= GROWTH_MIN &&
+      value <= GROWTH_MAX
+    )) {
+      errors.push({
+        field: `rental.${field}`,
+        message: `${label} must be between -10% and 25%.`,
+      });
+    }
+  }
+
+  (rental.customExpenses ?? []).forEach((expense, index) => {
+    if (!(
+      Number.isFinite(expense.monthlyAmount) && expense.monthlyAmount >= 0
+    )) {
+      const name = expense.label.trim() || `Custom expense ${index + 1}`;
+      errors.push({
+        field: `rental.customExpenses.${index}.monthlyAmount`,
+        message: `${name} cannot be negative.`,
+      });
+    }
+  });
+
+  return errors;
+}

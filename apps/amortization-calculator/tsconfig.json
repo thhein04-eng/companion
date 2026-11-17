@@ -67,13 +67,19 @@
   ],
   "references": [
     {
-      "path": "../../libs/charts"
+      "path": "../../libs/shared/charts"
     },
     {
-      "path": "../../libs/amortization-ui"
+      "path": "../../libs/deal-analyzer/ui"
     },
     {
-      "path": "../../libs/amortization-calculations"
+      "path": "../../libs/amortization/ui"
+    },
+    {
+      "path": "../../libs/shared/ui"
+    },
+    {
+      "path": "../../libs/shared/data-access"
     }
   ]
 }

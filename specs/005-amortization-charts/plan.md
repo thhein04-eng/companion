@@ -27,7 +27,7 @@ library in the workspace can import and reuse them (clarified meaning of "reimpo
 
 The technical approach has three layers:
 
-1. A **new, domain-free `libs/charts` library** (`@companion/charts`). It contains hand-rolled,
+1. A **new, domain-free `libs/shared/charts` library** (`@companion/charts`). It contains hand-rolled,
    zero-dependency SVG React primitives (`LineChart`, `StackedBarChart`, `SegmentedBar`) and the
    chart chrome they share: frame, legend, tooltip, data table, keyboard hook and theme tokens.
 2. **Pure dataset builders** in `amortization-calculations`, unit-tested to the cent. This
@@ -59,7 +59,7 @@ a new `charts.spec.ts`.
 **Target Platform**: The same browsers as feature 001 (Chrome/Edge/Firefox 111+, Safari 16.4+).
 Relies on `ResizeObserver`, which all of them support.
 
-**Project Type**: Nx monorepo web app. This feature adds one library (`libs/charts`) and extends two
+**Project Type**: Nx monorepo web app. This feature adds one library (`libs/shared/charts`) and extends two
 existing libraries and the app.
 
 **Performance Goals**: A 360-period schedule re-renders all four charts inside the existing
@@ -85,7 +85,7 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 | III. Client-side, no server storage | ✅ | No server and no network calls. The three growth inputs persist only to the existing `sessionStorage` state, which is the constitution's default. |
 | IV. Accessible interactive components | ✅ with a note | The "Show data" toggle uses `@ui-sdk/react/collapsible`, and the growth inputs use the existing `@ui-sdk` `NumberField`. Arrow-key stepping through a plot's data points is a composite widget that the SDK does not provide, so it is custom. See Complexity Tracking. |
 | V. Spec-driven delivery | ✅ | `spec.md` was written during the first plan run and then clarified on 2026-11-17 (5 questions). This plan was regenerated from the clarified spec. The existing `tasks.md` is now stale and must be regenerated with `/speckit-tasks`. |
-| Stack: Nx generators | ✅ | `libs/charts` is created with `nx g @nx/react:library` (research R3), not assembled by hand. |
+| Stack: Nx generators | ✅ | `libs/shared/charts` is created with `nx g @nx/react:library` (research R3), not assembled by hand. |
 | Stack: Vitest + Playwright | ✅ | Both are used, as listed above. |
 
 **Gate result**: PASS. There are no unjustified violations.
@@ -162,7 +162,7 @@ apps/
 │   ├── _components/rental-charts-section.tsx # NEW: rental charts (insertion 2)
 │   ├── _components/rental-inputs-panel.tsx  # + Growth assumptions fields
 │   ├── page.tsx                              # 3 insertions; comparison memo returns schedules
-│   └── global.css                            # +@import theme.css, +@source libs/charts
+│   └── global.css                            # +@import theme.css, +@source libs/shared/charts
 └── amortization-calculator-e2e/src/charts.spec.ts  # NEW
 
 eslint.config.mjs                             # depConstraints by scope tag
@@ -183,7 +183,7 @@ The app only places presets on the page.
 ## Implementation Notes
 
 - **Order**:
-  1. Generate `libs/charts` and add the tags and lint constraints.
+  1. Generate `libs/shared/charts` and add the tags and lint constraints.
   2. Write the pure helpers and their tests.
   3. Build the generic components (including signed stacking and `'auto'` y-domain) and their
      render tests.
@@ -211,3 +211,24 @@ The app only places presets on the page.
 |---|---|---|
 | Custom keyboard and ARIA handling for chart point navigation (`usePlotKeyboard`), not built on `@ui-sdk/react` (Constitution IV says SHOULD) | `@ui-sdk/react` 0.1.0-beta.1 has no chart, data-grid-cell or point-navigation primitive. Its closest fit, Slider, has value-editing semantics that are wrong for read-only data. | Using Slider would make screen readers announce an editable control. Leaving keyboard support out would fail FR-008. The hook is small, isolated, and covered by render tests. |
 | Hand-rolled scales and paths instead of a charting library | It keeps `@companion/charts` free of runtime dependencies, so it is easy to re-import, and it gives full control over the mark specs. | Recharts and visx add weight and need many overrides (research R1). |
+
+## Merge into the feature-scoped layout (2026-11-17)
+
+While this feature was in progress, `main` merged features 003 (page navigation) and 004 (schedule
+pagination), which split the workspace into feature-scoped libraries. On merge, this feature's code
+moved as follows (behavior unchanged):
+
+| Planned location | Final location |
+|---|---|
+| `libs/charts` (`@companion/charts`) | `libs/shared/charts` (workspaces are now `libs/*/*`) |
+| `amortization-calculations/src/lib/chart-data.ts` | `libs/amortization/calculations` |
+| `project-rental.ts`, `rental-line-items.ts`, growth validation | `libs/deal-analyzer/calculations` |
+| `RentalAssumptions` growth fields | `libs/shared/calculations` (where the type now lives) |
+| Loan chart presets + `ChartsSection`, `ScenarioBalanceChart` | `libs/amortization/ui`, rendered by `AmortizationCalculatorView` (`/amortization`) |
+| Rental chart presets + `RentalChartsSection`, growth inputs | `libs/deal-analyzer/ui`, rendered by `DealAnalyzerView` / `RentalInputsPanel` (`/deal-analyzer`) |
+
+Other merge changes:
+- Custom operating expenses (added on `main`) are fixed costs, so they grow with expense growth.
+- Each chart's `aria-live` region is now a sibling of the focusable plot, not a child. The
+  `@ui-sdk` modal keeps live regions out of its inert background, so a nested live region left
+  the plots focusable behind the mobile navigation drawer.

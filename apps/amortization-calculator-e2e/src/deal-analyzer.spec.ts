@@ -7,9 +7,10 @@ import { clearNumberField, fillNumberField } from './helpers';
  * default 5/8/5/5% assumptions, $7,500 closing costs, $10,000 rehab.
  */
 async function enterScenarioOne(page: Page, { withCashInvested = true } = {}) {
-  await page.goto('/');
+  await page.goto('/deal-analyzer');
   await fillNumberField(page, 'Home price', '250000');
-  await fillNumberField(page, 'Down payment', '62500');
+  // Down payment defaults to percent mode: 25% of $250k = $62,500.
+  await fillNumberField(page, 'Down payment', '25');
   await fillNumberField(page, 'Annual interest rate', '7');
   await fillNumberField(page, 'Annual property tax', '3000');
   await fillNumberField(page, "Annual homeowner's insurance", '1200');
@@ -124,11 +125,59 @@ test.describe('Deal Analyzer', () => {
     await expect(grid.locator('tbody tr').nth(2)).toContainText('—');
   });
 
+  test('a negative custom expense shows a field error and holds back the deal metrics', async ({ page }) => {
+    // The amount field clamps typed values at $0, so seed a saved session that has a negative one.
+    await page.goto('/deal-analyzer');
+    await page.evaluate(() => {
+      const scenario = {
+        id: 'neg',
+        name: 'Negative expense',
+        principal: 187500,
+        annualInterestRatePct: 7,
+        termMonths: 360,
+        startDate: '2027-01-01',
+        paymentFrequency: 'monthly',
+        homePrice: 250000,
+        downPayment: { percent: 25 },
+        annualPropertyTax: 3000,
+        annualInsurance: 1200,
+        pmiAnnualRatePct: null,
+        monthlyHoa: null,
+        extraPayments: [],
+        principalIsOverridden: false,
+        rental: {
+          grossMonthlyRent: 2400,
+          otherMonthlyIncome: 0,
+          vacancyPct: 5,
+          managementPct: 8,
+          maintenanceReservePct: 5,
+          capexReservePct: 5,
+          closingCosts: 7500,
+          rehabBudget: 10000,
+          customExpenses: [{ id: 'water', label: 'Water', monthlyAmount: -50 }],
+        },
+      };
+      sessionStorage.setItem(
+        'amortization:scenarios',
+        JSON.stringify({ scenarios: [scenario], activeScenarioId: 'neg' })
+      );
+    });
+    await page.reload();
+
+    await expect(page.locator('[data-slot="field-error"]', { hasText: 'Water cannot be negative.' })).toBeVisible();
+    await expect(page.getByTestId('badge-cash-on-cash')).toHaveCount(0);
+    // Rental errors never block the loan figures here or the schedule on
+    // /amortization (FR-015; the schedule moved there in spec 003).
+    await expect(page.getByText('Total estimated monthly payment').locator('..')).toContainText('$1,597.44');
+    await page.goto('/amortization');
+    await expect(page.getByRole('heading', { name: 'Amortization schedule' })).toBeVisible();
+  });
+
   test('US4: a session saved before the Deal Analyzer loads without errors (FR-016)', async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
 
-    await page.goto('/');
+    await page.goto('/deal-analyzer');
     // Wait until the app has hydrated and persisted its own initial state; otherwise its mount
     // effect can overwrite the legacy session we are about to seed (a race under load).
     await page.waitForFunction(() => sessionStorage.getItem('amortization:scenarios') !== null);
@@ -177,15 +226,24 @@ test.describe('Deal Analyzer', () => {
     await expect(page.getByTestId('total-cash-invested')).toContainText('$80,000.00');
   });
 
-  test('FR-015: invalid rental input shows a field error without hiding the schedule (quickstart Scenario 4)', async ({
+  test('FR-015: invalid rental input never blocks the loan figures or schedule (quickstart Scenario 4)', async ({
     page,
   }) => {
     await enterScenarioOne(page);
     await fillNumberField(page, 'Vacancy rate', '150');
     await page.keyboard.press('Tab');
 
+    // On the Deal Analyzer page: the rental error shows, deal metrics hide,
+    // and the loan's monthly payment is still computed.
     await expect(page.getByText('Vacancy rate must be between 0% and 100%.')).toBeVisible();
+    await expect(page.getByTestId('deal-metrics')).toHaveCount(0);
+    await expect(page.getByText('Total estimated monthly payment').locator('..')).toContainText('$1,597.44');
+
+    // The schedule itself now lives on the Amortization page (spec 003) and
+    // is still produced for the same session's scenario.
+    await page.goto('/amortization');
     await expect(page.getByRole('heading', { name: 'Amortization schedule' })).toBeVisible();
-    await expect(page.locator('table').last().locator('tbody tr')).toHaveCount(360);
+    await expect(page.locator('table').last().locator('tbody tr')).toHaveCount(12);
+    await expect(page.getByText('Payments 1–12 of 360')).toBeVisible();
   });
 });

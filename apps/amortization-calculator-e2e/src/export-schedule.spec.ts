@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 // quickstart.md Scenario 6: export / print (User Story 1 / P1, FR-011).
 test('downloads the schedule as a CSV with one row per period', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/amortization');
 
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Download CSV' }).click();

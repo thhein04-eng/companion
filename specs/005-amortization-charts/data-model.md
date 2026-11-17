@@ -16,7 +16,7 @@ There are three groups:
 
 ---
 
-## A. Generic chart model (`libs/charts`)
+## A. Generic chart model (`libs/shared/charts`)
 
 ### `ColorToken`
 

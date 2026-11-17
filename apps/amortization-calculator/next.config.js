@@ -2,7 +2,16 @@
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ['amortization-calculations', 'amortization-ui'],
+  transpilePackages: [
+    'shared-calculations',
+    'shared-data-access',
+    'shared-ui',
+    'amortization-calculations',
+    'amortization-ui',
+    'deal-analyzer-calculations',
+    'deal-analyzer-ui',
+    '@companion/charts',
+  ],
 };
 
 module.exports = nextConfig;

@@ -1,7 +1,9 @@
 @import 'tailwindcss';
 @import '@companion/charts/theme.css';
-@source '../../../../libs/amortization-ui/src';
-@source '../../../../libs/charts/src';
+@source '../../../../libs/shared/ui/src';
+@source '../../../../libs/amortization/ui/src';
+@source '../../../../libs/deal-analyzer/ui/src';
+@source '../../../../libs/shared/charts/src';
 
 :root {
   color-scheme: light dark;
@@ -9,5 +11,9 @@
 
 body {
   margin: 0;
-  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    sans-serif;
 }

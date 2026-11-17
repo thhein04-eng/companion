@@ -3,7 +3,7 @@ import { fillNumberField } from './helpers';
 
 // quickstart.md Scenario 5: validation & edge cases (FR-009, FR-012).
 test('validates inputs and retains scenario data for the session', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/amortization');
 
   await fillNumberField(page, 'Loan amount', '0');
   await page.keyboard.press('Tab');
@@ -21,7 +21,7 @@ test('validates inputs and retains scenario data for the session', async ({ page
 });
 
 test('starts a fresh default scenario in a brand-new session', async ({ page, browser }) => {
-  await page.goto('/');
+  await page.goto('/amortization');
   await fillNumberField(page, 'Loan amount', '123456');
   await page.keyboard.press('Tab');
 

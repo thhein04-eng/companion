@@ -3,7 +3,7 @@ import { fillNumberField } from './helpers';
 
 // quickstart.md §3: balance chart (User Story 1 / FR-001, FR-005, FR-008).
 test('balance chart', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/amortization');
 
   const chart = page.getByTestId('chart-balance');
   await expect(chart).toBeVisible();
@@ -21,7 +21,7 @@ test('balance chart', async ({ page }) => {
   const plot = chart.getByRole('group', { name: 'Remaining balance' });
   await plot.focus();
   await page.keyboard.press('ArrowRight');
-  await expect(plot.locator('[aria-live="polite"]')).toContainText('$');
+  await expect(chart.locator('[aria-live="polite"]')).toContainText('$');
 
   await fillNumberField(page, 'Loan amount', '0');
   await page.keyboard.press('Tab');
@@ -30,7 +30,7 @@ test('balance chart', async ({ page }) => {
 
 // quickstart.md §4: principal vs. interest (User Story 2 / FR-002).
 test('principal vs interest chart', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/amortization');
 
   const chart = page.getByTestId('chart-principal-interest');
   await expect(chart).toBeVisible();
@@ -47,7 +47,7 @@ test('principal vs interest chart', async ({ page }) => {
 
 // quickstart.md §5: payment composition (User Story 3 / FR-003).
 test('payment composition', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/amortization');
 
   // Principal & interest only → no chart.
   await expect(page.getByTestId('chart-balance')).toBeVisible();
@@ -68,11 +68,12 @@ test('payment composition', async ({ page }) => {
   await expect(legend.getByText('$100.00')).toBeVisible();
 });
 
-/** The R3 loan from the plan, with a rental: $330k price, $33k down, $2,800 rent, $6k closing. */
+/** The R3 loan from the plan, with a rental: $330k price, 10% ($33k) down, $2,800 rent, $6k closing. */
 async function enterRental(page: import('@playwright/test').Page) {
-  await page.goto('/');
+  await page.goto('/deal-analyzer');
   await fillNumberField(page, 'Home price', '330000');
-  await fillNumberField(page, 'Down payment', '33000');
+  // Down payment defaults to percent mode: 10% of $330k = $33,000.
+  await fillNumberField(page, 'Down payment', '10');
   await fillNumberField(page, 'Annual property tax', '3600');
   await fillNumberField(page, "Annual homeowner's insurance", '1200');
   await fillNumberField(page, 'Monthly rent', '2800');
@@ -110,7 +111,8 @@ test('rental charts', async ({ page }) => {
   await page.keyboard.press('Tab');
   await expect(page.getByText('Rent growth must be between -10% and 25%.')).toBeVisible();
   await expect(page.getByTestId('chart-rental-cash-flow')).toHaveCount(0);
-  await expect(page.getByTestId('chart-balance')).toBeVisible();
+  // Rental errors never block the loan (spec 002 FR-015): the loan fields keep their values.
+  await expect(page.getByRole('textbox', { name: 'Home price', exact: true })).toHaveValue('$330,000.00');
 
   await fillNumberField(page, 'Rent growth', '3');
   await page.keyboard.press('Tab');
@@ -120,7 +122,6 @@ test('rental charts', async ({ page }) => {
   for (const id of ['chart-rental-cash-flow', 'chart-equity', 'chart-cash-on-cash']) {
     await expect(page.getByTestId(id)).toHaveCount(0);
   }
-  await expect(page.getByTestId('chart-balance')).toBeVisible();
 });
 
 // FR-013: a rental saved before the growth inputs existed loads with 0% growth.
@@ -160,7 +161,7 @@ test('rental charts – old session', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
-  await page.goto('/');
+  await page.goto('/deal-analyzer');
   await expect(page.getByRole('tab', { name: /Old rental/ })).toBeVisible();
   await expect(page.getByRole('textbox', { name: 'Rent growth', exact: true })).toHaveValue('0');
   await expect(page.getByTestId('chart-rental-cash-flow')).toBeVisible();
@@ -170,7 +171,7 @@ test('rental charts – old session', async ({ page }) => {
 // quickstart.md §6: scenario comparison (User Story 4 / FR-004). A line's color is its scenario's
 // position in the list, never its rank among the valid scenarios.
 test('scenario balance chart', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/amortization');
   await expect(page.getByTestId('chart-balance')).toBeVisible();
   await expect(page.getByTestId('chart-scenario-balance')).toHaveCount(0);
 
@@ -203,40 +204,33 @@ test('scenario balance chart', async ({ page }) => {
 // Edge case: narrow viewport (≤ 375px) — no horizontal page scroll, every chart visible.
 test('charts at mobile width', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 800 });
-  await enterRental(page);
-  await fillNumberField(page, 'Monthly HOA fee', '50');
-  await page.keyboard.press('Tab');
 
-  for (const id of [
-    'chart-payment-composition',
-    'chart-balance',
-    'chart-principal-interest',
-    'chart-rental-cash-flow',
-    'chart-equity',
-    'chart-cash-on-cash',
-  ]) {
+  await enterRental(page);
+  for (const id of ['chart-rental-cash-flow', 'chart-equity', 'chart-cash-on-cash']) {
     await expect(page.getByTestId(id)).toBeVisible();
   }
-  const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
-  expect(scrollWidth).toBeLessThanOrEqual(375);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+
+  // The same scenario on the calculator page (scenarios are shared between pages).
+  await page.goto('/amortization');
+  for (const id of ['chart-payment-composition', 'chart-balance', 'chart-principal-interest']) {
+    await expect(page.getByTestId(id)).toBeVisible();
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
 });
 
-// SC-002: with charts (including rental charts) on the page, a rate change still re-renders
-// within the 1-second budget.
+// SC-002: with the charts on the page, a rate change still re-renders within the 1-second budget.
 test('charts re-render within 1 second of an input change', async ({ page }) => {
-  await enterRental(page);
+  await page.goto('/amortization');
   await fillNumberField(page, 'Amount', '200');
   await page.getByRole('button', { name: 'Add', exact: true }).click();
-  const cashFlow = page.getByTestId('chart-rental-cash-flow');
-  await expect(cashFlow).toBeVisible();
-  const balanceDesc = page.getByTestId('chart-balance').getByRole('group', { name: 'Remaining balance' });
-  await expect(balanceDesc).toBeVisible();
-  const before = await page.getByTestId('chart-balance').locator('path[data-series="balance"]').getAttribute('d');
+  const balancePath = page.getByTestId('chart-balance').locator('path[data-series="balance"]');
+  await expect(balancePath).toBeVisible();
+  const before = String(await balancePath.getAttribute('d'));
 
   const start = Date.now();
   await fillNumberField(page, 'Annual interest rate', '7');
   await page.keyboard.press('Tab');
-  await expect(page.getByTestId('chart-balance').locator('path[data-series="balance"]')).not.toHaveAttribute('d', before ?? '');
-  await expect(cashFlow).toBeVisible();
+  await expect(balancePath).not.toHaveAttribute('d', before);
   expect(Date.now() - start).toBeLessThan(1000);
 });

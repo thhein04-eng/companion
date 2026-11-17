@@ -57,6 +57,6 @@ through the existing `onChange` patch. Each one shows the matching `rental.*` er
 ### Other app files
 
 - `global.css` gets `@import '@companion/charts/theme.css';` and
-  `@source '../../../../libs/charts/src';`.
+  `@source '../../../../libs/shared/charts/src';`.
 - `apps/amortization-calculator/package.json` and `libs/amortization-ui/package.json` add
   `"@companion/charts": "*"`.

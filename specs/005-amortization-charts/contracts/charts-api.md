@@ -1,6 +1,6 @@
 # Contract: `@companion/charts` public API
 
-**Project**: `libs/charts` · Nx tags `scope:shared`, `type:ui` · entry points `@companion/charts`
+**Project**: `libs/shared/charts` · Nx tags `scope:shared`, `type:ui` · entry points `@companion/charts`
 (TS/React) and `@companion/charts/theme.css` (tokens).
 
 **Stability rule**: Anything not exported from `src/index.ts` is private. Deep imports are a lint
@@ -16,7 +16,7 @@ is a breaking change, and every consumer in the workspace must be updated in the
 1. Add `"@companion/charts": "*"` to the consumer project's `package.json` dependencies (npm
    workspace), and run `npm install`.
 2. Import the tokens once in the app's global CSS: `@import '@companion/charts/theme.css';`
-3. Add Tailwind scanning: `@source '<relative>/libs/charts/src';`
+3. Add Tailwind scanning: `@source '<relative>/libs/shared/charts/src';`
 
 ## Types
 
@@ -154,7 +154,7 @@ The tokens are scoped to `.chart-root`. Each one has a light value, plus a dark 
 `--chart-axis`, `--chart-series-1` … `--chart-series-8`. The values are in
 [research.md R6](../research.md).
 
-## Conformance tests (in `libs/charts`)
+## Conformance tests (in `libs/shared/charts`)
 
 - Helpers: tick niceness and uniqueness, scale inversion, `linePath` breaking at `null`,
   `capSeries`.
