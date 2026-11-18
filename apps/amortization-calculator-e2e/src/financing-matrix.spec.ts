@@ -7,7 +7,7 @@ import { clearNumberField, fillNumberField } from './helpers';
  * the default 5/8/5/5% reserves. NOI = $2,376.00/mo.
  */
 async function enterReferenceScenario(page: Page) {
-  await page.goto('/deal-analyzer');
+  await page.goto('/financing');
   await fillNumberField(page, 'Home price', '400000');
   await fillNumberField(page, 'Down payment', '25');
   await fillNumberField(page, 'Annual interest rate', '7');
@@ -16,6 +16,39 @@ async function enterReferenceScenario(page: Page) {
   await fillNumberField(page, 'Monthly rent', '3800');
   await page.keyboard.press('Tab');
 }
+
+test.describe('DSCR & Financing page (spec 006)', () => {
+  test('has its own route, title, heading and nav link', async ({ page }) => {
+    await page.goto('/financing');
+    await expect(page).toHaveTitle('DSCR & Financing · Companion');
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'DSCR & Financing' }),
+    ).toBeVisible();
+    await expect(
+      page
+        .getByRole('navigation', { name: 'Primary' })
+        .getByRole('link', { name: 'DSCR & Financing' }),
+    ).toHaveAttribute('aria-current', 'page');
+  });
+
+  test('the Deal Analyzer no longer shows DSCR or the matrix; inputs are shared', async ({
+    page,
+  }) => {
+    await enterReferenceScenario(page);
+    await expect(page.getByTestId('dscr')).toBeVisible();
+
+    await page.goto('/deal-analyzer');
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Rental Deal Analyzer' }),
+    ).toBeVisible();
+    // Inputs entered on /financing are there on the Deal Analyzer…
+    await expect(page.getByTestId('row-cash-flow')).toContainText('$380.09');
+    // …but the DSCR card and financing matrix live only on /financing.
+    await expect(page.getByTestId('dscr')).toHaveCount(0);
+    await expect(page.getByTestId('financing-matrix')).toHaveCount(0);
+    await expect(page.getByTestId('deal-metrics')).toBeVisible();
+  });
+});
 
 test.describe('DSCR card (spec 006 US1)', () => {
   test('flags a DSCR below the minimum and follows the chosen minimum', async ({
@@ -114,6 +147,7 @@ test.describe('Financing matrix (spec 006 US2)', () => {
     await expect(cell('dscr-dscr')).toContainText('1.08×');
 
     // SC-005: the untouched conventional column equals the Deal Analyzer's cash flow.
+    await page.getByRole('link', { name: 'Rental Deal Analyzer' }).first().click();
     await expect(page.getByTestId('row-cash-flow')).toContainText('$380.09');
   });
 

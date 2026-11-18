@@ -1,20 +1,28 @@
 # Contract: DSCR & financing UI (`deal-analyzer-ui`)
 
-These are presentational components wired by `DealAnalyzerView`. None of them compute finance
+These are presentational components wired by `FinancingView`. None of them compute finance
 math; they render the results from [dscr-financing-calculations.md](./dscr-financing-calculations.md).
 The `data-testid` values listed here are part of the contract that the e2e tests depend on.
 
-## Placement on `/deal-analyzer`
+## Placement: its own page, `/financing`
+
+> Amended 2026-11-17 at the user's request. The feature first shipped inside `/deal-analyzer`;
+> it now has its own route and nav entry, and `/deal-analyzer` is back to its spec 002/003 layout
+> (no DSCR card, no matrix, no DSCR comparison column).
+
+| Route | `<title>` | `<h1>` | Nav entry |
+|---|---|---|---|
+| `/financing` | `DSCR & Financing · Companion` | "DSCR & Financing" | "DSCR & Financing" (`nav-financing`, bank icon), third in menu order |
 
 ```text
-Deal analyzer (h2)
-├── RentalInputsPanel            (existing)
-├── IncomeExpenseCard            (existing)
-├── DealMetrics                  (existing, now 4 cards: Cap rate · DSCR · 1% Rule · 50% Rule)
-└── RentalChartsSection          (existing)
-Financing options (h2)           (new section; shown only when an analysis exists)
-└── FinancingMatrix
-Compare scenarios (h2)           (existing grid + new "DSCR" column)
+FinancingView (/financing)       (shares the scenario store with the other pages, spec 003 FR-004)
+├── ScenarioTabs
+├── Loan (h2)                    LoanInputForm
+├── Real-estate costs (h2)       CostBreakdownPanel
+├── Rental income (h2)           RentalInputsPanel (same inputs as the Deal Analyzer)
+├── Debt service coverage (h2)   annual NOI line + DscrCard        (only when an analysis exists)
+├── Financing options (h2)       FinancingMatrix                   (only when an analysis exists)
+└── Compare scenarios (h2)       loan columns + NOI /yr, Cash Flow /mo, DSCR (FINANCING_COMPARISON_COLUMNS)
 ```
 
 ## `DscrCard` — `data-testid="dscr"`

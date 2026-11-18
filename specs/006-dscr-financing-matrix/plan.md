@@ -125,8 +125,18 @@ apps/amortization-calculator-e2e/src/
 
 **Structure Decision**: This feature uses the existing Nx libraries only. The pure math sits next to
 `analyzeDeal` in `deal-analyzer-calculations`, the shared amortization math in
-`shared-calculations`, and the presentation in `deal-analyzer-ui`. `apps/amortization-calculator`
-does not change, because `/deal-analyzer/page.tsx` already renders `DealAnalyzerView`.
+`shared-calculations`, and the presentation in `deal-analyzer-ui`.
+
+**Amendment (2026-11-17, at the user's request): separate page.** The feature now lives at its own
+route instead of inside `/deal-analyzer`:
+- `apps/amortization-calculator/src/app/financing/page.tsx` renders the new `FinancingView`.
+- `_nav.tsx` gains a "DSCR & Financing" entry, with a `BankIcon` added to `shared-ui`.
+- `DealAnalyzerView` and `DealMetrics` are restored to their pre-006 versions, and
+  `DEAL_COMPARISON_COLUMNS` drops DSCR.
+- `FINANCING_COMPARISON_COLUMNS` carries DSCR on the new page.
+- The app stays thin (Principle II): the route file only composes `FinancingView` from
+  `deal-analyzer-ui`.
+- See [contracts/financing-ui.md § Placement](contracts/financing-ui.md).
 
 ## Implementation order (for `/speckit-tasks`)
 

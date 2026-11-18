@@ -56,7 +56,7 @@ test('updates the Cash-on-Cash badge within 1 second of a rent change', async ({
 // Measured inside the page (click → DOM update), so Playwright's own
 // round-trips don't count against the budget.
 test('switches the financing matrix structure within 100 ms', async ({ page }) => {
-  await page.goto('/deal-analyzer');
+  await page.goto('/financing');
   await fillNumberField(page, 'Home price', '400000');
   await fillNumberField(page, 'Down payment', '25');
   await fillNumberField(page, 'Annual interest rate', '7');

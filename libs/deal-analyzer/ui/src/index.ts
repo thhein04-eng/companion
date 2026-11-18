@@ -11,6 +11,7 @@ export * from './lib/segmented-options';
 export * from './lib/use-financing-editor';
 export * from './lib/financing-matrix';
 export * from './lib/financing-terms-editor';
+export * from './lib/financing-view';
 export * from './lib/charts/chart-note';
 export * from './lib/charts/rental-cash-flow-chart';
 export * from './lib/charts/equity-build-up-chart';
