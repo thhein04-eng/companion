@@ -175,7 +175,13 @@ test.describe('Deal Analyzer', () => {
 
   test('US4: a session saved before the Deal Analyzer loads without errors (FR-016)', async ({ page }) => {
     const errors: string[] = [];
-    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('pageerror', (error) => {
+      // WebKit reports Next.js nav-link RSC prefetches cancelled by the reload below as
+      // "…?_rsc=… due to access control checks." They are aborted network requests, not
+      // app errors, and they grew more frequent with every nav link (specs 006, 008).
+      if (/\?_rsc=.*access control checks/.test(error.message)) return;
+      errors.push(error.message);
+    });
 
     await page.goto('/deal-analyzer');
     // Wait until the app has hydrated and persisted its own initial state; otherwise its mount

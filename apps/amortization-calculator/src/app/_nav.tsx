@@ -2,6 +2,7 @@ import {
   BankIcon,
   BuildingIcon,
   CalculatorIcon,
+  TrendingUpIcon,
   type NavItem,
 } from 'shared-ui';
 
@@ -27,5 +28,11 @@ export const NAV_ITEMS: NavItem[] = [
     label: 'DSCR & Financing',
     href: '/financing',
     icon: <BankIcon />,
+  },
+  {
+    id: 'wealth',
+    label: 'Wealth Projection',
+    href: '/wealth',
+    icon: <TrendingUpIcon />,
   },
 ];

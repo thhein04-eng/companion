@@ -64,6 +64,20 @@ export interface RentalAssumptions {
   financing?: FinancingTerms | null;
   /** Structure in focus in the matrix toggle (spec 006 FR-010). Optional; missing = 'conventional'. */
   financingSelection?: FinancingOptionId;
+  /** Wealth-projection assumptions (spec 008). Optional; missing = defaults. */
+  wealth?: WealthAssumptions | null;
+}
+
+/** Wealth-projection assumptions (spec 008). Every field optional; missing = default (FR-015). */
+export interface WealthAssumptions {
+  /** Integer 1…30. Default 10. */
+  horizonYears?: number;
+  /** One-time value uplift at purchase, $ ≥ 0. Default 0. */
+  forcedAppreciation?: number;
+  /** Land share of the price, 0 ≤ x < 100. Default 20. */
+  landValuePct?: number;
+  /** 0 ≤ x ≤ 60. Default 24. */
+  marginalTaxRatePct?: number;
 }
 
 /** The three loan structures compared by the financing matrix (spec 006). */
@@ -136,7 +150,8 @@ export interface FieldError {
     | `rental.${keyof RentalAssumptions}`
     | `rental.customExpenses.${number}.monthlyAmount`
     | `rental.dscrMinimum`
-    | `rental.financing.${FinancingOptionId}.${string}`;
+    | `rental.financing.${FinancingOptionId}.${string}`
+    | `rental.wealth.${keyof WealthAssumptions}`;
   message: string;
 }
 

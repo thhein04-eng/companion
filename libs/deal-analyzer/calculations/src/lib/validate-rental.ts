@@ -11,6 +11,7 @@ type NumericRentalField = Exclude<
   | 'dscrMinimum'
   | 'financing'
   | 'financingSelection'
+  | 'wealth'
 >;
 
 const GROWTH_FIELDS: { field: GrowthField; label: string }[] = [

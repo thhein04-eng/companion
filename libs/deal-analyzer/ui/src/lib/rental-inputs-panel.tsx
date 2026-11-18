@@ -11,6 +11,8 @@ export interface RentalInputsPanelProps {
   onChange: (patch: Partial<RentalAssumptions> | null) => void;
   /** Down payment + closing costs + rehab, when an analysis is available. */
   totalCashInvested?: number | null;
+  /** Skip the growth group, e.g. when a page shows those inputs elsewhere (spec 008 `/wealth`). */
+  hideGrowth?: boolean;
 }
 
 type PercentFieldKey =
@@ -38,6 +40,7 @@ export function RentalInputsPanel({
   errors,
   onChange,
   totalCashInvested,
+  hideGrowth = false,
 }: RentalInputsPanelProps) {
   const rentField = (
     <NumberField
@@ -120,16 +123,18 @@ export function RentalInputsPanel({
         {percentField('capexReservePct', 'CapEx reserve')}
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-neutral-200 pt-4">
-        <h3 className="text-sm font-medium text-neutral-800">
-          Growth assumptions
-        </h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {percentField('rentGrowthPct', 'Rent growth', growthOptions)}
-          {percentField('expenseGrowthPct', 'Expense growth', growthOptions)}
-          {percentField('appreciationPct', 'Appreciation', growthOptions)}
+      {hideGrowth ? null : (
+        <div className="flex flex-col gap-3 border-t border-neutral-200 pt-4">
+          <h3 className="text-sm font-medium text-neutral-800">
+            Growth assumptions
+          </h3>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {percentField('rentGrowthPct', 'Rent growth', growthOptions)}
+            {percentField('expenseGrowthPct', 'Expense growth', growthOptions)}
+            {percentField('appreciationPct', 'Appreciation', growthOptions)}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Custom Operating Expenses Sub-Section */}
       <div className="flex flex-col gap-3 border-t border-neutral-200 pt-4">

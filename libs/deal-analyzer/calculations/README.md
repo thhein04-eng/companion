@@ -16,6 +16,10 @@ Pure rental-analysis functions for the Rental Deal Analyzer.
   - `defaultFinancingTerms`, `resolveFinancingTerms`, `buildFinancingMatrix`
   - `validateFinancing`, `validateDscrMinimum`
   - Types: `DscrResult`, `FinancingPhase`, `FinancingOptionResult`, `FinancingMatrix`
+- Wealth projection (spec 008):
+  - `projectWealth`, `resolveWealthAssumptions`, `validateWealth`
+  - `DEFAULT_WEALTH`, `TYPICAL_GROWTH`, `DEPRECIATION_YEARS`, `WEALTH_*_REASON`
+  - Types: `WealthYear`, `WealthProjection`
 
 Import only from the package name (`'deal-analyzer-calculations'`), never from a deep path.
 

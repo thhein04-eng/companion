@@ -55,6 +55,58 @@ export interface DealAnalysis {
   dscr: DscrResult;
 }
 
+/** One projected year of the wealth simulator (spec 008 data-model §B). Money is cents-rounded. */
+export interface WealthYear {
+  /** 0…N (0 = purchase). */
+  year: number;
+  /** (price + forced) × (1 + appreciation)^year. */
+  propertyValue: number;
+  /** 0 after payoff or past the loan term. */
+  loanBalance: number;
+  /** propertyValue − loanBalance. */
+  equity: number;
+  /** price − loan. */
+  initialEquity: number;
+  /** The one-time forced appreciation. */
+  forcedAppreciation: number;
+  /** propertyValue − price − forced. */
+  marketAppreciation: number;
+  /** loan − loanBalance. */
+  principalPaid: number;
+  /** 0 in year 0. */
+  noi: number;
+  /** 0 in year 0; spec 005 definition (never extra principal). */
+  cashFlow: number;
+  cumulativeCashFlow: number;
+  /** Scheduled interest paid in the year. */
+  interest: number;
+  /** basis / 27.5, capped by the remaining basis. */
+  depreciation: number;
+  /** noi − interest − depreciation; null when the tax inputs are invalid. */
+  taxableIncome: number | null;
+  /** −taxableIncome × rate (positive = tax saved). */
+  taxEffect: number | null;
+  cumulativeTaxEffect: number | null;
+  /** equity + cumulativeCashFlow. */
+  netWorth: number;
+  netWorthAfterTax: number | null;
+}
+
+/** The derived (never stored) wealth projection of a rental scenario (spec 008). */
+export interface WealthProjection {
+  /** Year 0…N, or null with naReason (no price, or an invalid horizon/forced input). */
+  years: WealthYear[] | null;
+  naReason: string | null;
+  horizonYears: number;
+  depreciableBasis: number | null;
+  totalCashInvested: number;
+  /** netWorth(N) / totalCashInvested, or null with a reason. */
+  multiple: RatioResult;
+  /** Set when the tax inputs are invalid; the tax fields are then null. */
+  taxNaReason: string | null;
+  errors: FieldError[];
+}
+
 /** One payment phase of a financing structure (the ARM has two, the others one). Spec 006 data-model §C. */
 export interface FinancingPhase {
   /** "Years 1–30", "Initial (years 1–7)", "After reset (years 8–30)". */

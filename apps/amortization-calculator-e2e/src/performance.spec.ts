@@ -95,3 +95,24 @@ test('switches the financing matrix structure within 100 ms', async ({ page }) =
   );
   expect(elapsed).toBeLessThan(100);
 });
+
+// Spec 008 SC-003: the wealth projection reflects a driver change within 1 second.
+test('updates the wealth projection within 1 second of a growth change', async ({ page }) => {
+  await page.goto('/wealth');
+  await fillNumberField(page, 'Home price', '400000');
+  await fillNumberField(page, 'Down payment', '25');
+  await fillNumberField(page, 'Annual interest rate', '7');
+  await fillNumberField(page, 'Annual property tax', '4800');
+  await fillNumberField(page, "Annual homeowner's insurance", '1800');
+  await fillNumberField(page, 'Monthly rent', '3800');
+  await page.keyboard.press('Tab');
+  const netWorth = page.getByTestId('wealth-net-worth');
+  await expect(netWorth).toBeVisible();
+  const before = await netWorth.innerText();
+
+  const start = Date.now();
+  await fillNumberField(page, 'Rent growth', '2.5');
+  await page.keyboard.press('Tab');
+  await expect(netWorth).not.toHaveText(before, { timeout: 1000 });
+  expect(Date.now() - start).toBeLessThan(1000);
+});

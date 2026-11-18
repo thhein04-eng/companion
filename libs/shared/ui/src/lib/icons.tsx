@@ -54,6 +54,16 @@ export function BankIcon(props: IconProps) {
   );
 }
 
+/** A rising trend line: the Wealth Projection page (spec 008). */
+export function TrendingUpIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M3 17l6-6 4 4 8-8" />
+      <path d="M14 7h7v7" />
+    </Icon>
+  );
+}
+
 export function MenuIcon(props: IconProps) {
   return (
     <Icon {...props}>

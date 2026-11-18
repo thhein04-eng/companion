@@ -8,6 +8,7 @@
 | `/amortization`  | `AmortizationCalculatorView`              | `Amortization Calculator · Companion` | "Amortization Calculator" |
 | `/deal-analyzer` | `DealAnalyzerView`                        | `Rental Deal Analyzer · Companion`    | "Rental Deal Analyzer"    |
 | `/financing`     | `FinancingView` (added by spec 006)       | `DSCR & Financing · Companion`        | "DSCR & Financing"        |
+| `/wealth`        | `WealthView` (added by spec 008)          | `Wealth Projection · Companion`       | "Wealth Projection"       |
 | any other path   | `not-found.tsx` rendered inside the shell | `Not found · Companion`               | "Page not found"          |
 
 ### Page section contract

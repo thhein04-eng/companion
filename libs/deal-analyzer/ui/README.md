@@ -16,6 +16,12 @@ The Rental Deal Analyzer page (`/deal-analyzer`) and its own components.
   - `DscrCard`, `FinancingMatrix`, `FinancingTermsEditor`
   - `StatusPill`, `SegmentedOptions`, `formatDscr`
   - `useFinancingEditor()`: minimum DSCR, structure selection, term edits and reset
+  - `FinancingView` (the `/financing` page)
+- Wealth projection (spec 008):
+  - `WealthView` (the `/wealth` page)
+  - `WealthAssumptionsPanel`, `WealthSummary`, `NetWorthChart`, `WealthTable`
+  - `useWealthEditor()`: wealth assumptions, shared growth rates and typical rates
+  - `RentalInputsPanel` gains `hideGrowth`
 
 Import only from the package name (`'deal-analyzer-ui'`), never from a deep path.
 
