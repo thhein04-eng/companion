@@ -1,4 +1,9 @@
-import { BuildingIcon, CalculatorIcon, type NavItem } from 'shared-ui';
+import {
+  BankIcon,
+  BuildingIcon,
+  CalculatorIcon,
+  type NavItem,
+} from 'shared-ui';
 
 /**
  * The app's feature pages, in menu order. Adding a feature means adding its
@@ -16,5 +21,11 @@ export const NAV_ITEMS: NavItem[] = [
     label: 'Rental Deal Analyzer',
     href: '/deal-analyzer',
     icon: <BuildingIcon />,
+  },
+  {
+    id: 'financing',
+    label: 'DSCR & Financing',
+    href: '/financing',
+    icon: <BankIcon />,
   },
 ];

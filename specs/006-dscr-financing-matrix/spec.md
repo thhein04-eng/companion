@@ -221,4 +221,8 @@ Reload: the edits remain. Click "Reset to defaults": they are gone.
 - **The matrix is a what-if**: it does not change the scenario's own loan. Applying a structure to
   the scenario is out of scope.
 - **Storage**: client-side only, in the existing session storage (constitution Principle III).
-- **Location**: the Deal Analyzer page (`/deal-analyzer`) only; the amortization page is unchanged.
+- **Location** (amended 2026-11-17 at the user's request): the feature has its own page,
+  `/financing` ("DSCR & Financing"), with its own nav entry. It shares scenarios and inputs with
+  the other pages. `/deal-analyzer` and `/amortization` do not show the DSCR card, the matrix or a
+  DSCR comparison column. Every "Deal Analyzer" placement in the user stories above now reads as
+  this page.
