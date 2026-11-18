@@ -20,6 +20,7 @@ export function withDealMetrics(
         annualNoi: analysis?.netOperatingIncome.annual ?? null,
         capRate: analysis?.capRate.value ?? null,
         cashOnCashReturn: analysis?.cashOnCashReturn.value ?? null,
+        dscr: analysis?.dscr.value ?? null,
       };
     }),
   };

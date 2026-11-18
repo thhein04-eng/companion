@@ -7,6 +7,7 @@ import {
 } from 'shared-calculations';
 import { analyzeDeal } from './analyze-deal';
 import type { DealAnalysis } from './types';
+import { referenceScenario } from './__fixtures__/dscr-reference';
 
 /**
  * Reference vector A (contracts/deal-analysis-engine.md): $250k purchase,
@@ -286,5 +287,43 @@ describe('analyzeDeal — User Story 3: cap rate and rules of thumb', () => {
     const a = analyze(scenarioA({}, { grossMonthlyRent: 0 }));
     expect(a.fiftyPercentRule).toBeNull();
     expect(a.capRate.value).toBeLessThan(0);
+  });
+});
+
+describe('analyzeDeal — spec 006: DSCR', () => {
+  it('reports the reference scenario DSCR against the default 1.25 minimum', () => {
+    const a = analyze(referenceScenario());
+    expect(a.dscr.value?.toFixed(4)).toBe('1.1904');
+    expect(a.dscr.minimum).toBe(1.25);
+    expect(a.dscr.meetsMinimum).toBe(false);
+    expect(a.dscr.rentForMinimum).toBe(3954.4);
+  });
+
+  it('uses the stored minimum', () => {
+    const a = analyze(referenceScenario({}, { dscrMinimum: 1.15 }));
+    expect(a.dscr.minimum).toBe(1.15);
+    expect(a.dscr.meetsMinimum).toBe(true);
+  });
+
+  it('ignores extra principal payments (R1)', () => {
+    const plain = analyze(referenceScenario());
+    const withExtra = analyze(
+      referenceScenario({
+        extraPayments: [
+          { id: 'x', kind: 'recurring', amount: 500, startPeriod: 1 },
+        ],
+      }),
+    );
+    expect(withExtra.dscr.value).toBe(plain.dscr.value);
+  });
+
+  it('uses steady monthly P&I × 12 for a loan shorter than a year', () => {
+    const scenario = referenceScenario({ termMonths: 6 });
+    const a = analyze(scenario);
+    const pi = computeSchedule(scenario).summary.monthlyPrincipalAndInterest;
+    expect(a.dscr.annualDebtService).toBe(roundCents(pi * 12));
+    expect(a.dscr.value).toBe(
+      a.netOperatingIncome.annual / roundCents(pi * 12),
+    );
   });
 });

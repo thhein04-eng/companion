@@ -6,7 +6,11 @@ type GrowthField = 'rentGrowthPct' | 'expenseGrowthPct' | 'appreciationPct';
 /** The always-present single-number rental inputs (not the custom-expense list or growth). */
 type NumericRentalField = Exclude<
   keyof RentalAssumptions,
-  'customExpenses' | GrowthField
+  | 'customExpenses'
+  | GrowthField
+  | 'dscrMinimum'
+  | 'financing'
+  | 'financingSelection'
 >;
 
 const GROWTH_FIELDS: { field: GrowthField; label: string }[] = [

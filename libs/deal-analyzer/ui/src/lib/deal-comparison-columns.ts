@@ -7,6 +7,7 @@ import {
   percent2,
   type ComparisonColumn,
 } from 'shared-ui';
+import { formatDscr } from './format-dscr';
 
 /**
  * The shared loan columns plus the Deal Analyzer's own (spec 002 FR-014).
@@ -29,6 +30,11 @@ export const DEAL_COMPARISON_COLUMNS: ComparisonColumn<DealComparisonRow>[] = [
     id: 'capRate',
     header: 'Cap Rate',
     render: (row) => orDash(row.capRate, (v) => percent2.format(v)),
+  },
+  {
+    id: 'dscr',
+    header: 'DSCR',
+    render: (row) => orDash(row.dscr, formatDscr),
   },
   {
     id: 'cashOnCashReturn',

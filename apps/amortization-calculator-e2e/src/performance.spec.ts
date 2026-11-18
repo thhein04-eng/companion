@@ -51,3 +51,47 @@ test('updates the Cash-on-Cash badge within 1 second of a rent change', async ({
   await expect(coc).toContainText(/-\d+\.\d%/, { timeout: 1000 });
   expect(Date.now() - start).toBeLessThan(1000);
 });
+
+// Spec 006 SC-003: the financing matrix reflects a toggle change within 100 ms.
+// Measured inside the page (click → DOM update), so Playwright's own
+// round-trips don't count against the budget.
+test('switches the financing matrix structure within 100 ms', async ({ page }) => {
+  await page.goto('/deal-analyzer');
+  await fillNumberField(page, 'Home price', '400000');
+  await fillNumberField(page, 'Down payment', '25');
+  await fillNumberField(page, 'Annual interest rate', '7');
+  await fillNumberField(page, 'Monthly rent', '3800');
+  await page.keyboard.press('Tab');
+  await expect(page.getByTestId('financing-matrix')).toBeVisible();
+
+  const elapsed = await page.evaluate(
+    () =>
+      new Promise<number>((resolve, reject) => {
+        const target = document.querySelector(
+          '[data-testid="financing-col-arm"]',
+        );
+        const radio = Array.from(
+          document.querySelectorAll(
+            '[data-testid="financing-toggle"] [role="radio"]',
+          ),
+        ).find((el) => el.textContent?.trim() === 'ARM') as
+          | HTMLElement
+          | undefined;
+        if (!target || !radio) {
+          reject(new Error('financing matrix not rendered'));
+          return;
+        }
+        let start = 0;
+        const observer = new MutationObserver(() => {
+          if (target.getAttribute('aria-current') === 'true') {
+            observer.disconnect();
+            resolve(performance.now() - start);
+          }
+        });
+        observer.observe(target, { attributes: true });
+        start = performance.now();
+        radio.click();
+      }),
+  );
+  expect(elapsed).toBeLessThan(100);
+});

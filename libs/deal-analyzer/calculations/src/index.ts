@@ -3,3 +3,7 @@ export * from './lib/analyze-deal';
 export * from './lib/validate-rental';
 export * from './lib/with-deal-metrics';
 export * from './lib/project-rental';
+export * from './lib/dscr';
+export * from './lib/validate-financing';
+export * from './lib/financing';
+export * from './lib/financing-matrix';

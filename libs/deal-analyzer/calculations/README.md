@@ -11,6 +11,11 @@ Pure rental-analysis functions for the Rental Deal Analyzer.
 - `analyzeDeal`, `DEFAULT_RENTAL_ASSUMPTIONS`, `validateRental`
 - `withDealMetrics`: adds deal columns to a `compareScenarios` result
 - Types: `DealAnalysis`, `OperatingExpenseCategory`, `OperatingExpenseLine`, `OnePercentRuleResult`, `FiftyPercentRuleResult`, `DealComparisonRow`, `DealScenarioComparison`
+- DSCR & financing matrix (spec 006):
+  - `computeDscr`, `resolveDscrMinimum`, `DEFAULT_DSCR_MINIMUM`, `DSCR_PRESETS`, `DSCR_MINIMUM_RANGE`. `analyzeDeal` also returns `dscr`.
+  - `defaultFinancingTerms`, `resolveFinancingTerms`, `buildFinancingMatrix`
+  - `validateFinancing`, `validateDscrMinimum`
+  - Types: `DscrResult`, `FinancingPhase`, `FinancingOptionResult`, `FinancingMatrix`
 
 Import only from the package name (`'deal-analyzer-calculations'`), never from a deep path.
 
