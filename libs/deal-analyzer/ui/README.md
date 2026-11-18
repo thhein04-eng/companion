@@ -12,6 +12,10 @@ The Rental Deal Analyzer page (`/deal-analyzer`) and its own components.
 - `RentalInputsPanel`, `IncomeExpenseCard`, `RuleIndicator`, `DealMetrics`
 - `DEAL_COMPARISON_COLUMNS` (loan columns plus deal columns)
 - `useRentalEditor()`: rental edits through the shared store, seeding defaults on first rent entry
+- DSCR & financing matrix (spec 006):
+  - `DscrCard`, `FinancingMatrix`, `FinancingTermsEditor`
+  - `StatusPill`, `SegmentedOptions`, `formatDscr`
+  - `useFinancingEditor()`: minimum DSCR, structure selection, term edits and reset
 
 Import only from the package name (`'deal-analyzer-ui'`), never from a deep path.
 

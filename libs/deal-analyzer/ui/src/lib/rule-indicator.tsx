@@ -4,8 +4,37 @@ import { Popover, PopoverContent, PopoverTrigger } from '@ui-sdk/react/popover';
 
 export type RuleStatus = 'pass' | 'fail' | 'na';
 
+export interface StatusPillProps {
+  status: RuleStatus;
+  /** Defaults to "Pass" / "Fail" / "N/A". */
+  text?: string;
+  'data-testid'?: string;
+}
+
+/**
+ * A pass/fail/N/A pill. Status is conveyed by icon and text, not color alone
+ * (shared by the rules of thumb and the DSCR checks, spec 006 R9).
+ */
+export function StatusPill({
+  status,
+  text,
+  'data-testid': testId,
+}: StatusPillProps) {
+  const style = statusStyles[status];
+  return (
+    <span
+      data-testid={testId}
+      data-status={status}
+      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${style.className}`}
+    >
+      <span aria-hidden="true">{style.icon}</span>
+      {text ?? style.text}
+    </span>
+  );
+}
+
 export interface RuleIndicatorProps {
-  name: '1% Rule' | '50% Rule';
+  name: string;
   status: RuleStatus;
   /** e.g. "Rent $2,400 vs. target $2,500". */
   detail: string;
@@ -52,7 +81,6 @@ export function RuleIndicator({
   detail,
   explanation,
 }: RuleIndicatorProps) {
-  const style = statusStyles[status];
   return (
     <div
       data-testid={testIdFor(name)}
@@ -61,12 +89,7 @@ export function RuleIndicator({
       <div className="flex items-center justify-between gap-2">
         <span className="text-sm font-medium text-neutral-900">{name}</span>
         <div className="flex items-center gap-1.5">
-          <span
-            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${style.className}`}
-          >
-            <span aria-hidden="true">{style.icon}</span>
-            {style.text}
-          </span>
+          <StatusPill status={status} />
           <Popover openOnHover>
             <PopoverTrigger
               aria-label={`About the ${name}`}

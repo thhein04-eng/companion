@@ -58,6 +58,40 @@ export interface RentalAssumptions {
   expenseGrowthPct?: number;
   /** Annual appreciation of the purchase price, %. Optional; missing = 0. −10 ≤ x ≤ 25. */
   appreciationPct?: number;
+  /** Minimum DSCR to test against (spec 006 FR-002). Optional; missing = 1.25. 1.00 ≤ x ≤ 2.00. */
+  dscrMinimum?: number;
+  /** Stored financing-matrix terms (spec 006 FR-012). Optional; missing = derive from the scenario. */
+  financing?: FinancingTerms | null;
+  /** Structure in focus in the matrix toggle (spec 006 FR-010). Optional; missing = 'conventional'. */
+  financingSelection?: FinancingOptionId;
+}
+
+/** The three loan structures compared by the financing matrix (spec 006). */
+export type FinancingOptionId = 'conventional' | 'arm' | 'dscr';
+
+/** Terms shared by every financing structure. */
+export interface LoanTerms {
+  /** 0 ≤ x < 100, % of purchase price. */
+  downPaymentPct: number;
+  /** 0 ≤ x ≤ 25 (initial rate for the ARM). */
+  annualRatePct: number;
+  /** Integer 1…40. */
+  termYears: number;
+}
+
+/** An adjustable-rate mortgage: fixed for `fixedPeriodYears`, then `adjustedRatePct`. */
+export interface ArmTerms extends LoanTerms {
+  /** Must be < termYears. */
+  fixedPeriodYears: 3 | 5 | 7 | 10;
+  /** 0 ≤ x ≤ 25, applies for the rest of the term. */
+  adjustedRatePct: number;
+}
+
+/** Investor-owned matrix terms; present only after the first matrix edit (spec 006 research R7). */
+export interface FinancingTerms {
+  conventional: LoanTerms;
+  arm: ArmTerms;
+  dscr: LoanTerms;
 }
 
 /** A user-defined extra-principal-payment instruction applied when generating a schedule. */
@@ -100,7 +134,9 @@ export interface FieldError {
     | keyof LoanScenario
     | `extraPayments.${number}.${string}`
     | `rental.${keyof RentalAssumptions}`
-    | `rental.customExpenses.${number}.monthlyAmount`;
+    | `rental.customExpenses.${number}.monthlyAmount`
+    | `rental.dscrMinimum`
+    | `rental.financing.${FinancingOptionId}.${string}`;
   message: string;
 }
 

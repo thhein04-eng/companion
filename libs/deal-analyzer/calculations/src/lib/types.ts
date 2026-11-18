@@ -1,5 +1,9 @@
 import type {
+  ArmTerms,
   ComparisonRow,
+  FieldError,
+  FinancingOptionId,
+  LoanTerms,
   MonthlyAnnual,
   RatioResult,
 } from 'shared-calculations';
@@ -47,6 +51,71 @@ export interface DealAnalysis {
   fiftyPercentRule: FiftyPercentRuleResult | null;
   pmiEndsInYearOne: boolean;
   pmiDropPeriod: number | null;
+  /** Coverage of the scenario's own loan (spec 006 US1). */
+  dscr: DscrResult;
+}
+
+/** One payment phase of a financing structure (the ARM has two, the others one). Spec 006 data-model §C. */
+export interface FinancingPhase {
+  /** "Years 1–30", "Initial (years 1–7)", "After reset (years 8–30)". */
+  label: string;
+  fromYear: number;
+  toYear: number;
+  annualRatePct: number;
+  monthlyPrincipalAndInterest: number;
+  /** 0 for the DSCR loan, and when LTV ≤ 80% or the scenario has no PMI rate. */
+  monthlyPmi: number;
+  /** NOI monthly − P&I − PMI. */
+  monthlyCashFlow: number;
+  /** Annual cash flow ÷ cash invested. */
+  cashOnCashReturn: RatioResult;
+  dscr: DscrResult;
+}
+
+/** The derived figures for one structure: a matrix column. */
+export interface FinancingOptionResult {
+  id: FinancingOptionId;
+  name: 'Conventional' | 'ARM' | 'DSCR loan';
+  /** e.g. "30-yr fixed", "7/1 ARM", "30-yr DSCR". */
+  description: string;
+  terms: LoanTerms | ArmTerms;
+  loanAmount: number;
+  downPayment: number;
+  ltv: number;
+  /** Down payment + closing costs + rehab. */
+  totalCashInvested: number;
+  /** Null when the option's terms are invalid (the column shows "—"). */
+  phases: FinancingPhase[] | null;
+  errors: FieldError[];
+}
+
+/** The financing matrix of one scenario (spec 006 User Story 2). */
+export interface FinancingMatrix {
+  /** Null with `naReason` when there is no purchase price (FR-014). */
+  options: FinancingOptionResult[] | null;
+  naReason: string | null;
+  selected: FinancingOptionId;
+  /** True when the terms are stored (detached) rather than derived. */
+  isCustomized: boolean;
+  dscrMinimum: number | null;
+}
+
+/** The derived debt-service coverage of one loan (spec 006 data-model §B). */
+export interface DscrResult {
+  /** annualNoi / annualDebtService, unrounded. Null only when annualDebtService is 0. */
+  value: number | null;
+  naReason: string | null;
+  /** The minimum tested against, or null when the stored minimum is invalid. */
+  minimum: number | null;
+  /** value ≥ minimum (unrounded), or null when either is null. */
+  meetsMinimum: boolean | null;
+  /** value ≥ 1, or null when value is null. */
+  coversDebtService: boolean | null;
+  /** Monthly P&I × 12, cents-rounded. */
+  annualDebtService: number;
+  /** Monthly gross rent for value = minimum (research R3), cents, ≥ 0; null with a reason when reserves ≥ 100%. */
+  rentForMinimum: number | null;
+  rentForMinimumNaReason: string | null;
 }
 
 /** A comparison row with the Deal Analyzer's columns added (`withDealMetrics`). */
@@ -55,6 +124,7 @@ export type DealComparisonRow = ComparisonRow & {
   annualNoi: number | null;
   capRate: number | null;
   cashOnCashReturn: number | null;
+  dscr: number | null;
 };
 
 /** A `ScenarioComparison` whose rows carry deal metrics. */

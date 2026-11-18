@@ -1,17 +1,27 @@
 import type { DealAnalysis } from 'deal-analyzer-calculations';
 import { currency, percent1, percent2 } from 'shared-ui';
+import { DscrCard } from './dscr-card';
 import { RuleIndicator } from './rule-indicator';
 
 export interface DealMetricsProps {
   analysis: DealAnalysis;
+  /** Writes `rental.dscrMinimum` (spec 006). */
+  onDscrMinimumChange?: (value: number) => void;
+  dscrMinimumInput?: number;
+  dscrMinimumError?: string | null;
 }
 
-/** Cap rate plus the 1% and 50% rules of thumb (spec 002 User Story 3). */
-export function DealMetrics({ analysis }: DealMetricsProps) {
+/** Cap rate, DSCR, and the 1% and 50% rules of thumb (spec 002 User Story 3, spec 006 US1). */
+export function DealMetrics({
+  analysis,
+  onDscrMinimumChange = () => undefined,
+  dscrMinimumInput,
+  dscrMinimumError = null,
+}: DealMetricsProps) {
   return (
     <div
       data-testid="deal-metrics"
-      className="grid grid-cols-1 gap-3 sm:grid-cols-3"
+      className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4"
     >
       <div
         data-testid="cap-rate"
@@ -27,6 +37,12 @@ export function DealMetrics({ analysis }: DealMetricsProps) {
           {analysis.capRate.naReason ?? 'Independent of financing'}
         </span>
       </div>
+      <DscrCard
+        dscr={analysis.dscr}
+        onMinimumChange={onDscrMinimumChange}
+        minimumInput={dscrMinimumInput}
+        minimumError={dscrMinimumError}
+      />
       <RuleIndicator
         name="1% Rule"
         status={

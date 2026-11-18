@@ -70,6 +70,8 @@ describe('withDealMetrics (Deal Analyzer, FR-014)', () => {
       cashOnCashReturn: analysis.cashOnCashReturn.value,
     });
     expect(comparison.rows[0].monthlyCashFlow).toBe(250.56);
+    expect(comparison.rows[0].dscr).toBe(analysis.dscr.value);
+    expect(comparison.rows[1].dscr).toBeNull();
     expect(comparison.rows[1]).toMatchObject({
       monthlyCashFlow: null,
       annualNoi: null,

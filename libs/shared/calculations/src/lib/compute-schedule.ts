@@ -5,6 +5,7 @@ import type {
   SchedulePeriod,
 } from './types';
 import { roundCents } from './round';
+import { monthlyPayment } from './loan-math';
 
 const PMI_LTV_THRESHOLD = 0.8;
 
@@ -55,28 +56,15 @@ function extraForPeriod(
   return total;
 }
 
-/** The fixed periodic payment for a standard fully-amortizing fixed-rate loan. */
-function fixedPayment(
-  principal: number,
-  monthlyRate: number,
-  termMonths: number,
-): number {
-  if (monthlyRate === 0) {
-    return principal / termMonths;
-  }
-  const factor = Math.pow(1 + monthlyRate, termMonths);
-  return (principal * monthlyRate * factor) / (factor - 1);
-}
-
 /**
  * Produces a full `AmortizationSchedule` for a `LoanScenario`. Assumes
  * `scenario` has already passed `validateScenario` (FR-001–FR-008).
  */
 export function computeSchedule(scenario: LoanScenario): AmortizationSchedule {
   const monthlyRate = scenario.annualInterestRatePct / 100 / 12;
-  const payment = fixedPayment(
+  const payment = monthlyPayment(
     scenario.principal,
-    monthlyRate,
+    scenario.annualInterestRatePct,
     scenario.termMonths,
   );
 

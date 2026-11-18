@@ -10,6 +10,8 @@ import {
 } from 'shared-calculations';
 import {
   analyzeDeal,
+  buildFinancingMatrix,
+  validateDscrMinimum,
   validateRental,
   withDealMetrics,
   type DealAnalysis,
@@ -26,8 +28,10 @@ import {
 import { RentalChartsSection } from './charts/rental-charts-section';
 import { DEAL_COMPARISON_COLUMNS } from './deal-comparison-columns';
 import { DealMetrics } from './deal-metrics';
+import { FinancingMatrix } from './financing-matrix';
 import { IncomeExpenseCard } from './income-expense-card';
 import { RentalInputsPanel } from './rental-inputs-panel';
+import { useFinancingEditor } from './use-financing-editor';
 import { useRentalEditor } from './use-rental-editor';
 
 /** The Rental Deal Analyzer page (spec 002), rendered at `/deal-analyzer`. */
@@ -42,10 +46,12 @@ export function DealAnalyzerView() {
     removeScenario,
   } = useScenarios();
   const { updateActiveRental } = useRentalEditor();
+  const { setDscrMinimum, setSelection, patchTerms, resetTerms } =
+    useFinancingEditor();
 
   // Memoized on the scenario so unrelated re-renders don't recompute the
   // schedule or the deal analysis.
-  const { validation, schedule, rentalErrors, analysis } = useMemo(() => {
+  const { validation, schedule, rentalErrors, analysis, matrix } = useMemo(() => {
     const validation = validateScenario(activeScenario);
     const schedule = validation.valid
       ? computeSchedule(validation.scenario)
@@ -62,7 +68,13 @@ export function DealAnalyzerView() {
       rentalErrors.length === 0
         ? analyzeDeal(validation.scenario, schedule)
         : null;
-    return { validation, schedule, rentalErrors, analysis };
+    // Spec 006: the financing matrix needs a valid analysis; its own errors
+    // never block anything else on the page (FR-011).
+    const matrix =
+      validation.valid && analysis
+        ? buildFinancingMatrix(validation.scenario, analysis)
+        : null;
+    return { validation, schedule, rentalErrors, analysis, matrix };
   }, [activeScenario]);
   const ltv = computeLtv(activeScenario);
   const coc = analysis?.cashOnCashReturn ?? null;
@@ -165,7 +177,14 @@ export function DealAnalyzerView() {
         {analysis ? (
           <>
             <IncomeExpenseCard analysis={analysis} />
-            <DealMetrics analysis={analysis} />
+            <DealMetrics
+              analysis={analysis}
+              onDscrMinimumChange={setDscrMinimum}
+              dscrMinimumInput={activeScenario.rental?.dscrMinimum}
+              dscrMinimumError={
+                validateDscrMinimum(activeScenario.rental)[0]?.message ?? null
+              }
+            />
             {validation.valid && schedule ? (
               <RentalChartsSection
                 scenario={validation.scenario}
@@ -180,6 +199,23 @@ export function DealAnalyzerView() {
           </p>
         ) : null}
       </section>
+
+      {matrix && analysis ? (
+        <section className="flex flex-col gap-4">
+          <h2 className="text-lg font-medium text-neutral-800">
+            Financing options
+          </h2>
+          <FinancingMatrix
+            matrix={matrix}
+            scenarioName={activeScenario.name}
+            noiMonthly={analysis.netOperatingIncome.monthly}
+            errors={matrix.options?.flatMap((o) => o.errors) ?? []}
+            onSelect={setSelection}
+            onTermsChange={patchTerms}
+            onReset={resetTerms}
+          />
+        </section>
+      ) : null}
 
       {comparison ? (
         <section className="flex flex-col gap-4">

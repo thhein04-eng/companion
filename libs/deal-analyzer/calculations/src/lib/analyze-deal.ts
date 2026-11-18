@@ -13,6 +13,7 @@ import type {
   OperatingExpenseLine,
 } from './types';
 import { rentalLineItems } from './rental-line-items';
+import { computeDscr, resolveDscrMinimum } from './dscr';
 
 /** Common investor screening defaults, seeded as editable values on first rent entry (FR-002, research R3). */
 export const DEFAULT_RENTAL_ASSUMPTIONS: Omit<
@@ -149,5 +150,11 @@ export function analyzeDeal(
     fiftyPercentRule,
     pmiEndsInYearOne: pmiMonths > 0 && pmiMonths < yearOne.length,
     pmiDropPeriod: schedule.summary.pmiDropPeriod,
+    dscr: computeDscr({
+      scenario,
+      annualNoi: netOperatingIncome.annual,
+      monthlyPrincipalAndInterest: schedule.summary.monthlyPrincipalAndInterest,
+      minimum: resolveDscrMinimum(rental),
+    }),
   };
 }

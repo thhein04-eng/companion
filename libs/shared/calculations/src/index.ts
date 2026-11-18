@@ -2,6 +2,7 @@ export * from './lib/types';
 export * from './lib/round';
 export * from './lib/validate-scenario';
 export * from './lib/compute-schedule';
+export * from './lib/loan-math';
 export * from './lib/calculate-principal';
 export * from './lib/apply-scenario-patch';
 export * from './lib/persistence';
