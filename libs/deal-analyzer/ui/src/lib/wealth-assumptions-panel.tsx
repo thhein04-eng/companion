@@ -48,17 +48,16 @@ export function WealthAssumptionsPanel({
     (field: keyof WealthAssumptions) => (value: number | null) => {
       if (value != null) onWealthChange({ [field]: value });
     };
-  const growth =
-    (field: keyof GrowthPatch) => (value: number | null) =>
-      onGrowthChange({ [field]: value ?? 0 });
+  const growth = (field: keyof GrowthPatch) => (value: number | null) =>
+    onGrowthChange({ [field]: value ?? 0 });
 
   return (
     <div
       data-testid="wealth-assumptions"
-      className="flex flex-col gap-4 rounded-md border border-neutral-200 bg-white p-4"
+      className="flex flex-col gap-4 rounded-xl border border-line bg-surface p-[18px]"
     >
       <div className="flex flex-col gap-2">
-        <h3 className="text-sm font-medium text-neutral-800">Horizon</h3>
+        <h3 className="eyebrow m-0">Horizon</h3>
         <div className="flex flex-wrap items-end gap-4">
           <SegmentedOptions
             label="Projection horizon"
@@ -79,18 +78,18 @@ export function WealthAssumptionsPanel({
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-neutral-200 pt-4">
+      <div className="flex flex-col gap-3 border-t border-line pt-4">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h3 className="text-sm font-medium text-neutral-800">Growth</h3>
+          <h3 className="eyebrow m-0">Growth</h3>
           <Button
             data-testid="wealth-typical-rates"
             onClick={onTypicalRates}
-            className="rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-sm text-neutral-700 hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400"
+            className="rounded-md border border-line bg-surface px-3 py-2 text-sm text-fg hover:bg-sunk focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             Use typical rates (3% / 2.5% / 2.5%)
           </Button>
         </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-[var(--space-grid)] sm:grid-cols-2">
           <NumberField
             label="Appreciation"
             suffix="%"
@@ -121,9 +120,9 @@ export function WealthAssumptionsPanel({
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-neutral-200 pt-4">
-        <h3 className="text-sm font-medium text-neutral-800">Equity</h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="flex flex-col gap-3 border-t border-line pt-4">
+        <h3 className="eyebrow m-0">Equity</h3>
+        <div className="grid grid-cols-1 gap-[var(--space-grid)] sm:grid-cols-2">
           <NumberField
             label="Forced appreciation"
             variant="currency"
@@ -135,9 +134,9 @@ export function WealthAssumptionsPanel({
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-neutral-200 pt-4">
-        <h3 className="text-sm font-medium text-neutral-800">Tax</h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="flex flex-col gap-3 border-t border-line pt-4">
+        <h3 className="eyebrow m-0">Tax</h3>
+        <div className="grid grid-cols-1 gap-[var(--space-grid)] sm:grid-cols-2">
           <NumberField
             label="Land value share"
             suffix="%"

@@ -7,7 +7,7 @@ import {
 } from 'shared-calculations';
 import { analyzeDeal } from './analyze-deal';
 import { growthRates, projectRental } from './project-rental';
-import { rentalLineItems } from './rental-line-items';
+import { operatingYear } from './operating-year';
 import type { WealthProjection, WealthYear } from './types';
 import { resolveWealthAssumptions, validateWealth } from './validate-wealth';
 
@@ -30,7 +30,10 @@ export const WEALTH_INVALID_REASON =
 export const WEALTH_TAX_INVALID_REASON =
   'Fix the tax assumptions to see after-tax figures.';
 
-const TAX_FIELDS = new Set(['rental.wealth.landValuePct', 'rental.wealth.marginalTaxRatePct']);
+const TAX_FIELDS = new Set([
+  'rental.wealth.landValuePct',
+  'rental.wealth.marginalTaxRatePct',
+]);
 
 /**
  * Year-by-year wealth projection (spec 008, research R1–R7).
@@ -43,13 +46,19 @@ const TAX_FIELDS = new Set(['rental.wealth.landValuePct', 'rental.wealth.margina
 export function projectWealth(
   scenario: LoanScenario,
   schedule: AmortizationSchedule,
+  options?: { horizonYears?: number },
 ): WealthProjection {
   const rental = scenario.rental as RentalAssumptions;
   const assumptions = resolveWealthAssumptions(rental);
   const errors = validateWealth(rental);
   const deal = analyzeDeal(scenario, schedule);
   const totalCashInvested = deal.totalCashInvested;
-  const horizonYears = assumptions.horizonYears;
+  // Spec 009 T007: a caller-chosen horizon (the exit's hold) replaces the stored one, so an
+  // invalid stored horizon no longer blocks; it stays in `errors` for /wealth to show.
+  const horizonYears = options?.horizonYears ?? assumptions.horizonYears;
+  const blocking = (field: string) =>
+    !TAX_FIELDS.has(field) &&
+    !(options?.horizonYears != null && field === 'rental.wealth.horizonYears');
 
   const empty = (naReason: string): WealthProjection => ({
     years: null,
@@ -67,7 +76,7 @@ export function projectWealth(
       ? scenario.homePrice
       : null;
   if (price == null) return empty(WEALTH_NO_PRICE_REASON);
-  if (errors.some((e) => !TAX_FIELDS.has(e.field))) {
+  if (errors.some((e) => blocking(e.field))) {
     return empty(WEALTH_INVALID_REASON);
   }
 
@@ -76,7 +85,6 @@ export function projectWealth(
   const forced = assumptions.forcedAppreciation;
   const loan = scenario.principal;
   const rentalYears = projectRental(scenario, schedule).years;
-  const baseGsiMonthly = rental.grossMonthlyRent + rental.otherMonthlyIncome;
 
   // Depreciation (R5): basis = building share of the price + rehab.
   const basis = roundCents(
@@ -125,12 +133,7 @@ export function projectWealth(
       ({ noi, cashFlow, loanBalance } = inTerm);
     } else {
       // Past the loan term (R1): same growth rule as projectRental, no debt.
-      const gsiMonthly = baseGsiMonthly * (1 + rates.rent) ** (year - 1);
-      const opexMonthly = rentalLineItems(
-        scenario,
-        gsiMonthly,
-        (1 + rates.expense) ** (year - 1),
-      ).reduce((sum, line) => sum + line.monthly, 0);
+      const { gsiMonthly, opexMonthly } = operatingYear(scenario, year);
       noi = roundCents((gsiMonthly - opexMonthly) * 12);
       cashFlow = noi;
       loanBalance = 0;
@@ -179,9 +182,7 @@ export function projectWealth(
       taxEffect,
       cumulativeTaxEffect: taxValid ? cumulativeTax : null,
       netWorth,
-      netWorthAfterTax: taxValid
-        ? roundCents(netWorth + cumulativeTax)
-        : null,
+      netWorthAfterTax: taxValid ? roundCents(netWorth + cumulativeTax) : null,
     });
   }
 

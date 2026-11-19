@@ -33,11 +33,11 @@ function isActive(pathname: string, href: string): boolean {
 }
 
 const linkClass =
-  'flex items-center gap-3 rounded-md border-l-[3px] border-transparent px-3 py-2 text-sm text-neutral-700 ' +
-  'hover:bg-neutral-100 hover:text-neutral-900 ' +
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900 ' +
-  'aria-[current=page]:border-neutral-900 aria-[current=page]:bg-neutral-100 ' +
-  'aria-[current=page]:font-medium aria-[current=page]:text-neutral-900';
+  'flex items-center gap-3 rounded-md px-3 py-2 text-[14px] text-muted ' +
+  'hover:bg-sunk hover:text-fg ' +
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ' +
+  'aria-[current=page]:bg-ink aria-[current=page]:font-medium aria-[current=page]:text-ink-fg ' +
+  'aria-[current=page]:hover:bg-ink';
 
 /** The list of feature links, shared by the docked menu and the mobile drawer. */
 export function SideNav({ items, collapsed, onNavigate }: SideNavProps) {
@@ -76,7 +76,7 @@ export function SideNav({ items, collapsed, onNavigate }: SideNavProps) {
                 </TooltipTrigger>
                 <TooltipContent
                   side="right"
-                  className="rounded bg-neutral-900 px-2 py-1 text-xs text-white shadow"
+                  className="rounded bg-ink px-2 py-1 text-xs text-ink-fg shadow-float"
                 >
                   {label}
                 </TooltipContent>

@@ -1,6 +1,6 @@
 export * from './lib/types';
 export * from './lib/analyze-deal';
-export * from './lib/validate-rental';
+export { validateRental } from 'shared-calculations';
 export * from './lib/with-deal-metrics';
 export * from './lib/project-rental';
 export * from './lib/dscr';
@@ -16,3 +16,6 @@ export {
   WEALTH_TAX_INVALID_REASON,
   projectWealth,
 } from './lib/project-wealth';
+export * from './lib/irr';
+export * from './lib/validate-exit';
+export * from './lib/project-exit';

@@ -1,5 +1,15 @@
 import { expect, test } from '@playwright/test';
-import { fillNumberField } from './helpers';
+import {
+  closeDealSheet,
+  fillNumberField,
+  openDealSheet,
+  skipSetupFor,
+} from './helpers';
+
+// Spec 010 US3: these specs test other stories, so first-run setup never opens.
+test.beforeEach(async ({ page }) => {
+  await skipSetupFor(page);
+});
 
 // quickstart.md Scenario 2: real-estate costs (User Story 2 / P2).
 test('separates total estimated monthly payment from principal & interest, and PMI drops off', async ({
@@ -13,8 +23,15 @@ test('separates total estimated monthly payment from principal & interest, and P
   await fillNumberField(page, 'PMI rate', '0.5');
   await page.keyboard.press('Tab');
 
-  await expect(page.getByText('Total estimated monthly payment')).toBeVisible();
-  await expect(page.getByText(/PMI drops off automatically at payment #/)).toBeVisible();
+  // Spec 010: the payment breakdown lives in the Edit deal sheet.
+  const sheet = await openDealSheet(page);
+  await expect(
+    sheet.getByText('Total estimated monthly payment'),
+  ).toBeVisible();
+  await expect(
+    sheet.getByText(/PMI drops off automatically at payment #/),
+  ).toBeVisible();
+  await closeDealSheet(page);
 
   await fillNumberField(page, 'Monthly HOA fee', '50');
   await page.keyboard.press('Tab');

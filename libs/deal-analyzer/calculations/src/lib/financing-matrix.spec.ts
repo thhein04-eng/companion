@@ -66,7 +66,10 @@ describe('buildFinancingMatrix — reference scenario (research.md table)', () =
     expect(phase.dscr.value?.toFixed(4)).toBe('1.1904');
     expect(phase.dscr.meetsMinimum).toBe(false);
     expect(phase.dscr.rentForMinimum).toBe(3954.4);
-    expect(phase.cashOnCashReturn.value).toBeCloseTo((380.09 * 12) / 100_000, 12);
+    expect(phase.cashOnCashReturn.value).toBeCloseTo(
+      (380.09 * 12) / 100_000,
+      12,
+    );
   });
 
   it('ARM: 7/1, initial and after-reset phases', () => {
@@ -98,7 +101,10 @@ describe('buildFinancingMatrix — reference scenario (research.md table)', () =
 
   it('DSCR loan: 30-yr at 8%', () => {
     const dscr = option(referenceScenario(), 'dscr');
-    expect(dscr).toMatchObject({ name: 'DSCR loan', description: '30-yr DSCR' });
+    expect(dscr).toMatchObject({
+      name: 'DSCR loan',
+      description: '30-yr DSCR',
+    });
     const [phase] = phases(dscr);
     expect(phase.monthlyPrincipalAndInterest).toBe(2201.29);
     expect(phase.monthlyCashFlow).toBe(174.71);
@@ -143,9 +149,7 @@ describe('buildFinancingMatrix — rules', () => {
     expect(arm.map((p) => p.monthlyPmi)).toEqual([150, 150]);
     expect(dscrLoan.monthlyPmi).toBe(0);
     expect(conv.monthlyCashFlow).toBe(
-      Math.round(
-        (2376 - conv.monthlyPrincipalAndInterest - 150) * 100,
-      ) / 100,
+      Math.round((2376 - conv.monthlyPrincipalAndInterest - 150) * 100) / 100,
     );
     // PMI is not P&I: the DSCR matches the same loan without PMI (R1, R6).
     const withoutPmi = referenceScenario({
@@ -201,10 +205,7 @@ describe('buildFinancingMatrix — rules', () => {
       ...REFERENCE_TERMS,
       dscr: { ...REFERENCE_TERMS.dscr, downPaymentPct: 0 },
     };
-    const dscr = option(
-      referenceScenario({}, { financing: stored }),
-      'dscr',
-    );
+    const dscr = option(referenceScenario({}, { financing: stored }), 'dscr');
     expect(dscr.totalCashInvested).toBe(0);
     expect(phases(dscr)[0].cashOnCashReturn).toEqual({
       value: null,
@@ -250,9 +251,7 @@ describe('buildFinancingMatrix — edited terms (spec 006 US3)', () => {
       conventional: REFERENCE_TERMS.conventional,
       dscr: REFERENCE_TERMS.dscr,
     } as unknown as FinancingTerms;
-    const matrix = matrixFor(
-      referenceScenario({}, { financing: malformed }),
-    );
+    const matrix = matrixFor(referenceScenario({}, { financing: malformed }));
     const [conv, arm, dscr] = matrix.options ?? [];
     expect(arm.phases).toBeNull();
     expect(arm.errors.length).toBeGreaterThan(0);

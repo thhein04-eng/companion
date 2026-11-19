@@ -15,23 +15,7 @@ import type {
 import { rentalLineItems } from './rental-line-items';
 import { computeDscr, resolveDscrMinimum } from './dscr';
 
-/** Common investor screening defaults, seeded as editable values on first rent entry (FR-002, research R3). */
-export const DEFAULT_RENTAL_ASSUMPTIONS: Omit<
-  RentalAssumptions,
-  'grossMonthlyRent'
-> = {
-  otherMonthlyIncome: 0,
-  vacancyPct: 5,
-  managementPct: 8,
-  maintenanceReservePct: 5,
-  capexReservePct: 5,
-  closingCosts: 0,
-  rehabBudget: 0,
-  customExpenses: [],
-  rentGrowthPct: 0,
-  expenseGrowthPct: 0,
-  appreciationPct: 0,
-};
+export { DEFAULT_RENTAL_ASSUMPTIONS } from 'shared-calculations';
 
 /** Rounds an unrounded monthly figure per the data-model rounding rule. */
 function fromMonthly(rawMonthly: number): MonthlyAnnual {

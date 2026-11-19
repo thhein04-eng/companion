@@ -55,8 +55,7 @@ export function validateFinancing(
 
   for (const id of OPTION_IDS) {
     const option = (terms as Partial<FinancingTerms> | null)?.[id] as
-      | Record<string, unknown>
-      | undefined;
+      Record<string, unknown> | undefined;
     const fieldError = (field: string, message: string): FieldError => ({
       field: `rental.financing.${id}.${field}`,
       message,
@@ -70,7 +69,8 @@ export function validateFinancing(
       errors.push(fieldError('annualRatePct', RATE_MESSAGE));
     }
     const term = option?.termYears;
-    const termValid = Number.isInteger(term) && (term as number) >= 1 && (term as number) <= 40;
+    const termValid =
+      Number.isInteger(term) && (term as number) >= 1 && (term as number) <= 40;
     if (!termValid) {
       errors.push(fieldError('termYears', TERM_MESSAGE));
     }

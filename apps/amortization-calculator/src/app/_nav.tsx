@@ -2,6 +2,7 @@ import {
   BankIcon,
   BuildingIcon,
   CalculatorIcon,
+  KeyIcon,
   TrendingUpIcon,
   type NavItem,
 } from 'shared-ui';
@@ -34,5 +35,11 @@ export const NAV_ITEMS: NavItem[] = [
     label: 'Wealth Projection',
     href: '/wealth',
     icon: <TrendingUpIcon />,
+  },
+  {
+    id: 'pro-forma',
+    label: 'Hold & Exit',
+    href: '/pro-forma',
+    icon: <KeyIcon />,
   },
 ];

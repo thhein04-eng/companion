@@ -1,5 +1,5 @@
 import type { DealAnalysis } from 'deal-analyzer-calculations';
-import { currency, percent1, percent2 } from 'shared-ui';
+import { Ripple, currency, percent1, percent2 } from 'shared-ui';
 import { RuleIndicator } from './rule-indicator';
 
 export interface DealMetricsProps {
@@ -11,19 +11,21 @@ export function DealMetrics({ analysis }: DealMetricsProps) {
   return (
     <div
       data-testid="deal-metrics"
-      className="grid grid-cols-1 gap-3 sm:grid-cols-3"
+      className="grid grid-cols-1 gap-[var(--space-grid)] sm:grid-cols-2"
     >
       <div
         data-testid="cap-rate"
-        className="flex flex-col gap-1 rounded-md border border-neutral-200 bg-white p-3"
+        className="flex flex-col gap-1 rounded-lg border border-line bg-surface px-3.5 py-3"
       >
-        <span className="text-sm font-medium text-neutral-900">Cap rate</span>
-        <span className="text-lg font-semibold tabular-nums">
-          {analysis.capRate.value != null
-            ? percent2.format(analysis.capRate.value)
-            : 'N/A'}
+        <span className="text-sm font-medium text-fg">Cap rate</span>
+        <span className="num font-display text-[20px] font-semibold">
+          <Ripple value={analysis.capRate.value}>
+            {analysis.capRate.value != null
+              ? percent2.format(analysis.capRate.value)
+              : 'N/A'}
+          </Ripple>
         </span>
-        <span className="text-xs text-neutral-500">
+        <span className="text-xs text-muted">
           {analysis.capRate.naReason ?? 'Independent of financing'}
         </span>
       </div>
@@ -55,7 +57,7 @@ export function DealMetrics({ analysis }: DealMetricsProps) {
         detail={
           analysis.fiftyPercentRule
             ? `Expenses ${percent1.format(analysis.fiftyPercentRule.opexRatio)} of income · Rule estimate ${currency.format(analysis.fiftyPercentRule.estimatedMonthlyCashFlow)}/mo`
-            : 'Enter rent above $0 to check the 50% Rule.'
+            : 'Enter rent greater than $0 to check the 50% Rule.'
         }
         explanation="Operating expenses (excluding the mortgage) typically run about 50% of gross rent."
       />

@@ -13,7 +13,7 @@ export function Legend({ items }: { items: LegendItem[] }) {
   return (
     <ul
       aria-label="Legend"
-      className="m-0 flex list-none flex-wrap gap-x-4 gap-y-1 p-0 text-xs"
+      className="m-0 flex list-none flex-wrap gap-x-[14px] gap-y-1 p-0 text-small"
     >
       {items.map((item) => (
         <li

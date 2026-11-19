@@ -18,17 +18,20 @@ import {
 import { useScenarios } from 'shared-data-access';
 import {
   ComparisonGrid,
-  CostBreakdownPanel,
   currency,
-  LoanInputForm,
-  ScenarioTabs,
+  dealPayment,
+  DealStrip,
+  FINANCING_PROFILE,
+  InputsMessage,
+  PageHeader,
+  Section,
+  SectionHeader,
 } from 'shared-ui';
 import { FINANCING_COMPARISON_COLUMNS } from './deal-comparison-columns';
 import { DscrCard } from './dscr-card';
+import { formatDscr } from './format-dscr';
 import { FinancingMatrix } from './financing-matrix';
-import { RentalInputsPanel } from './rental-inputs-panel';
 import { useFinancingEditor } from './use-financing-editor';
-import { useRentalEditor } from './use-rental-editor';
 
 /**
  * The DSCR & Financing page (spec 006), rendered at `/financing`. It shares
@@ -36,16 +39,7 @@ import { useRentalEditor } from './use-rental-editor';
  * entered anywhere show up here (spec 003 FR-004).
  */
 export function FinancingView() {
-  const {
-    scenarios,
-    activeScenarioId,
-    activeScenario,
-    setActiveScenarioId,
-    updateActiveScenario,
-    addScenario,
-    removeScenario,
-  } = useScenarios();
-  const { updateActiveRental } = useRentalEditor();
+  const { scenarios, activeScenario } = useScenarios();
   const { setDscrMinimum, setSelection, patchTerms, resetTerms } =
     useFinancingEditor();
 
@@ -94,80 +88,67 @@ export function FinancingView() {
     scenarios.map((s) => [s.id, s.name]),
   );
 
+  const payment = dealPayment(activeScenario, schedule);
+  const errors = [
+    ...(validation.valid ? [] : validation.errors),
+    ...rentalErrors,
+  ];
+
   return (
     <>
-      <header>
-        <h1
-          tabIndex={-1}
-          className="text-2xl font-semibold text-neutral-900 focus:outline-none"
-        >
-          DSCR &amp; Financing
-        </h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          Check debt service coverage against a lender minimum and compare how
-          conventional, ARM and DSCR loans change your cash flow.
-        </p>
-      </header>
-
-      <ScenarioTabs
-        scenarios={scenarios}
-        activeScenarioId={activeScenarioId}
-        onActiveScenarioIdChange={setActiveScenarioId}
-        onAddScenario={addScenario}
-        onRemoveScenario={removeScenario}
+      <PageHeader
+        eyebrow="Analysis"
+        title="DSCR & Financing"
+        lede="Check debt service coverage against a lender minimum and compare how conventional, ARM and DSCR loans change your cash flow."
       />
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium text-neutral-800">Loan</h2>
-        <LoanInputForm
-          scenario={activeScenario}
-          errors={validation.valid ? [] : validation.errors}
-          onChange={updateActiveScenario}
-        />
-      </section>
+      <DealStrip
+        profile={FINANCING_PROFILE}
+        headline={{
+          label: 'DSCR',
+          value: analysis?.dscr.value ?? null,
+          naReason: !validation.valid
+            ? 'Fix the loan inputs to see DSCR.'
+            : activeScenario.rental
+              ? (analysis?.dscr.naReason ??
+                'Fix the rental inputs to see DSCR.')
+              : 'Add rent to see DSCR.',
+          format: formatDscr,
+          betterWhen: 'higher',
+        }}
+        errors={errors}
+        payment={payment}
+        sheet={{ totalCashInvested: analysis?.totalCashInvested ?? null }}
+      />
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium text-neutral-800">
-          Real-estate costs
-        </h2>
-        <CostBreakdownPanel
-          scenario={activeScenario}
-          onChange={updateActiveScenario}
-          monthlyPrincipalAndInterest={
-            schedule?.summary.monthlyPrincipalAndInterest ?? 0
+      {!analysis ? (
+        <InputsMessage
+          data-testid="financing-na"
+          errors={errors}
+          message={
+            !validation.valid
+              ? 'Fix the loan inputs to see the debt coverage.'
+              : activeScenario.rental
+                ? 'Fix the rental inputs to see the debt coverage.'
+                : 'Add rent to see the debt coverage.'
           }
-          totalMonthlyPayment={schedule?.summary.totalMonthlyPayment ?? 0}
-          pmiDropPeriod={schedule?.summary.pmiDropPeriod ?? null}
         />
-      </section>
-
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium text-neutral-800">Rental income</h2>
-        <RentalInputsPanel
-          rental={activeScenario.rental ?? null}
-          errors={rentalErrors}
-          onChange={updateActiveRental}
-          totalCashInvested={analysis?.totalCashInvested ?? null}
-        />
-        {!validation.valid ? (
-          <p className="text-sm text-red-600">
-            Fix the highlighted loan fields above to see the debt coverage.
-          </p>
-        ) : null}
-      </section>
+      ) : null}
 
       {analysis ? (
-        <section className="flex flex-col gap-4">
-          <h2 className="text-lg font-medium text-neutral-800">
-            Debt service coverage
-          </h2>
-          <p className="text-sm text-neutral-500">
-            Net operating income{' '}
-            <span className="font-medium tabular-nums text-neutral-800">
-              {currency.format(analysis.netOperatingIncome.annual)}/yr
-            </span>{' '}
-            ÷ annual principal &amp; interest of your loan above.
-          </p>
+        <Section>
+          <SectionHeader
+            title="Debt service coverage"
+            lede={
+              <>
+                Net operating income{' '}
+                <b className="num font-semibold text-fg">
+                  {currency.format(analysis.netOperatingIncome.annual)}/yr
+                </b>{' '}
+                ÷ annual principal &amp; interest of this deal&apos;s loan.
+              </>
+            }
+          />
           <div className="max-w-md">
             <DscrCard
               dscr={analysis.dscr}
@@ -178,14 +159,12 @@ export function FinancingView() {
               }
             />
           </div>
-        </section>
+        </Section>
       ) : null}
 
       {matrix && analysis ? (
-        <section className="flex flex-col gap-4">
-          <h2 className="text-lg font-medium text-neutral-800">
-            Financing options
-          </h2>
+        <Section>
+          <SectionHeader title="Financing options" />
           <FinancingMatrix
             matrix={matrix}
             scenarioName={activeScenario.name}
@@ -195,20 +174,18 @@ export function FinancingView() {
             onTermsChange={patchTerms}
             onReset={resetTerms}
           />
-        </section>
+        </Section>
       ) : null}
 
       {comparison ? (
-        <section className="flex flex-col gap-4">
-          <h2 className="text-lg font-medium text-neutral-800">
-            Compare scenarios
-          </h2>
+        <Section>
+          <SectionHeader title="Compare scenarios" />
           <ComparisonGrid
             comparison={comparison}
             columns={FINANCING_COMPARISON_COLUMNS}
             scenarioNames={scenarioNames}
           />
-        </section>
+        </Section>
       ) : null}
     </>
   );

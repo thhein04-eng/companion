@@ -2,7 +2,7 @@
 
 import { Popover, PopoverContent, PopoverTrigger } from '@ui-sdk/react/popover';
 import { DSCR_PRESETS, type DscrResult } from 'deal-analyzer-calculations';
-import { currency, NumberField } from 'shared-ui';
+import { NumberField, Ripple, currency } from 'shared-ui';
 import { formatDscr, formatDscrMinimum } from './format-dscr';
 import { StatusPill, type RuleStatus } from './rule-indicator';
 import { SegmentedOptions } from './segmented-options';
@@ -51,25 +51,25 @@ export function DscrCard({
   return (
     <div
       data-testid="dscr"
-      className={`flex flex-col gap-2 rounded-md border bg-white p-3 ${
-        status === 'fail' ? 'border-red-300' : 'border-neutral-200'
+      className={`flex flex-col gap-2 rounded-xl border bg-surface p-[18px] ${
+        status === 'fail' ? 'border-bad' : 'border-line'
       }`}
     >
       <div className="flex items-center justify-between gap-2">
-        <span className="text-sm font-medium text-neutral-900">DSCR</span>
+        <span className="text-sm font-medium text-fg">DSCR</span>
         <div className="flex items-center gap-1.5">
           <StatusPill status={status} text={text} data-testid="dscr-status" />
           <Popover openOnHover>
             <PopoverTrigger
               aria-label="About DSCR"
-              className="flex h-5 w-5 items-center justify-center rounded-full border border-neutral-300 text-xs text-neutral-500 hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400"
+              className="flex h-5 w-5 items-center justify-center rounded-full border border-line text-xs text-muted hover:bg-sunk focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               i
             </PopoverTrigger>
             <PopoverContent
               side="top"
               sideOffset={6}
-              className="max-w-xs rounded-md border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-700 shadow-md"
+              className="max-w-xs rounded-md border border-line bg-surface px-3 py-2 text-xs text-fg shadow-float"
             >
               Debt Service Coverage Ratio = annual net operating income ÷ annual
               principal &amp; interest. DSCR lenders typically require
@@ -79,28 +79,30 @@ export function DscrCard({
         </div>
       </div>
       <span
-        className={`text-lg font-semibold tabular-nums ${
-          status === 'fail' ? 'text-red-700' : ''
+        className={`num font-display text-[20px] font-semibold ${
+          status === 'fail' ? 'text-bad' : ''
         }`}
       >
-        {dscr.value != null ? formatDscr(dscr.value) : 'N/A'}
+        <Ripple value={dscr.value}>
+          {dscr.value != null ? formatDscr(dscr.value) : 'N/A'}
+        </Ripple>
       </span>
       {dscr.naReason ? (
-        <p className="text-xs text-neutral-500">{dscr.naReason}</p>
+        <p className="text-xs text-muted">{dscr.naReason}</p>
       ) : null}
       {dscr.coversDebtService === false ? (
-        <p className="text-xs font-medium text-red-700">
+        <p className="text-xs font-medium text-bad">
           NOI does not cover the annual principal &amp; interest.
         </p>
       ) : null}
       {dscr.meetsMinimum === false && dscr.minimum != null ? (
-        <p data-testid="dscr-rent-needed" className="text-xs text-neutral-700">
+        <p data-testid="dscr-rent-needed" className="text-xs text-fg">
           {dscr.rentForMinimum != null
             ? `Rent needed for ${formatDscrMinimum(dscr.minimum)}: ${currency.format(dscr.rentForMinimum)}/mo`
             : dscr.rentForMinimumNaReason}
         </p>
       ) : null}
-      <div className="flex flex-col gap-2 border-t border-neutral-100 pt-2">
+      <div className="flex flex-col gap-2 border-t border-line pt-2">
         <SegmentedOptions
           label="Minimum DSCR"
           value={checkedPreset}

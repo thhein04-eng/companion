@@ -1,5 +1,15 @@
 import { expect, test, type Page } from '@playwright/test';
-import { fillNumberField } from './helpers';
+import {
+  closeDealSheet,
+  dealField,
+  fillNumberField,
+  skipSetupFor,
+} from './helpers';
+
+// Spec 010 US3: these specs test other stories, so first-run setup never opens.
+test.beforeEach(async ({ page }) => {
+  await skipSetupFor(page);
+});
 
 /**
  * Spec 003 User Story 2 — responsive, collapsible left-side menu
@@ -124,9 +134,10 @@ test.describe('Navigation — desktop', () => {
       .getByRole('link', { name: 'Rental Deal Analyzer' })
       .click();
     await expect(page).toHaveURL(/\/deal-analyzer$/);
-    await expect(
-      page.getByRole('textbox', { name: 'Home price', exact: true }),
-    ).toHaveValue('$250,000.00');
+    await expect(await dealField(page, 'Home price')).toHaveValue(
+      '$250,000.00',
+    );
+    await closeDealSheet(page);
     await expect(
       primaryNav(page).getByRole('link', { name: 'Rental Deal Analyzer' }),
     ).toHaveAttribute('aria-current', 'page');

@@ -12,7 +12,7 @@ import type {
   FieldError,
   FinancingOptionId,
 } from 'shared-calculations';
-import { currency, percent1 } from 'shared-ui';
+import { Ripple, currency, percent1 } from 'shared-ui';
 import { dscrStatus } from './dscr-card';
 import { FinancingTermsEditor } from './financing-terms-editor';
 import { formatDscr, formatDscrMinimum } from './format-dscr';
@@ -58,10 +58,14 @@ interface RowDef {
 }
 
 function money(value: number): ReactNode {
-  return value < 0 ? (
-    <span className="text-red-700">{currency.format(value)}</span>
-  ) : (
-    currency.format(value)
+  return (
+    <Ripple value={value}>
+      {value < 0 ? (
+        <span className="text-bad">{currency.format(value)}</span>
+      ) : (
+        currency.format(value)
+      )}
+    </Ripple>
   );
 }
 
@@ -70,13 +74,13 @@ function DscrValue({ dscr }: { dscr: DscrResult }) {
   return (
     <span className="flex flex-col items-start gap-0.5">
       <span
-        className={`tabular-nums ${status === 'fail' ? 'font-medium text-red-700' : ''}`}
+        className={`num ${status === 'fail' ? 'font-medium text-bad' : ''}`}
       >
         {dscr.value != null ? formatDscr(dscr.value) : 'N/A'}
       </span>
       <StatusPill status={status} text={text} />
       {dscr.coversDebtService === false ? (
-        <span className="text-xs text-red-700">NOI doesn&apos;t cover P&amp;I</span>
+        <span className="text-xs text-bad">NOI doesn&apos;t cover P&amp;I</span>
       ) : null}
     </span>
   );
@@ -179,7 +183,7 @@ function CellContent({
           data-testid={`${idPrefix}${row.key}-${option.id}-${i === 0 ? 'initial' : 'reset'}`}
           className="flex flex-col"
         >
-          <span className="text-xs text-neutral-500">{phaseTag(phase)}</span>
+          <span className="text-xs text-muted">{phaseTag(phase)}</span>
           <span>{row.phase?.(phase)}</span>
         </span>
       ))}
@@ -198,10 +202,10 @@ function Breakdown({
   return (
     <div
       data-testid="financing-breakdown"
-      className="flex flex-col gap-1 rounded-md bg-neutral-50 px-3 py-2 text-sm text-neutral-700"
+      className="flex flex-col gap-1 rounded-md bg-sunk px-3 py-2 text-sm text-fg"
     >
       {option.phases.map((phase) => (
-        <p key={phase.label} className="tabular-nums">
+        <p key={phase.label} className="num">
           {option.phases && option.phases.length > 1 ? (
             <span className="font-medium">{phase.label}: </span>
           ) : null}
@@ -210,7 +214,7 @@ function Breakdown({
           {currency.format(phase.monthlyPmi)} = Cash flow{' '}
           <span
             className={
-              phase.monthlyCashFlow < 0 ? 'font-medium text-red-700' : 'font-medium'
+              phase.monthlyCashFlow < 0 ? 'font-medium text-bad' : 'font-medium'
             }
           >
             {currency.format(phase.monthlyCashFlow)}
@@ -239,7 +243,7 @@ export function FinancingMatrix({
   if (matrix.options === null) {
     return (
       <div data-testid="financing-matrix">
-        <p data-testid="financing-matrix-na" className="text-sm text-neutral-500">
+        <p data-testid="financing-matrix-na" className="text-sm text-muted">
           {matrix.naReason}
         </p>
       </div>
@@ -247,15 +251,14 @@ export function FinancingMatrix({
   }
 
   const options = matrix.options;
-  const selected =
-    options.find((o) => o.id === matrix.selected) ?? options[0];
+  const selected = options.find((o) => o.id === matrix.selected) ?? options[0];
   const rows = rowsFor(matrix.dscrMinimum);
   const highlight = (id: FinancingOptionId) =>
-    id === selected.id ? 'bg-sky-50' : '';
+    id === selected.id ? 'bg-accent-soft' : '';
 
   return (
     <div data-testid="financing-matrix" className="flex flex-col gap-4">
-      <p className="text-sm text-neutral-500">
+      <p className="text-sm text-muted">
         Same property, rent and expenses — only the debt changes. DSCR lenders
         qualify on the property&apos;s income instead of yours.
       </p>
@@ -267,14 +270,17 @@ export function FinancingMatrix({
         data-testid="financing-toggle"
       />
 
-      <div className="hidden overflow-x-auto rounded-md border border-neutral-200 bg-white sm:block">
-        <table className="w-full border-collapse text-sm">
+      <div className="hidden overflow-x-auto rounded-xl border border-line bg-surface sm:block">
+        <table className="num w-full border-collapse text-[14px]">
           <caption className="sr-only">
             Financing options for {scenarioName}
           </caption>
           <thead className="text-left">
             <tr>
-              <th scope="col" className="px-3 py-2 font-medium text-neutral-600">
+              <th
+                scope="col"
+                className="border-b border-line px-3 py-2.5 text-[13px] font-medium text-muted"
+              >
                 <span className="sr-only">Metric</span>
               </th>
               {options.map((o) => (
@@ -285,13 +291,11 @@ export function FinancingMatrix({
                   data-selected={o.id === selected.id ? 'true' : undefined}
                   aria-current={o.id === selected.id ? 'true' : undefined}
                   className={`px-3 py-2 align-bottom ${highlight(o.id)} ${
-                    o.id === selected.id ? 'border-b-2 border-sky-500' : ''
+                    o.id === selected.id ? 'border-b-2 border-accent' : ''
                   }`}
                 >
-                  <span className="block font-semibold text-neutral-900">
-                    {o.name}
-                  </span>
-                  <span className="block text-xs font-normal text-neutral-500">
+                  <span className="block font-semibold text-fg">{o.name}</span>
+                  <span className="block text-xs font-normal text-muted">
                     {o.phases ? o.description : 'Fix the terms below'}
                   </span>
                 </th>
@@ -300,10 +304,10 @@ export function FinancingMatrix({
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.key} className="border-t border-neutral-100">
+              <tr key={row.key} className="border-t border-line">
                 <th
                   scope="row"
-                  className="px-3 py-2 text-left font-medium text-neutral-600"
+                  className="px-3 py-2 text-left font-medium text-muted"
                 >
                   {row.label}
                 </th>
@@ -311,7 +315,7 @@ export function FinancingMatrix({
                   <td
                     key={o.id}
                     data-testid={`${row.key}-${o.id}`}
-                    className={`px-3 py-2 align-top tabular-nums ${highlight(o.id)}`}
+                    className={`px-3 py-2 align-top num ${highlight(o.id)}`}
                   >
                     <CellContent row={row} option={o} idPrefix="" />
                   </td>
@@ -326,14 +330,14 @@ export function FinancingMatrix({
       <dl
         data-testid="financing-narrow"
         aria-label={`${selected.name} financing for ${scenarioName}`}
-        className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-md border border-neutral-200 bg-white p-3 text-sm sm:hidden"
+        className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-lg border border-line bg-surface px-3.5 py-3 text-sm sm:hidden"
       >
         {rows.map((row) => (
           <div key={row.key} className="contents">
-            <dt className="font-medium text-neutral-600">{row.label}</dt>
+            <dt className="font-medium text-muted">{row.label}</dt>
             <dd
               data-testid={`narrow-${row.key}-${selected.id}`}
-              className="tabular-nums"
+              className="num"
             >
               <CellContent row={row} option={selected} idPrefix="narrow-" />
             </dd>

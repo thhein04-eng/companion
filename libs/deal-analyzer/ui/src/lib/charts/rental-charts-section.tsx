@@ -23,15 +23,15 @@ export function RentalChartsSection({
     [scenario, schedule],
   );
   return (
-    <div className="flex flex-col gap-4">
-      <h3 className="text-base font-medium text-neutral-700">
+    <section className="flex flex-col gap-[var(--space-section)]">
+      <h2 className="m-0 font-display text-h2 font-semibold text-fg">
         Over the loan term
-      </h3>
-      <div className="grid gap-6">
+      </h2>
+      <div className="grid gap-[var(--space-card)]">
         <RentalCashFlowChart projection={projection} />
         <EquityBuildUpChart projection={projection} />
         <CashOnCashChart projection={projection} />
       </div>
-    </div>
+    </section>
   );
 }

@@ -1,9 +1,11 @@
 'use client';
 
 import { useCallback } from 'react';
-import { DEFAULT_RENTAL_ASSUMPTIONS } from 'deal-analyzer-calculations';
-import type { RentalAssumptions } from 'shared-calculations';
-import { useScenarios } from 'shared-data-access';
+import {
+  DEFAULT_RENTAL_ASSUMPTIONS,
+  type RentalAssumptions,
+} from 'shared-calculations';
+import { useScenarios } from './scenarios-provider';
 
 /**
  * Edits the active scenario's rental assumptions through the shared scenario

@@ -50,13 +50,18 @@ export function ComparisonGrid<Row extends ComparisonRow>({
   scenarioNames,
 }: ComparisonGridProps<Row>) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-sm">
-        <thead className="text-left text-neutral-600">
+    <div className="min-w-0 overflow-x-auto rounded-xl border border-line bg-surface">
+      <table className="num w-full border-collapse text-[14px]">
+        <thead className="text-left">
           <tr>
-            <th className="px-3 py-2 font-medium">Scenario</th>
+            <th className="border-b border-line px-3.5 py-2.5 text-[13px] font-medium text-muted">
+              Scenario
+            </th>
             {columns.map((column) => (
-              <th key={column.id} className="px-3 py-2 font-medium">
+              <th
+                key={column.id}
+                className="border-b border-line px-3.5 py-2.5 text-[13px] font-medium text-muted"
+              >
                 {column.header}
               </th>
             ))}
@@ -64,12 +69,15 @@ export function ComparisonGrid<Row extends ComparisonRow>({
         </thead>
         <tbody>
           {comparison.rows.map((row) => (
-            <tr key={row.scenarioId} className="border-t border-neutral-100">
-              <td className="px-3 py-1.5 font-medium">
+            <tr
+              key={row.scenarioId}
+              className="border-t border-line first:border-t-0"
+            >
+              <td className="px-3.5 py-2.5 font-medium">
                 {scenarioNames[row.scenarioId] ?? row.scenarioId}
               </td>
               {columns.map((column) => (
-                <td key={column.id} className="px-3 py-1.5">
+                <td key={column.id} className="px-3.5 py-2.5">
                   {column.render(row)}
                 </td>
               ))}

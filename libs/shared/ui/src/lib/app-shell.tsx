@@ -20,6 +20,9 @@ import {
 import { CloseIcon, MenuIcon, PanelToggleIcon } from './icons';
 import { SideNav, type NavItem } from './side-nav';
 import { useNavPreference } from './use-nav-preference';
+import { ToastRegion } from './ds/toast';
+import { ThemeSwitcher } from './ds/theme-switcher';
+import { DealChangeToast } from './deal/deal-change-toast';
 
 /** Tailwind's `lg` breakpoint: docked menu at and above, drawer below (spec 003 FR-008/009). */
 const DESKTOP_QUERY = '(min-width: 1024px)';
@@ -108,13 +111,13 @@ export function AppShell({
       <aside
         id="primary-nav"
         data-collapsed={String(collapsed)}
-        className="sticky top-0 hidden h-screen w-64 flex-col gap-2 overflow-y-auto border-r border-neutral-200 bg-white p-3 transition-[width] duration-200 motion-reduce:transition-none data-[collapsed=true]:w-16 lg:flex"
+        className="sticky top-0 hidden h-screen w-64 flex-col gap-2 overflow-y-auto border-r border-line bg-surface p-3 transition-[width] duration-200 motion-reduce:transition-none data-[collapsed=true]:w-16 lg:flex"
       >
         <div
           className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between pl-3'}`}
         >
           {collapsed ? null : (
-            <span className="text-sm font-semibold text-neutral-900">
+            <span className="font-display text-[15px] font-semibold text-fg">
               {appName}
             </span>
           )}
@@ -123,7 +126,7 @@ export function AppShell({
             aria-controls="primary-nav"
             aria-expanded={!collapsed}
             aria-label={collapsed ? 'Expand navigation' : 'Collapse navigation'}
-            className="rounded-md p-2 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-2 focus-visible:outline-neutral-900"
+            className="rounded-md p-2 text-muted hover:bg-sunk hover:text-fg focus-visible:outline-2 focus-visible:outline-accent"
           >
             <PanelToggleIcon collapsed={collapsed} className="size-5" />
           </Button>
@@ -131,6 +134,11 @@ export function AppShell({
         <nav aria-label="Primary">
           <SideNav items={navItems} collapsed={collapsed} />
         </nav>
+        <div
+          className={`mt-auto flex border-t border-line pt-2 ${collapsed ? 'justify-center' : ''}`}
+        >
+          <ThemeSwitcher showLabel={!collapsed} />
+        </div>
       </aside>
 
       <div className="min-w-0">
@@ -141,27 +149,29 @@ export function AppShell({
           onOpenChange={handleOpenChange}
           onOpenChangeComplete={handleOpenChangeComplete}
         >
-          <header className="sticky top-0 z-10 flex items-center gap-2 border-b border-neutral-200 bg-white px-4 py-2 lg:hidden">
+          <header className="page-gutter sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-line bg-surface lg:hidden">
             <DrawerTrigger
               aria-label="Open navigation"
-              className="rounded-md p-2 text-neutral-700 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-neutral-900"
+              className="rounded-md p-2 text-fg hover:bg-sunk focus-visible:outline-2 focus-visible:outline-accent"
             >
               <MenuIcon className="size-5" />
             </DrawerTrigger>
-            <span className="text-sm font-semibold text-neutral-900">
+            <span className="font-display text-[15px] font-semibold text-fg">
               {appName}
             </span>
+            <span className="flex-1" />
+            <ThemeSwitcher />
           </header>
           {/* ui-sdk positions the sheet but not the backdrop; size it to the viewport. */}
-          <DrawerBackdrop className="fixed inset-0 bg-black/30" />
-          <DrawerContent className="flex h-full w-72 max-w-[85vw] flex-col gap-4 bg-white p-4 shadow-xl">
+          <DrawerBackdrop className="fixed inset-0 z-40 bg-fg/25" />
+          <DrawerContent className="z-50 flex h-full w-72 max-w-[85vw] flex-col gap-4 border-r border-line bg-surface p-4 shadow-float">
             <div className="flex items-center justify-between pl-3">
-              <DrawerTitle className="text-sm font-semibold text-neutral-900">
+              <DrawerTitle className="font-display text-[15px] font-semibold text-fg">
                 Navigation
               </DrawerTitle>
               <DrawerClose
                 aria-label="Close navigation"
-                className="rounded-md p-2 text-neutral-600 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-neutral-900"
+                className="rounded-md p-2 text-muted hover:bg-sunk focus-visible:outline-2 focus-visible:outline-accent"
               >
                 <CloseIcon className="size-5" />
               </DrawerClose>
@@ -178,6 +188,8 @@ export function AppShell({
 
         {children}
       </div>
+      <ToastRegion />
+      <DealChangeToast />
     </div>
   );
 }

@@ -1,22 +1,50 @@
 import type { WealthProjection, WealthYear } from 'deal-analyzer-calculations';
 import { currency } from 'shared-ui';
 
-const COLUMNS: { key: string; label: string; get: (y: WealthYear) => number | null }[] = [
+const COLUMNS: {
+  key: string;
+  label: string;
+  get: (y: WealthYear) => number | null;
+}[] = [
   { key: 'value', label: 'Property value', get: (y) => y.propertyValue },
   { key: 'balance', label: 'Loan balance', get: (y) => y.loanBalance },
   { key: 'equity', label: 'Equity', get: (y) => y.equity },
-  { key: 'initial-equity', label: 'Initial equity', get: (y) => y.initialEquity },
-  { key: 'principal-paid', label: 'Principal paid', get: (y) => y.principalPaid },
-  { key: 'market-appreciation', label: 'Market appreciation', get: (y) => y.marketAppreciation },
-  { key: 'forced-appreciation', label: 'Forced appreciation', get: (y) => y.forcedAppreciation },
+  {
+    key: 'initial-equity',
+    label: 'Initial equity',
+    get: (y) => y.initialEquity,
+  },
+  {
+    key: 'principal-paid',
+    label: 'Principal paid',
+    get: (y) => y.principalPaid,
+  },
+  {
+    key: 'market-appreciation',
+    label: 'Market appreciation',
+    get: (y) => y.marketAppreciation,
+  },
+  {
+    key: 'forced-appreciation',
+    label: 'Forced appreciation',
+    get: (y) => y.forcedAppreciation,
+  },
   { key: 'cash-flow', label: 'Cash flow', get: (y) => y.cashFlow },
-  { key: 'cum-cash-flow', label: 'Cumulative cash flow', get: (y) => y.cumulativeCashFlow },
+  {
+    key: 'cum-cash-flow',
+    label: 'Cumulative cash flow',
+    get: (y) => y.cumulativeCashFlow,
+  },
   { key: 'interest', label: 'Interest', get: (y) => y.interest },
   { key: 'depreciation', label: 'Depreciation', get: (y) => y.depreciation },
   { key: 'taxable', label: 'Taxable income', get: (y) => y.taxableIncome },
   { key: 'tax-effect', label: 'Tax effect', get: (y) => y.taxEffect },
   { key: 'net-worth', label: 'Net worth', get: (y) => y.netWorth },
-  { key: 'net-worth-after-tax', label: 'Net worth after tax', get: (y) => y.netWorthAfterTax },
+  {
+    key: 'net-worth-after-tax',
+    label: 'Net worth after tax',
+    get: (y) => y.netWorthAfterTax,
+  },
 ];
 
 /** Year-by-year projection table (spec 008 FR-012). Scrolls inside its own region. */
@@ -33,16 +61,19 @@ export function WealthTable({
         role="region"
         aria-label="Year-by-year projection"
         tabIndex={0}
-        className="overflow-x-auto rounded-md border border-neutral-200 bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400"
+        className="overflow-x-auto rounded-xl border border-line bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
-        <table className="w-full border-collapse text-sm">
+        <table className="num w-full border-collapse text-[14px]">
           <caption className="sr-only">
             Year-by-year wealth projection, purchase through year{' '}
             {projection.horizonYears}
           </caption>
-          <thead className="bg-neutral-50 text-left text-neutral-600">
+          <thead className="text-left">
             <tr>
-              <th scope="col" className="px-3 py-2 font-medium">
+              <th
+                scope="col"
+                className="border-b border-line px-3 py-2.5 text-[13px] font-medium text-muted"
+              >
                 Year
               </th>
               {COLUMNS.map((c) => (
@@ -61,11 +92,11 @@ export function WealthTable({
               <tr
                 key={y.year}
                 data-testid={`wealth-row-${y.year}`}
-                className="border-t border-neutral-100"
+                className="border-t border-line"
               >
                 <th
                   scope="row"
-                  className="whitespace-nowrap px-3 py-1.5 text-left font-medium text-neutral-700"
+                  className="whitespace-nowrap px-3 py-2 text-left font-medium text-fg"
                 >
                   {y.year === 0 ? 'Purchase' : y.year}
                 </th>
@@ -75,8 +106,8 @@ export function WealthTable({
                     <td
                       key={c.key}
                       data-testid={c.key}
-                      className={`whitespace-nowrap px-3 py-1.5 text-right tabular-nums ${
-                        value != null && value < 0 ? 'text-red-700' : ''
+                      className={`whitespace-nowrap px-3 py-2 text-right num ${
+                        value != null && value < 0 ? 'text-bad' : ''
                       }`}
                     >
                       {value == null ? '—' : currency.format(value)}
@@ -88,13 +119,13 @@ export function WealthTable({
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-neutral-500">
+      <p className="text-xs text-muted">
         Tax effect: positive = tax saved, negative = tax owed. Depreciation:
-        27.5-year straight-line on the building value. Simplified model; not
-        tax advice.
+        27.5-year straight-line on the building value. Simplified model; not tax
+        advice.
       </p>
       {hasExtraPayments ? (
-        <p data-testid="wealth-extra-note" className="text-xs text-neutral-500">
+        <p data-testid="wealth-extra-note" className="text-xs text-muted">
           Cash flow excludes extra principal payments; they show up as faster
           principal paydown in equity.
         </p>

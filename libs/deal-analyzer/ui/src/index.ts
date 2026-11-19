@@ -1,7 +1,5 @@
 export * from './lib/income-expense-card';
 export * from './lib/rule-indicator';
-export * from './lib/rental-inputs-panel';
-export * from './lib/use-rental-editor';
 export * from './lib/deal-metrics';
 export * from './lib/deal-comparison-columns';
 export * from './lib/deal-analyzer-view';
@@ -23,3 +21,9 @@ export * from './lib/charts/rental-cash-flow-chart';
 export * from './lib/charts/equity-build-up-chart';
 export * from './lib/charts/cash-on-cash-chart';
 export * from './lib/charts/rental-charts-section';
+export * from './lib/use-exit-editor';
+export * from './lib/exit-summary';
+export * from './lib/hold-comparison-table';
+export * from './lib/exit-assumptions-panel';
+export * from './lib/pro-forma-table';
+export * from './lib/pro-forma-view';

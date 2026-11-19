@@ -1,5 +1,16 @@
 import { expect, test, type Page } from '@playwright/test';
-import { clearNumberField, fillNumberField } from './helpers';
+import {
+  clearNumberField,
+  closeDealSheet,
+  dealField,
+  fillNumberField,
+  skipSetupFor,
+} from './helpers';
+
+// Spec 010 US3: these specs test other stories, so first-run setup never opens.
+test.beforeEach(async ({ page }) => {
+  await skipSetupFor(page);
+});
 
 const STORAGE_KEY = 'amortization:scenarios';
 
@@ -58,16 +69,22 @@ test.describe('Wealth Projection page (spec 008 US1)', () => {
         .getByRole('link', { name: 'Wealth Projection' }),
     ).toHaveAttribute('aria-current', 'page');
     await expect(page.getByTestId('wealth-na')).toHaveText(
-      'Enter rent above to project net worth.',
+      'Add rent to project net worth.',
     );
   });
 
   test('projects the reference property to the cent', async ({ page }) => {
     await enterReference(page);
-    await expect(page.getByTestId('wealth-summary')).toContainText('In year 10');
-    await expect(page.getByTestId('wealth-net-worth')).toHaveText('$360,051.02');
+    await expect(page.getByTestId('wealth-summary')).toContainText(
+      'In year 10',
+    );
+    await expect(page.getByTestId('wealth-net-worth')).toHaveText(
+      '$360,051.02',
+    );
     await expect(page.getByTestId('wealth-equity')).toHaveText('$280,129.40');
-    await expect(page.getByTestId('wealth-cum-cash-flow')).toHaveText('$79,921.62');
+    await expect(page.getByTestId('wealth-cum-cash-flow')).toHaveText(
+      '$79,921.62',
+    );
     await expect(page.getByTestId('wealth-multiple')).toHaveText('3.6×');
     await expect(row(page, 0, 'net-worth')).toHaveText('$100,000.00');
     await expect(row(page, 5, 'net-worth')).toHaveText('$211,428.70');
@@ -81,7 +98,9 @@ test.describe('Wealth Projection page (spec 008 US1)', () => {
       .getByRole('radio', { name: '5 yrs' })
       .click();
     await expect(page.getByTestId('wealth-summary')).toContainText('In year 5');
-    await expect(page.getByTestId('wealth-net-worth')).toHaveText('$211,428.70');
+    await expect(page.getByTestId('wealth-net-worth')).toHaveText(
+      '$211,428.70',
+    );
     await expect(page.getByTestId('wealth-row-6')).toHaveCount(0);
   });
 
@@ -113,7 +132,9 @@ test.describe('Drivers (spec 008 US2)', () => {
   test('typical rates and forced appreciation', async ({ page }) => {
     await enterReference(page, { typical: false });
     await page.getByTestId('wealth-typical-rates').click();
-    await expect(page.getByTestId('wealth-net-worth')).toHaveText('$360,051.02');
+    await expect(page.getByTestId('wealth-net-worth')).toHaveText(
+      '$360,051.02',
+    );
 
     await fillNumberField(page, 'Forced appreciation', '20000');
     await page.keyboard.press('Tab');
@@ -121,13 +142,18 @@ test.describe('Drivers (spec 008 US2)', () => {
     await expect(row(page, 0, 'forced-appreciation')).toHaveText('$20,000.00');
 
     const parts = await Promise.all(
-      ['initial-equity', 'principal-paid', 'market-appreciation', 'forced-appreciation'].map(
-        async (c) => money(await row(page, 10, c).innerText()),
-      ),
+      [
+        'initial-equity',
+        'principal-paid',
+        'market-appreciation',
+        'forced-appreciation',
+      ].map(async (c) => money(await row(page, 10, c).innerText())),
     );
     await expect(row(page, 10, 'initial-equity')).toHaveText('$100,000.00');
     const equity = money(await row(page, 10, 'equity').innerText());
-    expect(Math.round(parts.reduce((a, b) => a + b, 0) * 100) / 100).toBe(equity);
+    expect(Math.round(parts.reduce((a, b) => a + b, 0) * 100) / 100).toBe(
+      equity,
+    );
   });
 
   test('an invalid growth rate waits for a valid value; growth is shared', async ({
@@ -140,11 +166,10 @@ test.describe('Drivers (spec 008 US2)', () => {
       'must be between -10% and 25%',
     );
     await expect(page.getByTestId('wealth-na')).toHaveText(
-      'Fix the highlighted rental inputs to see the projection.',
+      'Fix the rental inputs to see the projection.',
     );
-    await expect(
-      page.getByRole('textbox', { name: 'Loan amount', exact: true }),
-    ).toBeEditable();
+    await expect(await dealField(page, 'Loan amount')).toBeEditable();
+    await closeDealSheet(page);
 
     await fillNumberField(page, 'Appreciation', '3');
     await page.keyboard.press('Tab');
@@ -152,7 +177,9 @@ test.describe('Drivers (spec 008 US2)', () => {
     await expect(
       page.getByRole('textbox', { name: 'Appreciation', exact: true }),
     ).toHaveValue(/^3/);
-    await expect(page.getByTestId('chart-equity')).toContainText('Appreciation');
+    await expect(page.getByTestId('chart-equity')).toContainText(
+      'Appreciation',
+    );
   });
 });
 
@@ -163,11 +190,15 @@ test.describe('Tax (spec 008 US3)', () => {
     await expect(row(page, 1, 'interest')).toHaveText('$20,903.45');
     await expect(row(page, 1, 'taxable')).toHaveText('-$4,027.81');
     await expect(row(page, 1, 'tax-effect')).toHaveText('$966.67');
-    await expect(row(page, 10, 'net-worth-after-tax')).toHaveText('$358,581.92');
+    await expect(row(page, 10, 'net-worth-after-tax')).toHaveText(
+      '$358,581.92',
+    );
 
     await fillNumberField(page, 'Marginal tax rate', '0');
     await page.keyboard.press('Tab');
-    await expect(row(page, 10, 'net-worth-after-tax')).toHaveText('$360,051.02');
+    await expect(row(page, 10, 'net-worth-after-tax')).toHaveText(
+      '$360,051.02',
+    );
   });
 
   test('invalid tax inputs blank only the tax figures', async ({ page }) => {
@@ -178,7 +209,9 @@ test.describe('Tax (spec 008 US3)', () => {
       'Land value must be at least 0% and less than 100%.',
     );
     await expect(page.getByTestId('wealth-cum-tax')).toHaveText('—');
-    await expect(page.getByTestId('wealth-net-worth')).toHaveText('$360,051.02');
+    await expect(page.getByTestId('wealth-net-worth')).toHaveText(
+      '$360,051.02',
+    );
     await expect(page.getByTestId('chart-net-worth')).not.toContainText(
       'Net worth after tax',
     );
@@ -215,7 +248,9 @@ test.describe('Tax (spec 008 US3)', () => {
 
     await seedLegacySessionWithExtraPayment(page);
     await expect(page.getByTestId('wealth-extra-note')).toBeVisible();
-    await expect(page.getByTestId('wealth-summary')).toContainText('In year 10');
+    await expect(page.getByTestId('wealth-summary')).toContainText(
+      'In year 10',
+    );
     await expect(
       page.getByRole('textbox', { name: 'Land value share', exact: true }),
     ).toHaveValue('20');

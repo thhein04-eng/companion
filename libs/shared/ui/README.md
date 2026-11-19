@@ -10,7 +10,15 @@ Presentational components and the app shell used by both features.
 
 - Formatters: `currency`, `percent1`, `percent2`, `dateMedium`, `formatIsoDate`, `orDash`
 - Fields and widgets: `NumberField`, `DateField`, `ScenarioTabs`, `MetricBadge`, `MetricBadgeGroup`
-- Forms: `LoanInputForm`, `CostBreakdownPanel`
+- Form groups (hosted by the Edit deal sheet): `PropertyFields`, `DownPaymentField`, `LoanFields`,
+  `TermField`, `MonthlyCostFields`, `RentalInputsPanel`, `GrowthFields`, `DerivedRow`
+- Deal UI (spec 010): `DealStrip`, `DealSheet`, `DealSheetProvider`, `useDealSheet`, `ChipPopover`,
+  `DealSentence`, `PaymentBar`, `FixInputsButton`, `InputsMessage`, `DealChangeToast`, the page
+  profiles (`*_PROFILE`, `chipOrder`) and `dealPayment`
+- Design system (`ds/`): `Button`, `Chip`, `Card`, `Kpi`, `KpiRow`, `Eyebrow`, `PageHeader`,
+  `SectionHeader`, `Section`, `Sheet`, `Popover`, `SegmentedToggle`, `ToastRegion` / `showToast`,
+  `Ripple`, `ThemeSwitcher`, `ThemePreferences`, `colorScheme`, table classes
+- Styles: `shared-ui/styles/tokens.css` (import once in the app's global CSS)
 - `ComparisonGrid` (column-driven), `ComparisonColumn`, `LOAN_COMPARISON_COLUMNS`
 - Shell: `AppShell`, `SideNav`, `NavItem`, `useNavPreference` (`localStorage['companion:nav']`), plus icons
 

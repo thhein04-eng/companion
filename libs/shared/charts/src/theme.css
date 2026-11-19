@@ -1,78 +1,32 @@
 /*
- * @companion/charts color tokens.
+ * @companion/charts color tokens (spec 010 R5, contracts/design-system.md §6).
  *
- * Categorical slots are the data-viz reference palette, in its validated fixed order
- * (research.md R6). Validated with validate_palette.js:
- *   light (#fcfcfb): all checks PASS — worst adjacent CVD ΔE 9.1, normal-vision ΔE 19.6;
- *                    contrast WARN for slots 3/4/5 (< 3:1) → every chart keeps a legend or
- *                    direct labels AND a data-table view (relief rule).
- *   dark  (#1a1a19): all checks PASS — worst adjacent CVD ΔE 8.4, normal-vision ΔE 19.3, all ≥ 3:1.
- * Dark values are selected steps of the same hues, not an automatic inversion.
+ * Every value points at the app's design tokens (shared-ui/styles/tokens.css), so charts follow
+ * the app's System / Light / Dark switching with no dark blocks of their own. Series 1–5 are the
+ * reference's seg1–seg5, in order; 6–8 are the semantic good / bad / warn colors.
+ *
+ * Contrast (spec FR-035): light seg3 and seg4 are below 3:1 against the surface, so every chart
+ * keeps a legend or direct labels AND a data-table view. Axis text uses `muted`, never `faint`.
  */
 .chart-root {
-  color-scheme: light;
-  --chart-surface: #fcfcfb;
-  --chart-ink: #0b0b0b;
-  --chart-ink-secondary: #52514e;
-  --chart-muted: #898781;
-  --chart-grid: #e1e0d9;
-  --chart-axis: #c3c2b7;
-  --chart-border: rgba(11, 11, 11, 0.1);
-  --chart-series-1: #2a78d6;
-  --chart-series-2: #eb6834;
-  --chart-series-3: #1baf7a;
-  --chart-series-4: #eda100;
-  --chart-series-5: #e87ba4;
-  --chart-series-6: #008300;
-  --chart-series-7: #6250d6;
-  --chart-series-8: #e34948;
+  --chart-surface: var(--surface);
+  --chart-ink: var(--fg);
+  --chart-ink-secondary: var(--muted);
+  --chart-muted: var(--muted);
+  --chart-grid: var(--line);
+  --chart-axis: var(--line);
+  --chart-border: var(--line);
+  --chart-series-1: var(--seg1);
+  --chart-series-2: var(--seg2);
+  --chart-series-3: var(--seg3);
+  --chart-series-4: var(--seg4);
+  --chart-series-5: var(--seg5);
+  --chart-series-6: var(--good);
+  --chart-series-7: var(--bad);
+  --chart-series-8: var(--warn);
 
   background: var(--chart-surface);
   color: var(--chart-ink);
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    sans-serif;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:where(:not([data-theme='light'])) .chart-root {
-    color-scheme: dark;
-    --chart-surface: #1a1a19;
-    --chart-ink: #f0efec;
-    --chart-ink-secondary: #c3c2b7;
-    --chart-muted: #898781;
-    --chart-grid: #2c2c2a;
-    --chart-axis: #383835;
-    --chart-border: rgba(255, 255, 255, 0.1);
-    --chart-series-1: #3987e5;
-    --chart-series-2: #d95926;
-    --chart-series-3: #199e70;
-    --chart-series-4: #c98500;
-    --chart-series-5: #d55181;
-    --chart-series-6: #0ca30c;
-    --chart-series-7: #9085e9;
-    --chart-series-8: #e66767;
-  }
-}
-
-:root[data-theme='dark'] .chart-root {
-  color-scheme: dark;
-  --chart-surface: #1a1a19;
-  --chart-ink: #f0efec;
-  --chart-ink-secondary: #c3c2b7;
-  --chart-muted: #898781;
-  --chart-grid: #2c2c2a;
-  --chart-axis: #383835;
-  --chart-border: rgba(255, 255, 255, 0.1);
-  --chart-series-1: #3987e5;
-  --chart-series-2: #d95926;
-  --chart-series-3: #199e70;
-  --chart-series-4: #c98500;
-  --chart-series-5: #d55181;
-  --chart-series-6: #0ca30c;
-  --chart-series-7: #9085e9;
-  --chart-series-8: #e66767;
 }

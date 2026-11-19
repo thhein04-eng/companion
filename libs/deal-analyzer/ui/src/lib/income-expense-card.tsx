@@ -4,8 +4,7 @@ import { useId, useState } from 'react';
 import type { MonthlyAnnual } from 'shared-calculations';
 import type { DealAnalysis } from 'deal-analyzer-calculations';
 import { Tabs, TabsList, TabsTab } from '@ui-sdk/react/tabs';
-import { currency } from 'shared-ui';
-
+import { Ripple, currency } from 'shared-ui';
 
 export type IncomeExpensePeriod = 'monthly' | 'annual';
 
@@ -32,11 +31,11 @@ function Row({
   return (
     <div
       data-testid={testId}
-      className={`flex items-baseline justify-between py-1 ${emphasis ? 'font-semibold text-neutral-900' : 'text-neutral-700'} ${indent ? 'pl-3 text-sm' : ''}`}
+      className={`flex items-baseline justify-between py-1 ${emphasis ? 'font-semibold text-fg' : 'text-fg'} ${indent ? 'pl-3 text-sm' : ''}`}
     >
       <span>{label}</span>
       {/* `+ 0` normalizes -0 so a zero expense never renders as "-$0.00". */}
-      <span className="tabular-nums">{currency.format(amount + 0)}</span>
+      <span className="num">{currency.format(amount + 0)}</span>
     </div>
   );
 }
@@ -62,10 +61,10 @@ export function IncomeExpenseCard({
   return (
     <section
       aria-labelledby={titleId}
-      className="flex flex-col gap-2 rounded-md border border-neutral-200 bg-white p-4"
+      className="flex flex-col gap-2 rounded-xl border border-line bg-surface p-[18px]"
     >
       <div className="flex items-center justify-between">
-        <h3 id={titleId} className="text-base font-medium text-neutral-900">
+        <h3 id={titleId} className="font-display text-h3 font-semibold text-fg">
           Rental Income vs. Operating Expenses
         </h3>
         <Tabs
@@ -82,13 +81,13 @@ export function IncomeExpenseCard({
           >
             <TabsTab
               value="monthly"
-              className="rounded px-2 py-0.5 text-neutral-500 data-selected:bg-neutral-900 data-selected:text-white"
+              className="cursor-pointer rounded-sm border border-transparent px-2 py-0.5 text-muted hover:bg-sunk data-selected:border-ink data-selected:bg-ink data-selected:text-ink-fg"
             >
               Monthly
             </TabsTab>
             <TabsTab
               value="annual"
-              className="rounded px-2 py-0.5 text-neutral-500 data-selected:bg-neutral-900 data-selected:text-white"
+              className="cursor-pointer rounded-sm border border-transparent px-2 py-0.5 text-muted hover:bg-sunk data-selected:border-ink data-selected:bg-ink data-selected:text-ink-fg"
             >
               Annual
             </TabsTab>
@@ -96,7 +95,7 @@ export function IncomeExpenseCard({
         </Tabs>
       </div>
 
-      <div className="flex flex-col divide-y divide-neutral-100">
+      <div className="flex flex-col divide-y divide-line">
         <Row
           label="Gross scheduled income"
           amount={pick(analysis.grossScheduledIncome)}
@@ -132,22 +131,22 @@ export function IncomeExpenseCard({
         />
         <div
           data-testid="row-cash-flow"
-          className={`flex items-baseline justify-between py-1 font-semibold ${isNegative ? 'text-red-700' : 'text-emerald-700'}`}
+          className={`flex items-baseline justify-between py-1 font-semibold ${isNegative ? 'text-bad' : 'text-good'}`}
         >
           <span>Pre-tax cash flow</span>
-          <span className="flex items-baseline gap-2 tabular-nums">
+          <span className="flex items-baseline gap-2 num">
             {isNegative ? (
-              <span className="rounded bg-red-50 px-1.5 text-xs font-medium">
+              <span className="rounded bg-bad-soft px-1.5 text-xs font-medium">
                 ▼ Negative
               </span>
             ) : null}
-            {currency.format(cashFlow)}
+            <Ripple value={cashFlow}>{currency.format(cashFlow)}</Ripple>
           </span>
         </div>
       </div>
 
       {analysis.pmiDropPeriod != null ? (
-        <p className="text-xs text-neutral-500">
+        <p className="text-xs text-muted">
           Cash flow improves after PMI drops off at payment #
           {analysis.pmiDropPeriod}.
         </p>

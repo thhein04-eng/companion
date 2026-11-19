@@ -1,5 +1,17 @@
 import { expect, test, type Page } from '@playwright/test';
-import { clearNumberField, fillNumberField } from './helpers';
+import {
+  clearNumberField,
+  closeDealSheet,
+  dealField,
+  fillNumberField,
+  openDealSheet,
+  skipSetupFor,
+} from './helpers';
+
+// Spec 010 US3: these specs test other stories, so first-run setup never opens.
+test.beforeEach(async ({ page }) => {
+  await skipSetupFor(page);
+});
 
 /**
  * quickstart.md Scenario 1 (reference vector A): $250k purchase, 25% down
@@ -24,13 +36,19 @@ async function enterScenarioOne(page: Page, { withCashInvested = true } = {}) {
 }
 
 test.describe('Deal Analyzer', () => {
-  test('US1: income vs. expenses card shows NOI, debt service, and cash flow', async ({ page }) => {
+  test('US1: income vs. expenses card shows NOI, debt service, and cash flow', async ({
+    page,
+  }) => {
     await enterScenarioOne(page, { withCashInvested: false });
 
-    const card = page.getByRole('region', { name: 'Rental Income vs. Operating Expenses' });
+    const card = page.getByRole('region', {
+      name: 'Rental Income vs. Operating Expenses',
+    });
     await expect(card).toBeVisible();
     await expect(card.getByTestId('row-noi')).toContainText('$1,498.00');
-    await expect(card.getByTestId('row-debt-service')).toContainText('$1,247.44');
+    await expect(card.getByTestId('row-debt-service')).toContainText(
+      '$1,247.44',
+    );
     await expect(card.getByTestId('row-cash-flow')).toContainText('$250.56');
 
     await card.getByRole('tab', { name: 'Annual' }).click();
@@ -43,7 +61,9 @@ test.describe('Deal Analyzer', () => {
     await expect(card.getByTestId('row-cash-flow')).toContainText('Negative');
   });
 
-  test('US2: LTV and Cash-on-Cash badges update in real time', async ({ page }) => {
+  test('US2: LTV and Cash-on-Cash badges update in real time', async ({
+    page,
+  }) => {
     await enterScenarioOne(page);
 
     const badges = page.getByRole('group', { name: 'Key deal metrics' });
@@ -69,7 +89,9 @@ test.describe('Deal Analyzer', () => {
     await expect(ltv).toContainText('N/A');
   });
 
-  test('US3: cap rate and rules of thumb with accessible explanations', async ({ page }) => {
+  test('US3: cap rate and rules of thumb with accessible explanations', async ({
+    page,
+  }) => {
     await enterScenarioOne(page);
 
     const metrics = page.getByTestId('deal-metrics');
@@ -84,15 +106,21 @@ test.describe('Deal Analyzer', () => {
     await expect(fiftyPercent).toContainText('37.6%');
     await expect(fiftyPercent).toContainText('-$47.44');
 
-    const explanation = page.getByText('Monthly rent should be at least 1% of the purchase price.');
+    const explanation = page.getByText(
+      'Monthly rent should be at least 1% of the purchase price.',
+    );
     await onePercent.getByRole('button', { name: 'About the 1% Rule' }).focus();
     await page.keyboard.press('Enter');
     await expect(explanation).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(explanation).toBeHidden();
 
-    await fiftyPercent.getByRole('button', { name: 'About the 50% Rule' }).hover();
-    await expect(page.getByText(/typically run about 50% of gross rent/)).toBeVisible();
+    await fiftyPercent
+      .getByRole('button', { name: 'About the 50% Rule' })
+      .hover();
+    await expect(
+      page.getByText(/typically run about 50% of gross rent/),
+    ).toBeVisible();
     await page.mouse.move(0, 0);
 
     await clearNumberField(page, 'Home price');
@@ -101,14 +129,22 @@ test.describe('Deal Analyzer', () => {
     await expect(onePercent).toContainText('N/A');
   });
 
-  test('US4: comparison shows deal metrics per scenario and rental inputs persist', async ({ page }) => {
+  test('US4: comparison shows deal metrics per scenario and rental inputs persist', async ({
+    page,
+  }) => {
     await enterScenarioOne(page);
 
-    await page.getByRole('button', { name: '+ Add scenario' }).click();
+    await page
+      .getByRole('button', { name: 'Add scenario', exact: true })
+      .click();
     await fillNumberField(page, 'Monthly rent', '2800');
     await page.keyboard.press('Tab');
 
-    const grid = page.getByText('Compare scenarios').locator('..').locator('table');
+    const grid = page
+      .locator('section', {
+        has: page.getByRole('heading', { name: 'Compare scenarios' }),
+      })
+      .locator('table');
     for (const column of ['Cash Flow /mo', 'NOI /yr', 'Cap Rate', 'CoC']) {
       await expect(grid.locator('thead')).toContainText(column);
     }
@@ -117,15 +153,27 @@ test.describe('Deal Analyzer', () => {
     await expect(grid.locator('tbody tr').nth(1)).not.toContainText('—');
 
     await page.reload();
-    await expect(page.getByRole('textbox', { name: 'Monthly rent', exact: true })).toHaveValue('$2,800.00');
+    await expect(await dealField(page, 'Monthly rent')).toHaveValue(
+      '$2,800.00',
+    );
+    await closeDealSheet(page);
 
-    await page.getByRole('button', { name: '+ Add scenario' }).click();
-    await page.getByRole('button', { name: 'Remove rental analysis' }).click();
+    await page
+      .getByRole('button', { name: 'Add scenario', exact: true })
+      .click();
+    await (
+      await openDealSheet(page)
+    )
+      .getByRole('button', { name: 'Remove rental analysis' })
+      .click();
+    await closeDealSheet(page);
     await expect(grid.locator('tbody tr')).toHaveCount(3);
     await expect(grid.locator('tbody tr').nth(2)).toContainText('—');
   });
 
-  test('a negative custom expense shows a field error and holds back the deal metrics', async ({ page }) => {
+  test('a negative custom expense shows a field error and holds back the deal metrics', async ({
+    page,
+  }) => {
     // The amount field clamps typed values at $0, so seed a saved session that has a negative one.
     await page.goto('/deal-analyzer');
     await page.evaluate(() => {
@@ -159,21 +207,34 @@ test.describe('Deal Analyzer', () => {
       };
       sessionStorage.setItem(
         'amortization:scenarios',
-        JSON.stringify({ scenarios: [scenario], activeScenarioId: 'neg' })
+        JSON.stringify({ scenarios: [scenario], activeScenarioId: 'neg' }),
       );
     });
     await page.reload();
 
-    await expect(page.locator('[data-slot="field-error"]', { hasText: 'Water cannot be negative.' })).toBeVisible();
     await expect(page.getByTestId('badge-cash-on-cash')).toHaveCount(0);
+    // Spec 010: the rental inputs and the payment breakdown live in the Edit deal sheet.
+    const sheet = await openDealSheet(page);
+    await expect(
+      sheet.locator('[data-slot="field-error"]', {
+        hasText: 'Water cannot be negative.',
+      }),
+    ).toBeVisible();
     // Rental errors never block the loan figures here or the schedule on
     // /amortization (FR-015; the schedule moved there in spec 003).
-    await expect(page.getByText('Total estimated monthly payment').locator('..')).toContainText('$1,597.44');
+    await expect(
+      sheet.getByText('Total estimated monthly payment').locator('..'),
+    ).toContainText('$1,597.44');
+    await closeDealSheet(page);
     await page.goto('/amortization');
-    await expect(page.getByRole('heading', { name: 'Amortization schedule' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Amortization schedule' }),
+    ).toBeVisible();
   });
 
-  test('US4: a session saved before the Deal Analyzer loads without errors (FR-016)', async ({ page }) => {
+  test('US4: a session saved before the Deal Analyzer loads without errors (FR-016)', async ({
+    page,
+  }) => {
     const errors: string[] = [];
     page.on('pageerror', (error) => {
       // WebKit reports Next.js nav-link RSC prefetches cancelled by the reload below as
@@ -186,7 +247,9 @@ test.describe('Deal Analyzer', () => {
     await page.goto('/deal-analyzer');
     // Wait until the app has hydrated and persisted its own initial state; otherwise its mount
     // effect can overwrite the legacy session we are about to seed (a race under load).
-    await page.waitForFunction(() => sessionStorage.getItem('amortization:scenarios') !== null);
+    await page.waitForFunction(
+      () => sessionStorage.getItem('amortization:scenarios') !== null,
+    );
     await page.evaluate(() => {
       const legacy = {
         id: 'legacy',
@@ -207,13 +270,20 @@ test.describe('Deal Analyzer', () => {
       };
       sessionStorage.setItem(
         'amortization:scenarios',
-        JSON.stringify({ scenarios: [legacy], activeScenarioId: 'legacy' })
+        JSON.stringify({ scenarios: [legacy], activeScenarioId: 'legacy' }),
       );
     });
     await page.reload();
 
-    await expect(page.getByRole('tab', { name: /Legacy scenario/ })).toBeVisible();
-    await expect(page.getByText('Enter rent to analyze this as a rental.')).toBeVisible();
+    await expect(
+      page.getByRole('tab', { name: /Legacy scenario/ }),
+    ).toBeVisible();
+    await expect(
+      (await openDealSheet(page)).getByText(
+        'Enter rent to analyze this as a rental.',
+      ),
+    ).toBeVisible();
+    await closeDealSheet(page);
     await expect(page.getByTestId('badge-cash-on-cash')).toHaveCount(0);
     expect(errors).toEqual([]);
   });
@@ -221,15 +291,22 @@ test.describe('Deal Analyzer', () => {
   test('FR-017: money, badge, and cap-rate formatting', async ({ page }) => {
     await enterScenarioOne(page);
 
-    const card = page.getByRole('region', { name: 'Rental Income vs. Operating Expenses' });
+    const card = page.getByRole('region', {
+      name: 'Rental Income vs. Operating Expenses',
+    });
     await expect(card.getByTestId('row-gsi')).toHaveText(/\$2,400\.00$/);
     await card.getByRole('tab', { name: 'Annual' }).click();
     await expect(card.getByTestId('row-gsi')).toHaveText(/\$28,800\.00$/);
 
     await expect(page.getByTestId('badge-ltv')).toHaveText(/\d+\.\d%$/);
-    await expect(page.getByTestId('badge-cash-on-cash')).toHaveText(/\d+\.\d%$/);
+    await expect(page.getByTestId('badge-cash-on-cash')).toHaveText(
+      /\d+\.\d%$/,
+    );
     await expect(page.getByTestId('cap-rate')).toContainText(/\d+\.\d{2}%/);
-    await expect(page.getByTestId('total-cash-invested')).toContainText('$80,000.00');
+    await expect(
+      (await openDealSheet(page)).getByTestId('total-cash-invested'),
+    ).toContainText('$80,000.00');
+    await closeDealSheet(page);
   });
 
   test('FR-015: invalid rental input never blocks the loan figures or schedule (quickstart Scenario 4)', async ({
@@ -241,15 +318,25 @@ test.describe('Deal Analyzer', () => {
 
     // On the Deal Analyzer page: the rental error shows, deal metrics hide,
     // and the loan's monthly payment is still computed.
-    await expect(page.getByText('Vacancy rate must be between 0% and 100%.')).toBeVisible();
     await expect(page.getByTestId('deal-metrics')).toHaveCount(0);
-    await expect(page.getByText('Total estimated monthly payment').locator('..')).toContainText('$1,597.44');
+    const sheet = await openDealSheet(page);
+    await expect(
+      sheet.getByText('Vacancy rate must be between 0% and 100%.'),
+    ).toBeVisible();
+    await expect(
+      sheet.getByText('Total estimated monthly payment').locator('..'),
+    ).toContainText('$1,597.44');
+    await closeDealSheet(page);
 
     // The schedule itself now lives on the Amortization page (spec 003) and
     // is still produced for the same session's scenario.
     await page.goto('/amortization');
-    await expect(page.getByRole('heading', { name: 'Amortization schedule' })).toBeVisible();
-    await expect(page.locator('table').last().locator('tbody tr')).toHaveCount(12);
+    await expect(
+      page.getByRole('heading', { name: 'Amortization schedule' }),
+    ).toBeVisible();
+    await expect(page.locator('table').last().locator('tbody tr')).toHaveCount(
+      12,
+    );
     await expect(page.getByText('Payments 1–12 of 360')).toBeVisible();
   });
 });

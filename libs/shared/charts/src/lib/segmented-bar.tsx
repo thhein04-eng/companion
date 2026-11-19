@@ -12,6 +12,17 @@ export interface SegmentedBarProps extends ChartBaseProps {
   /** The authoritative total; may differ from the segments' sum by rounding. */
   total: number;
   formatValue: (value: number) => string;
+  /**
+   * Makes segments and legend entries actionable: click, Enter or Space calls this with the
+   * segment's `key` (spec 010 US4 payment-bar editor). Omit it for a read-only bar.
+   */
+  onSegmentActivate?: (key: string) => void;
+  /** `bare` drops the card frame, for a bar embedded in a form (spec 010 US4). */
+  variant?: 'card' | 'bare';
+  /** The title's heading level; default 3. */
+  headingLevel?: 3 | 4;
+  /** Hide the built-in legend when the caller renders its own. */
+  hideLegend?: boolean;
 }
 
 const BAR_HEIGHT = 32;
@@ -39,7 +50,12 @@ export function SegmentedBar({
   showDataTable = true,
   className,
   'data-testid': testId,
+  onSegmentActivate,
+  variant = 'card',
+  headingLevel = 3,
+  hideLegend = false,
 }: SegmentedBarProps) {
+  const Heading = headingLevel === 3 ? 'h3' : 'h4';
   const parts = segments.filter((s) => s.value > 0);
   if (parts.length > MAX_SEGMENTS && process.env.NODE_ENV !== 'production') {
     throw new Error(
@@ -76,6 +92,13 @@ export function SegmentedBar({
     else if (event.key === 'Escape') {
       setActive(null);
       return;
+    } else if (
+      onSegmentActivate &&
+      (event.key === 'Enter' || event.key === ' ')
+    ) {
+      event.preventDefault();
+      onSegmentActivate(shown[focusIndex].key);
+      return;
     }
     if (next == null) return;
     event.preventDefault();
@@ -89,19 +112,19 @@ export function SegmentedBar({
   return (
     <figure
       data-testid={testId}
-      className={`chart-root m-0 flex min-w-0 flex-col gap-2 rounded-md p-3 ${className ?? ''}`}
-      style={{ boxShadow: '0 0 0 1px var(--chart-border)' }}
+      className={`chart-root m-0 flex min-w-0 flex-col gap-3 ${variant === 'card' ? 'rounded-xl border border-line p-[18px]' : ''} ${className ?? ''}`}
+      style={variant === 'bare' ? { background: 'transparent' } : undefined}
     >
       <div className="flex flex-col gap-0.5">
-        <h3
-          className="m-0 text-sm font-medium"
+        <Heading
+          className="m-0 font-display text-h3 font-semibold"
           style={{ color: 'var(--chart-ink)' }}
         >
           {title}
-        </h3>
+        </Heading>
         {description ? (
           <p
-            className="m-0 text-xs"
+            className="m-0 text-small"
             style={{ color: 'var(--chart-ink-secondary)' }}
           >
             {description}
@@ -126,8 +149,11 @@ export function SegmentedBar({
               const first = i === 0;
               const lastSeg = i === shown.length - 1;
               const label = formatValue(part.value);
-              const fits = label.length * CHAR_WIDTH + 8 <= segW;
-              const text = part.color === 4 ? '#0b0b0b' : '#ffffff';
+              // FR-035: an inner label needs ≥ 4.5:1 against its segment. Only series 1 with
+              // ink-fg text clears that in both themes; other segments rely on the legend.
+              const fits =
+                part.color === 1 && label.length * CHAR_WIDTH + 8 <= segW;
+              const text = 'var(--ink-fg)';
               return (
                 <g
                   key={part.key}
@@ -146,7 +172,15 @@ export function SegmentedBar({
                   onBlur={() => setActive(null)}
                   onPointerEnter={() => setActive(i)}
                   onPointerLeave={() => setActive(null)}
-                  style={{ outline: 'none' }}
+                  onClick={
+                    onSegmentActivate
+                      ? () => onSegmentActivate(part.key)
+                      : undefined
+                  }
+                  style={{
+                    outline: 'none',
+                    cursor: onSegmentActivate ? 'pointer' : undefined,
+                  }}
                 >
                   <SegmentShape
                     x={x}
@@ -207,48 +241,60 @@ export function SegmentedBar({
           />
         ) : null}
       </div>
-      <ul
-        aria-label="Legend"
-        className="m-0 flex list-none flex-col gap-1 p-0 text-xs"
-      >
-        {shown.map((part) => (
-          <li
-            key={part.key}
-            className="flex items-center gap-2"
-            style={{ color: 'var(--chart-ink-secondary)' }}
-          >
-            <span
-              aria-hidden="true"
-              data-swatch=""
-              style={{
-                width: 10,
-                height: 10,
-                borderRadius: 2,
-                background: colorVar(part.color),
-                flex: 'none',
-              }}
-            />
-            <span>{part.label}</span>
-            <span className="ml-auto" style={{ color: 'var(--chart-ink)' }}>
-              {formatValue(part.value)}
-            </span>
-            <span className="w-12 text-right">
-              {percent.format(share(part.value))}
-            </span>
-          </li>
-        ))}
-        <li
-          className="flex items-center gap-2 pt-1"
-          style={{
-            borderTop: '1px solid var(--chart-grid)',
-            color: 'var(--chart-ink)',
-          }}
+      {hideLegend ? null : (
+        <ul
+          aria-label="Legend"
+          className="m-0 flex list-none flex-col gap-1.5 p-0 text-small"
         >
-          <span className="font-medium">Total</span>
-          <span className="ml-auto font-medium">{formatValue(total)}</span>
-          <span className="w-12" />
-        </li>
-      </ul>
+          {shown.map((part) => (
+            <li
+              key={part.key}
+              className="flex items-center gap-2"
+              style={{ color: 'var(--chart-ink-secondary)' }}
+            >
+              <span
+                aria-hidden="true"
+                data-swatch=""
+                style={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: 2,
+                  background: colorVar(part.color),
+                  flex: 'none',
+                }}
+              />
+              {onSegmentActivate ? (
+                <button
+                  type="button"
+                  className="cursor-pointer rounded-xs text-left text-fg underline decoration-line decoration-dotted underline-offset-2 hover:decoration-accent"
+                  onClick={() => onSegmentActivate(part.key)}
+                >
+                  {part.label}
+                </button>
+              ) : (
+                <span>{part.label}</span>
+              )}
+              <span className="ml-auto" style={{ color: 'var(--chart-ink)' }}>
+                {formatValue(part.value)}
+              </span>
+              <span className="w-12 text-right">
+                {percent.format(share(part.value))}
+              </span>
+            </li>
+          ))}
+          <li
+            className="flex items-center gap-2 pt-1"
+            style={{
+              borderTop: '1px solid var(--chart-grid)',
+              color: 'var(--chart-ink)',
+            }}
+          >
+            <span className="font-medium">Total</span>
+            <span className="ml-auto font-medium">{formatValue(total)}</span>
+            <span className="w-12" />
+          </li>
+        </ul>
+      )}
       {showDataTable ? (
         <ChartDataTable
           caption={title}

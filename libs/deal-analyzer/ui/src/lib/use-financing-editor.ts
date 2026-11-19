@@ -7,8 +7,7 @@ import type {
   FinancingOptionId,
   FinancingTerms,
 } from 'shared-calculations';
-import { useScenarios } from 'shared-data-access';
-import { useRentalEditor } from './use-rental-editor';
+import { useScenarios, useRentalEditor } from 'shared-data-access';
 
 /**
  * Edits the active scenario's DSCR minimum and financing-matrix state

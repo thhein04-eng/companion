@@ -66,6 +66,8 @@ export interface RentalAssumptions {
   financingSelection?: FinancingOptionId;
   /** Wealth-projection assumptions (spec 008). Optional; missing = defaults. */
   wealth?: WealthAssumptions | null;
+  /** Hold & exit assumptions (spec 009). Optional; missing = defaults. */
+  exit?: ExitAssumptions | null;
 }
 
 /** Wealth-projection assumptions (spec 008). Every field optional; missing = default (FR-015). */
@@ -78,6 +80,14 @@ export interface WealthAssumptions {
   landValuePct?: number;
   /** 0 ≤ x ≤ 60. Default 24. */
   marginalTaxRatePct?: number;
+}
+
+/** Hold & exit assumptions (spec 009). Every field optional; missing = default (FR-015). */
+export interface ExitAssumptions {
+  /** Integer 1…30. Default 7. */
+  holdYears?: number;
+  /** % of the sale price, 0 ≤ x ≤ 15. Default 7. */
+  sellingCostsPct?: number;
 }
 
 /** The three loan structures compared by the financing matrix (spec 006). */
@@ -151,7 +161,8 @@ export interface FieldError {
     | `rental.customExpenses.${number}.monthlyAmount`
     | `rental.dscrMinimum`
     | `rental.financing.${FinancingOptionId}.${string}`
-    | `rental.wealth.${keyof WealthAssumptions}`;
+    | `rental.wealth.${keyof WealthAssumptions}`
+    | `rental.exit.${keyof ExitAssumptions}`;
   message: string;
 }
 

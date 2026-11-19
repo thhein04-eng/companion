@@ -3,11 +3,13 @@
 import { useCallback } from 'react';
 import { TYPICAL_GROWTH } from 'deal-analyzer-calculations';
 import type { RentalAssumptions, WealthAssumptions } from 'shared-calculations';
-import { useScenarios } from 'shared-data-access';
-import { useRentalEditor } from './use-rental-editor';
+import { useScenarios, useRentalEditor } from 'shared-data-access';
 
 export type GrowthPatch = Partial<
-  Pick<RentalAssumptions, 'appreciationPct' | 'rentGrowthPct' | 'expenseGrowthPct'>
+  Pick<
+    RentalAssumptions,
+    'appreciationPct' | 'rentGrowthPct' | 'expenseGrowthPct'
+  >
 >;
 
 /**

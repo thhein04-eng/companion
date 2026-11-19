@@ -53,8 +53,7 @@ export const FINANCING_COMPARISON_COLUMNS: ComparisonColumn<DealComparisonRow>[]
     {
       id: 'monthlyCashFlow',
       header: 'Cash Flow /mo',
-      render: (row) =>
-        orDash(row.monthlyCashFlow, (v) => currency.format(v)),
+      render: (row) => orDash(row.monthlyCashFlow, (v) => currency.format(v)),
     },
     {
       id: 'dscr',

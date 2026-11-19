@@ -9,9 +9,10 @@ The Rental Deal Analyzer page (`/deal-analyzer`) and its own components.
 ## Public API (`src/index.ts`)
 
 - `DealAnalyzerView`
-- `RentalInputsPanel`, `IncomeExpenseCard`, `RuleIndicator`, `DealMetrics`
+- `IncomeExpenseCard`, `RuleIndicator`, `DealMetrics`
 - `DEAL_COMPARISON_COLUMNS` (loan columns plus deal columns)
-- `useRentalEditor()`: rental edits through the shared store, seeding defaults on first rent entry
+- `RentalInputsPanel` and `useRentalEditor()` moved to `shared-ui` / `shared-data-access` in spec 010
+  so the Deal Strip's sheet can host them on every page.
 - DSCR & financing matrix (spec 006):
   - `DscrCard`, `FinancingMatrix`, `FinancingTermsEditor`
   - `StatusPill`, `SegmentedOptions`, `formatDscr`
@@ -24,6 +25,12 @@ The Rental Deal Analyzer page (`/deal-analyzer`) and its own components.
   - `RentalInputsPanel` gains `hideGrowth`
 
 Import only from the package name (`'deal-analyzer-ui'`), never from a deep path.
+
+- Hold & exit pro forma (spec 009):
+  - `ProFormaView`, `ExitAssumptionsPanel`, `ExitSummary`, `HoldComparisonTable`, `ProFormaTable`
+  - `useExitEditor()`: hold, selling costs, shared growth and shared tax inputs
+- Every view renders the spec 010 `DealStrip` from `shared-ui` instead of inline Loan,
+  Real-estate costs and Rental sections.
 
 ## Running unit tests
 

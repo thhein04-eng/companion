@@ -1,0 +1,503 @@
+<title>Deal Inputs Redesign</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column of argument, with mockup "screens" drawn in the Companion app's own neutral language */
+:root{
+  --bg:#f6f7f8; --surface:#ffffff; --sunk:#eef0f2; --line:#dde1e5; --fg:#16191d; --muted:#5d6670; --faint:#8a939c;
+  --ink:#16191d; --ink-fg:#ffffff; --accent:#2f5d8a; --accent-soft:#e4edf6;
+  --good:#11795a; --good-soft:#e2f4ec; --bad:#b4262b; --bad-soft:#fbe7e7; --warn:#9a6300; --warn-soft:#fbf1dc;
+  --seg1:#2f5d8a; --seg2:#6b8fb3; --seg3:#9bb4cc; --seg4:#c79a3b; --seg5:#8e7cc3;
+  --display:"Space Grotesk",ui-sans-serif,system-ui,sans-serif; --body:"Inter",ui-sans-serif,system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --shadow:0 8px 28px rgba(16,24,40,.12);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111417; --surface:#191d21; --sunk:#22272c; --line:#2f363c; --fg:#e8ebee; --muted:#a0a9b2; --faint:#76808a;
+  --ink:#e8ebee; --ink-fg:#111417; --accent:#8db4dc; --accent-soft:#1f2e3d;
+  --good:#5cc79f; --good-soft:#163328; --bad:#f08a8d; --bad-soft:#3a1d1f; --warn:#e0b25a; --warn-soft:#352a14;
+  --seg1:#8db4dc; --seg2:#5f87ad; --seg3:#3f5f7e; --seg4:#d6aa4e; --seg5:#a796d8; --shadow:0 8px 28px rgba(0,0,0,.5); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111417; --surface:#191d21; --sunk:#22272c; --line:#2f363c; --fg:#e8ebee; --muted:#a0a9b2; --faint:#76808a;
+  --ink:#e8ebee; --ink-fg:#111417; --accent:#8db4dc; --accent-soft:#1f2e3d;
+  --good:#5cc79f; --good-soft:#163328; --bad:#f08a8d; --bad-soft:#3a1d1f; --warn:#e0b25a; --warn-soft:#352a14;
+  --seg1:#8db4dc; --seg2:#5f87ad; --seg3:#3f5f7e; --seg4:#d6aa4e; --seg5:#a796d8; --shadow:0 8px 28px rgba(0,0,0,.5); color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.55;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 80px}
+.wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:56px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(28px,4.5vw,40px);line-height:1.1}
+h2{font-size:24px}
+h3{font-size:17px}
+p{margin:0;max-width:68ch}
+.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.lede{font-size:17px;color:var(--muted)}
+section{display:flex;flex-direction:column;gap:18px}
+.num{font-variant-numeric:tabular-nums}
+code,.mono{font-family:var(--mono);font-size:.86em}
+code{background:var(--sunk);padding:1px 5px;border-radius:4px}
+
+/* problem */
+.stack{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.pg{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:5px;min-width:0}
+.pg b{font-size:12px;font-family:var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.blk{border-radius:4px;font-size:10.5px;padding:3px 6px;color:var(--muted);background:var(--sunk)}
+.blk.rep{background:var(--bad-soft);color:var(--bad);font-weight:500}
+.blk.own{background:var(--good-soft);color:var(--good);font-weight:500}
+.blk.tall{padding-block:14px}
+.pg.next{border-style:dashed}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.fact{border-top:2px solid var(--fg);padding-top:10px;display:flex;flex-direction:column;gap:4px}
+.fact .big{font-family:var(--display);font-size:28px;font-weight:600}
+.fact p{font-size:13.5px;color:var(--muted)}
+
+.principle{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:22px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:24px;align-items:center}
+.lensdiagram{display:flex;flex-direction:column;gap:8px}
+.deal{background:var(--ink);color:var(--ink-fg);border-radius:8px;padding:10px 14px;font-size:13px;font-weight:600;text-align:center}
+.lenses{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.lenses div{border:1px solid var(--line);border-radius:6px;padding:6px 4px;font-size:11px;text-align:center;color:var(--muted)}
+.arrows{text-align:center;color:var(--faint);font-size:12px;letter-spacing:.4em}
+
+/* concept switcher */
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:7px;padding:7px 12px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--ink-fg);border-color:var(--ink)}
+.tab:focus-visible,button:focus-visible,.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tag{font-size:11px;font-weight:600;border-radius:999px;padding:1px 8px;background:var(--good-soft);color:var(--good);margin-left:6px}
+.concept{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:24px;align-items:start}
+.concept .notes{display:flex;flex-direction:column;gap:12px;font-size:14px}
+.concept .notes ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.pro{color:var(--good);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.con{color:var(--bad);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+
+/* mock app frame */
+.screen{background:var(--bg);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);overflow:hidden;position:relative;font-size:12px;min-height:420px;display:grid;grid-template-columns:40px minmax(0,1fr)}
+.screen.wide{grid-template-columns:40px minmax(0,1fr) 190px}
+.rail{background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:8px;padding-top:12px}
+.rail i{width:18px;height:18px;border-radius:4px;background:var(--sunk);display:block}
+.rail i.on{background:var(--ink)}
+.main{padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.mh1{font-family:var(--display);font-size:16px;font-weight:600}
+.msub{color:var(--muted);font-size:11px;margin-top:-8px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.ph{height:8px;border-radius:3px;background:var(--sunk)}
+.chart{height:90px;border-radius:5px;background:linear-gradient(180deg,transparent 0 30%,var(--accent-soft) 30%);position:relative;overflow:hidden}
+.chart::after{content:"";position:absolute;inset:auto 0 0 0;height:70%;background:linear-gradient(160deg,transparent 48%,var(--accent) 49% 51%,transparent 52%)}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:7px 8px}
+.kpi small{display:block;color:var(--muted);font-size:10px}
+.kpi strong{font-family:var(--display);font-size:15px}
+
+/* deal strip */
+.strip{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px;display:flex;flex-direction:column;gap:8px;position:sticky;top:0;z-index:2}
+.strip-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.scen{display:flex;gap:3px}
+.scen span{padding:3px 8px;border-radius:5px;color:var(--muted);font-size:11px}
+.scen span.on{background:var(--ink);color:var(--ink-fg)}
+.spacer{flex:1}
+.btn{font:inherit;font-size:11px;font-weight:500;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:6px;padding:4px 9px;cursor:pointer}
+.btn.primary{background:var(--ink);color:var(--ink-fg);border-color:var(--ink)}
+.chips{display:flex;gap:5px;flex-wrap:wrap;position:relative}
+.chip{font:inherit;font-size:11px;border:1px solid var(--line);background:var(--sunk);color:var(--fg);border-radius:999px;padding:3px 9px;cursor:pointer;white-space:nowrap}
+.chip:hover{border-color:var(--faint)}
+.chip b{font-weight:600}
+.chip.pin{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.chip.err{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.chip.total{background:var(--ink);color:var(--ink-fg);border-color:var(--ink)}
+.pop{position:absolute;top:calc(100% + 6px);left:0;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);padding:10px;width:200px;display:flex;flex-direction:column;gap:6px;z-index:5}
+.pop label{font-size:10.5px;color:var(--muted);font-weight:500}
+.field{border:1px solid var(--line);border-radius:5px;padding:5px 7px;background:var(--surface);font-variant-numeric:tabular-nums;display:flex;justify-content:space-between}
+.pop .delta{font-size:10.5px;color:var(--good)}
+.sheet{position:absolute;top:0;right:0;bottom:0;width:min(250px,78%);background:var(--surface);border-left:1px solid var(--line);box-shadow:var(--shadow);padding:12px;display:flex;flex-direction:column;gap:10px;transform:translateX(105%);transition:transform .25s ease;z-index:6;overflow:auto}
+.sheet.open{transform:none}
+.sheet h4{margin:0;font-family:var(--display);font-size:13px}
+.grp{display:flex;flex-direction:column;gap:5px;border-top:1px solid var(--line);padding-top:8px}
+.grp > span{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.derived{font-size:10.5px;color:var(--muted);background:var(--sunk);border-radius:5px;padding:5px 7px;display:flex;justify-content:space-between}
+@media (prefers-reduced-motion:reduce){.sheet{transition:none}}
+
+/* inspector */
+.insp{background:var(--surface);border-left:1px solid var(--line);padding:10px;display:flex;flex-direction:column;gap:9px}
+.insp .grp:first-of-type{border-top:0;padding-top:0}
+.acc{display:flex;justify-content:space-between;font-size:11px;font-weight:600}
+.acc em{font-style:normal;color:var(--muted);font-weight:400}
+
+/* receipt */
+.receipt{background:var(--surface);border:1px dashed var(--line);border-radius:7px;padding:8px 10px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:11px;color:var(--muted)}
+.receipt b{color:var(--fg);font-variant-numeric:tabular-nums}
+.receipt a{color:var(--accent);margin-left:auto;font-weight:500;text-decoration:none}
+
+/* ideas */
+.ideas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.idea{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.idea p{font-size:14px;color:var(--muted)}
+.demo{background:var(--bg);border-radius:7px;padding:12px;font-size:13px}
+.sentence{line-height:2.1}
+.tok{font:inherit;font-weight:600;background:none;border:0;border-bottom:1.5px dashed var(--accent);color:var(--accent);padding:0 1px;cursor:pointer;font-variant-numeric:tabular-nums}
+.paybar{display:flex;height:30px;border-radius:5px;overflow:hidden;gap:2px}
+.paybar button{border:0;cursor:pointer;color:#fff;font:inherit;font-size:10.5px;font-weight:600;padding:0;min-width:0;overflow:hidden;white-space:nowrap}
+.paybar button:hover{filter:brightness(1.1)}
+.paylegend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--muted);margin-top:8px}
+.paylegend span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;background:var(--c)}
+.scrub{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.scrub label{cursor:ew-resize;user-select:none;border-bottom:1px dotted var(--faint);font-weight:500}
+.scrub output{font-family:var(--display);font-weight:600;font-size:18px}
+.scrub .d{font-size:12px;font-weight:600}
+.matrix{width:100%;border-collapse:collapse;font-size:12px}
+.matrix th,.matrix td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line)}
+.matrix th{color:var(--muted);font-weight:500;font-size:11px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.dot.o{background:transparent;border:1.5px solid var(--faint)}
+.toast{display:flex;align-items:center;gap:10px;background:var(--ink);color:var(--ink-fg);border-radius:7px;padding:8px 12px;font-size:12.5px;width:fit-content;max-width:100%;flex-wrap:wrap}
+.toast u{text-decoration:none;opacity:.7}
+.flash{background:var(--warn-soft);border-radius:4px;padding:0 4px;color:var(--warn);font-weight:600}
+
+/* plan */
+.plan{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.plan ol,.plan ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.keep{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 16px;font-size:13px}
+.keep div{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--line);padding:5px 0}
+.keep em{font-style:normal;color:var(--muted)}
+
+@media (max-width:820px){
+  .concept,.principle,.plan,.ideas{grid-template-columns:minmax(0,1fr)}
+  .stack{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .facts{grid-template-columns:minmax(0,1fr)}
+  .screen.wide{grid-template-columns:40px minmax(0,1fr)}
+  .screen.wide .insp{display:none}
+}
+@media (max-width:480px){.stack{grid-template-columns:repeat(2,minmax(0,1fr))}.keep{grid-template-columns:minmax(0,1fr)}.lenses{grid-template-columns:repeat(3,minmax(0,1fr))}}
+</style>
+
+<div class="wrap">
+
+<header style="display:flex;flex-direction:column;gap:12px">
+  <span class="eyebrow">Companion · UX proposal</span>
+  <h1>Enter the deal once, see it through every page</h1>
+  <p class="lede">The Loan and Real-estate cost forms repeat at the top of all four pages, and the Rental form on three. Below: why that hurts, three layouts that fix it, and smaller ideas that make the inputs feel less like a form.</p>
+</header>
+
+<section>
+  <span class="eyebrow">What happens today</span>
+  <h2>Every page opens with the same 13 fields</h2>
+  <div class="stack" aria-label="Sections per page">
+    <div class="pg"><b>Amortization</b><div class="blk">Scenario tabs</div><div class="blk rep">Loan · 4</div><div class="blk rep tall">Costs · 6 + total</div><div class="blk own">Extra payments</div><div class="blk own">Charts</div><div class="blk own">Schedule</div></div>
+    <div class="pg"><b>Deal Analyzer</b><div class="blk">Scenario tabs</div><div class="blk rep">Loan · 4</div><div class="blk rep tall">Costs · 6 + total</div><div class="blk rep">Rental</div><div class="blk own">Metrics</div><div class="blk own">Charts</div></div>
+    <div class="pg"><b>Financing</b><div class="blk">Scenario tabs</div><div class="blk rep">Loan · 4</div><div class="blk rep tall">Costs · 6 + total</div><div class="blk rep">Rental</div><div class="blk own">DSCR</div><div class="blk own">Matrix</div></div>
+    <div class="pg"><b>Wealth</b><div class="blk">Scenario tabs</div><div class="blk rep">Loan · 4</div><div class="blk rep tall">Costs · 6 + total</div><div class="blk rep">Rental</div><div class="blk own">Assumptions</div><div class="blk own">Net worth</div></div>
+    <div class="pg next"><b>Hold &amp; Exit (009)</b><div class="blk">Scenario tabs</div><div class="blk rep">Loan · 4</div><div class="blk rep tall">Costs · 6 + total</div><div class="blk rep">Rental</div><div class="blk own">Exit inputs</div><div class="blk own">Pro forma</div></div>
+  </div>
+  <div class="legend"><span style="--c:var(--bad-soft)">Repeated on every page</span><span style="--c:var(--good-soft)">The page's own content</span></div>
+  <div class="facts">
+    <div class="fact"><span class="big num">~650px</span><p>of identical form a user scrolls past on each page before reaching the thing that page is for.</p></div>
+    <div class="fact"><span class="big num">0</span><p>re-entry is actually needed. <code>ScenariosProvider</code> already shares every value across pages; the repetition is only visual.</p></div>
+    <div class="fact"><span class="big">Backwards</span><p><em>Loan amount</em> sits above <em>Home price</em> and <em>Down payment</em>, even though <code>applyScenarioPatch</code> derives the loan from those two.</p></div>
+  </div>
+</section>
+
+<section class="principle">
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <span class="eyebrow">The idea behind every option</span>
+    <h2>The deal is the noun. Pages are lenses.</h2>
+    <p style="color:var(--muted);font-size:14px">Loan, costs and rent describe the property, not a page. They should live with the scenario and be reachable from anywhere, while each page shows only the inputs it alone owns: extra payments, DSCR minimum, wealth assumptions, exit inputs.</p>
+  </div>
+  <div class="lensdiagram" aria-hidden="true">
+    <div class="deal">Scenario A · 412 Elm St — price, down, rate, term, costs, rent</div>
+    <div class="arrows">↓ ↓ ↓ ↓ ↓</div>
+    <div class="lenses"><div>Amortization<br>+ extra pmts</div><div>Deal<br>analyzer</div><div>Financing<br>+ DSCR min</div><div>Wealth<br>+ growth</div><div>Exit<br>+ hold yrs</div></div>
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">Three layouts</span>
+  <h2>Where the shared inputs should live</h2>
+  <div class="tabs" role="tablist" aria-label="Concepts">
+    <button class="tab" role="tab" id="t-a" aria-selected="true" aria-controls="c-a">A · Deal strip + edit sheet<span class="tag">Recommended</span></button>
+    <button class="tab" role="tab" id="t-b" aria-selected="false" aria-controls="c-b">B · Docked inspector</button>
+    <button class="tab" role="tab" id="t-c" aria-selected="false" aria-controls="c-c">C · Setup page + receipt</button>
+  </div>
+
+  <!-- A -->
+  <div class="concept" id="c-a" role="tabpanel" aria-labelledby="t-a">
+    <div class="screen" id="screenA">
+      <div class="rail"><i></i><i></i><i class="on"></i><i></i><i></i></div>
+      <div class="main">
+        <div class="mh1">DSCR &amp; Financing</div>
+        <div class="msub">Check debt coverage and compare loan types.</div>
+        <div class="strip">
+          <div class="strip-top">
+            <div class="scen"><span class="on">412 Elm</span><span>Elm 15-yr</span><span>+</span></div>
+            <span class="spacer"></span>
+            <button class="btn primary" id="openSheet">Edit deal</button>
+          </div>
+          <div class="chips" id="chipsA">
+            <button class="chip" data-pop="price">Home <b>$450k</b></button>
+            <button class="chip" data-pop="down">Down <b>20%</b></button>
+            <button class="chip pin" data-pop="rate">Rate <b>6.5%</b></button>
+            <button class="chip pin" data-pop="term">Term <b>30 yr</b></button>
+            <button class="chip pin" data-pop="rent">Rent <b>$3,200</b></button>
+            <button class="chip total" data-pop="total">PITI <b>$2,995/mo</b></button>
+            <div class="pop" id="popA" hidden>
+              <label for="popField" id="popLabel">Annual interest rate</label>
+              <div class="field" id="popField"><span id="popVal">6.5</span><span id="popUnit">%</span></div>
+              <span class="delta" id="popDelta">DSCR 1.18 → 1.24 at 6.0%</span>
+            </div>
+          </div>
+        </div>
+        <div class="kpis"><div class="kpi"><small>DSCR</small><strong>1.18</strong></div><div class="kpi"><small>NOI / yr</small><strong>$32.2k</strong></div><div class="kpi"><small>Min</small><strong>1.25</strong></div></div>
+        <div class="card"><div class="ph" style="width:40%"></div><div class="ph"></div><div class="ph" style="width:80%"></div><div class="ph" style="width:65%"></div></div>
+      </div>
+      <aside class="sheet" id="sheetA" aria-label="Edit deal">
+        <div style="display:flex;justify-content:space-between;align-items:center"><h4>412 Elm · deal</h4><button class="btn" id="closeSheet">Done</button></div>
+        <div class="grp"><span>Property</span><div class="row2"><div class="field">$450,000</div><div class="field">20 <span>%</span></div></div></div>
+        <div class="grp"><span>Loan</span><div class="derived"><span>Loan amount</span><b class="num">$360,000</b></div><div class="row2"><div class="field">6.5 <span>%</span></div><div class="field">30 <span>yr</span></div></div><div class="field">Jan 2027</div></div>
+        <div class="grp"><span>Monthly costs</span><div class="row2"><div class="field">$5,400<span>/yr</span></div><div class="field">$1,800<span>/yr</span></div><div class="field">0.5 <span>%</span></div><div class="field">$120<span>/mo</span></div></div></div>
+        <div class="grp"><span>Rental</span><div class="row2"><div class="field">$3,200</div><div class="field">5 <span>%</span></div></div></div>
+      </aside>
+    </div>
+    <div class="notes">
+      <p>A compact strip under the page title summarises the active scenario as chips. Click a chip to edit that one value in a popover. <b>Edit deal</b> opens a side sheet with every shared field, grouped in the order people think about a purchase.</p>
+      <div><span class="pro">Why it works</span><ul>
+        <li>Every page's own content starts within the first screen.</li>
+        <li>Small what-ifs stay one click away, with the resulting change shown in the popover.</li>
+        <li>Pinned chips (blue) differ by page: rate, term and rent on Financing; price and appreciation on Wealth.</li>
+        <li>Reuses the ui-sdk <code>Drawer</code> already in <code>AppShell</code>. Same pattern on phone, as a bottom sheet.</li>
+      </ul></div>
+      <div><span class="con">Watch for</span><ul>
+        <li>Validation errors need a home: a red chip plus an error count on <b>Edit deal</b>.</li>
+        <li>E2E tests that fill fields directly will need to open the sheet first.</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- B -->
+  <div class="concept" id="c-b" role="tabpanel" aria-labelledby="t-b" hidden>
+    <div class="screen wide">
+      <div class="rail"><i></i><i class="on"></i><i></i><i></i><i></i></div>
+      <div class="main">
+        <div class="mh1">Rental Deal Analyzer</div>
+        <div class="msub">Cash flow, returns and rules of thumb.</div>
+        <div class="kpis"><div class="kpi"><small>Cash flow</small><strong>$205/mo</strong></div><div class="kpi"><small>Cash-on-cash</small><strong>2.4%</strong></div><div class="kpi"><small>Cap rate</small><strong>7.2%</strong></div></div>
+        <div class="card"><div class="chart"></div></div>
+        <div class="card"><div class="ph" style="width:50%"></div><div class="ph"></div><div class="ph" style="width:70%"></div></div>
+      </div>
+      <aside class="insp" aria-label="Deal inspector mockup">
+        <div class="acc">412 Elm <em>▾</em></div>
+        <div class="grp"><div class="acc">Property <em>$450k · 20%</em></div><div class="row2"><div class="field">$450k</div><div class="field">20%</div></div></div>
+        <div class="grp"><div class="acc">Loan <em>6.5% · 30y</em></div><div class="derived"><span>Amount</span><b>$360k</b></div><div class="row2"><div class="field">6.5%</div><div class="field">30y</div></div></div>
+        <div class="grp"><div class="acc">Costs <em>$720/mo ▸</em></div></div>
+        <div class="grp"><div class="acc">Rental <em>$3,200 ▸</em></div></div>
+        <div class="derived" style="margin-top:auto"><span>PITI</span><b>$2,995</b></div>
+      </aside>
+    </div>
+    <div class="notes">
+      <p>A right-hand inspector, like Figma's, stays docked beside every page on wide screens. Accordion groups show a one-line summary when collapsed. It collapses to an icon rail exactly like the left nav does today.</p>
+      <div><span class="pro">Why it works</span><ul>
+        <li>Inputs and results are visible together, so every edit shows its effect without switching views.</li>
+        <li>Best for power users who iterate a lot on one deal.</li>
+      </ul></div>
+      <div><span class="con">Watch for</span><ul>
+        <li>Two side panels squeeze charts and the financing matrix at 1024–1280px.</li>
+        <li>Below the <code>xl</code> breakpoint it has to fall back to Concept A's sheet anyway, so you build both.</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- C -->
+  <div class="concept" id="c-c" role="tabpanel" aria-labelledby="t-c" hidden>
+    <div class="screen">
+      <div class="rail"><i class="on" style="outline:2px solid var(--accent);outline-offset:2px"></i><i></i><i></i><i></i><i></i></div>
+      <div class="main">
+        <div class="mh1">Wealth Projection</div>
+        <div class="msub">Equity, cash flow and net worth over time.</div>
+        <div class="receipt"><span>412 Elm</span><span>Price <b>$450,000</b></span><span>Loan <b>$360k @ 6.5% · 30y</b></span><span>PITI <b>$2,995</b></span><span>Rent <b>$3,200</b></span><a href="#c-c">Edit on Property ›</a></div>
+        <div class="card"><div class="ph" style="width:35%"></div><div class="row2"><div class="field">Appreciation 3.5%</div><div class="field">Rent growth 3%</div></div></div>
+        <div class="card"><div class="chart"></div></div>
+      </div>
+    </div>
+    <div class="notes">
+      <p>Add a first nav item, <b>Property &amp; Loan</b>, which holds every shared form. The other pages show a read-only receipt line with a link back.</p>
+      <div><span class="pro">Why it works</span><ul>
+        <li>Simplest to build. Mostly deleting sections and adding one route.</li>
+        <li>Clear mental model: set up the deal first, then analyse it.</li>
+      </ul></div>
+      <div><span class="con">Watch for</span><ul>
+        <li>Every what-if costs two page changes. That breaks the "tweak the rate and watch DSCR move" loop that makes these calculators useful.</li>
+        <li>Amortization loses its natural home for the loan form.</li>
+      </ul></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">Ideas to layer on top</span>
+  <h2>Making the inputs feel less like a form</h2>
+  <div class="ideas">
+
+    <div class="idea">
+      <h3>The deal as a sentence</h3>
+      <p>Replace the chip row with a readable sentence. Each underlined value is an inline editor. It shows that loan amount is a result, not an input.</p>
+      <div class="demo sentence" id="sentence">
+        Buying a <button class="tok" data-k="price">$450,000</button> home with <button class="tok" data-k="down">20%</button> down, so borrowing <b class="num" id="sLoan">$360,000</b> at <button class="tok" data-k="rate">6.5%</button> for <button class="tok" data-k="term">30 years</button>, renting it for <button class="tok" data-k="rent">$3,200</button>/mo.
+      </div>
+      <p style="font-size:12px">Click a value to cycle through sample amounts.</p>
+    </div>
+
+    <div class="idea">
+      <h3>The monthly payment is the cost editor</h3>
+      <p>Show the total payment as a stacked bar (P&amp;I, tax, insurance, PMI, HOA). Click a segment to edit it. Six fields become one picture that's useful on every page. <code>SegmentedBar</code> already exists in <code>shared-charts</code>.</p>
+      <div class="demo">
+        <div class="paybar" role="group" aria-label="Monthly payment">
+          <button style="flex:2275;background:var(--seg1)" title="Principal & interest $2,275">P&amp;I $2,275</button>
+          <button style="flex:450;background:var(--seg2)" title="Property tax $450">Tax</button>
+          <button style="flex:150;background:var(--seg4)" title="Insurance $150">Ins</button>
+          <button style="flex:120;background:var(--seg5)" title="HOA $120">HOA</button>
+        </div>
+        <div class="paylegend"><span style="--c:var(--seg1)">P&amp;I $2,275</span><span style="--c:var(--seg2)">Tax $450</span><span style="--c:var(--seg4)">Insurance $150</span><span style="--c:var(--seg5)">HOA $120</span><span>PMI $0 at 20% down</span><b style="margin-left:auto;color:var(--fg)">$2,995/mo</b></div>
+      </div>
+    </div>
+
+    <div class="idea">
+      <h3>Scrub to explore</h3>
+      <p>Drag horizontally on a field label to nudge its value, the way design tools do. The strip shows the live effect on the page's headline metric. That makes sensitivity tangible without a separate chart.</p>
+      <div class="demo scrub">
+        <label id="scrubLabel" tabindex="0" aria-label="Interest rate, drag or use arrow keys">Rate ⇔</label>
+        <output id="scrubVal" class="num">6.50%</output>
+        <span>Cash flow <b id="scrubCf" class="num">$205</b>/mo</span>
+        <span class="d num" id="scrubD">±$0</span>
+      </div>
+    </div>
+
+    <div class="idea">
+      <h3>Show what each page uses</h3>
+      <p>Each page declares which shared inputs it reads. The strip pins those chips first and greys the irrelevant ones, so the user knows what to tweak here.</p>
+      <div class="demo" style="overflow-x:auto">
+        <table class="matrix">
+          <thead><tr><th>Input</th><th>Amort.</th><th>Deal</th><th>Financing</th><th>Wealth</th></tr></thead>
+          <tbody>
+            <tr><td>Rate · term</td><td><span class="dot"></span></td><td><span class="dot"></span></td><td><span class="dot"></span></td><td><span class="dot o"></span></td></tr>
+            <tr><td>Price · down</td><td><span class="dot o"></span></td><td><span class="dot"></span></td><td><span class="dot o"></span></td><td><span class="dot"></span></td></tr>
+            <tr><td>Tax · ins · HOA</td><td><span class="dot o"></span></td><td><span class="dot"></span></td><td><span class="dot"></span></td><td><span class="dot o"></span></td></tr>
+            <tr><td>Rent · vacancy</td><td>–</td><td><span class="dot"></span></td><td><span class="dot"></span></td><td><span class="dot"></span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="idea">
+      <h3>Change ripple + undo</h3>
+      <p>After any edit, briefly highlight the metrics that moved and show a toast you can undo. With inputs off-screen, this is how users know their edit landed.</p>
+      <div class="demo" style="display:flex;flex-direction:column;gap:10px">
+        <span>DSCR <span class="flash num">1.18 → 1.24</span> · Cash flow <span class="flash num">$205 → $318</span></span>
+        <div class="toast">Rate changed 6.5% → 6.0% <u>·</u> <b>Undo</b></div>
+      </div>
+    </div>
+
+    <div class="idea">
+      <h3>First run expands, later visits collapse</h3>
+      <p>A new or untouched scenario shows the full form inline as a guided setup. Once it's valid, the form folds into the strip. Missing pieces appear as chips ("Add rent to unlock cash flow") that open the sheet at the right field. That replaces the current "Fix the highlighted fields above" messages, which would otherwise point at fields that aren't on screen.</p>
+      <div class="demo chips"><span class="chip">Home <b>$450k</b></span><span class="chip err">Rate missing</span><span class="chip" style="border-style:dashed;color:var(--muted)">+ Add rent to unlock cash flow</span></div>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">Recommendation</span>
+  <h2>Build Concept A, with the sentence and payment bar inside the sheet</h2>
+  <div class="plan">
+    <div class="box">
+      <h3>Implementation outline</h3>
+      <ol>
+        <li>New <code>DealStrip</code> in <code>shared-ui</code>: scenario tabs, chips and the PITI total. It replaces <code>ScenarioTabs</code> at the top of each view.</li>
+        <li>New <code>DealSheet</code> on the ui-sdk <code>Drawer</code> (right side on desktop, bottom on mobile). It hosts the existing <code>LoanInputForm</code>, <code>CostBreakdownPanel</code> and <code>RentalInputsPanel</code>, reordered as Property → Loan → Monthly costs → Rental.</li>
+        <li>Each view passes <code>pinned</code> fields and its headline metric to the strip for the popover preview.</li>
+        <li>Delete the repeated Loan, Real-estate cost and Rental sections from the four views (and leave them out of spec 009's page).</li>
+        <li>Error routing: the strip shows an error count, and clicking it opens the sheet scrolled to the first invalid field.</li>
+        <li>Update e2e helpers with an <code>openDealSheet()</code> step.</li>
+      </ol>
+    </div>
+    <div class="box">
+      <h3>What stays inline on each page</h3>
+      <p style="font-size:13.5px;color:var(--muted)">Inputs that only one page reads remain in that page's body, next to their results.</p>
+      <div class="keep">
+        <div><span>Amortization</span><em>Extra payments</em></div>
+        <div><span>Deal Analyzer</span><em>Expenses detail</em></div>
+        <div><span>Financing</span><em>DSCR min, loan terms</em></div>
+        <div><span>Wealth</span><em>Growth, land %, tax</em></div>
+        <div><span>Hold &amp; Exit</span><em>Hold years, selling %</em></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<script>
+(function(){
+  // concept tabs
+  const tabs=[...document.querySelectorAll('.tab')];
+  tabs.forEach(t=>t.addEventListener('click',()=>{
+    tabs.forEach(x=>{const on=x===t;x.setAttribute('aria-selected',on);document.getElementById(x.getAttribute('aria-controls')).hidden=!on;});
+  }));
+
+  // concept A popover
+  const pops={
+    price:['Home price','$450,000','','Loan amount → $360,000 (20% down)'],
+    down:['Down payment','20','%','PMI is $0 at 20% or more'],
+    rate:['Annual interest rate','6.5','%','DSCR 1.18 → 1.24 at 6.0%'],
+    term:['Loan term','30','yr','15 yr: P&I $3,136, DSCR 0.86'],
+    rent:['Monthly rent','$3,200','','+$100 rent → DSCR 1.22'],
+    total:['Total monthly payment','$2,995','/mo','P&I $2,275 · tax $450 · ins $150 · HOA $120']
+  };
+  const pop=document.getElementById('popA'); let openKey=null;
+  document.querySelectorAll('#chipsA .chip').forEach(c=>c.addEventListener('click',e=>{
+    const k=c.dataset.pop;
+    if(openKey===k){pop.hidden=true;openKey=null;return;}
+    const p=pops[k];
+    document.getElementById('popLabel').textContent=p[0];
+    document.getElementById('popVal').textContent=p[1];
+    document.getElementById('popUnit').textContent=p[2];
+    document.getElementById('popDelta').textContent=p[3];
+    pop.style.left=Math.min(c.offsetLeft, c.parentElement.clientWidth-200)+'px';
+    pop.hidden=false;openKey=k;e.stopPropagation();
+  }));
+  document.addEventListener('click',e=>{if(!pop.contains(e.target)){pop.hidden=true;openKey=null;}});
+  const sheet=document.getElementById('sheetA');
+  document.getElementById('openSheet').addEventListener('click',()=>{sheet.classList.add('open');pop.hidden=true;openKey=null;});
+  document.getElementById('closeSheet').addEventListener('click',()=>sheet.classList.remove('open'));
+
+  // sentence
+  const opts={price:[450000,400000,525000],down:[20,10,25],rate:[6.5,6.0,7.0],term:[30,15],rent:[3200,3000,3500]};
+  const st={price:0,down:0,rate:0,term:0,rent:0};
+  const fmt=n=>'$'+Math.round(n).toLocaleString('en-US');
+  document.querySelectorAll('.tok').forEach(t=>t.addEventListener('click',()=>{
+    const k=t.dataset.k; st[k]=(st[k]+1)%opts[k].length; const v=opts[k][st[k]];
+    t.textContent=k==='price'||k==='rent'?fmt(v):k==='down'||k==='rate'?v+'%':v+' years';
+    const price=opts.price[st.price],down=opts.down[st.down];
+    document.getElementById('sLoan').textContent=fmt(price*(1-down/100));
+  }));
+
+  // scrub
+  const lab=document.getElementById('scrubLabel'); let rate=6.5, startX=null, startRate=6.5;
+  const pmt=r=>{const i=r/1200;return 360000*i/(1-Math.pow(1+i,-360));};
+  const base=pmt(6.5);
+  function render(){
+    document.getElementById('scrubVal').textContent=rate.toFixed(2)+'%';
+    const d=base-pmt(rate); const cf=205+d;
+    document.getElementById('scrubCf').textContent=fmt(cf);
+    const el=document.getElementById('scrubD');
+    el.textContent=(d>=0?'+':'−')+fmt(Math.abs(d)).replace('$','$');
+    el.style.color=d>=0?'var(--good)':'var(--bad)';
+  }
+  lab.addEventListener('pointerdown',e=>{startX=e.clientX;startRate=rate;lab.setPointerCapture(e.pointerId);});
+  lab.addEventListener('pointermove',e=>{if(startX==null)return;rate=Math.min(9,Math.max(4,startRate+(e.clientX-startX)*0.0125));rate=Math.round(rate*8)/8;render();});
+  lab.addEventListener('pointerup',()=>{startX=null;});
+  lab.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowUp'){rate=Math.min(9,rate+.125);render();e.preventDefault();}if(e.key==='ArrowLeft'||e.key==='ArrowDown'){rate=Math.max(4,rate-.125);render();e.preventDefault();}});
+  render();
+})();
+</script>

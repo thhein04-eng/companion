@@ -9,3 +9,7 @@ export * from './lib/persistence';
 export * from './lib/ltv';
 export * from './lib/compute-valid-schedules';
 export * from './lib/compare-scenarios';
+export * from './lib/validate-rental';
+export * from './lib/rental-defaults';
+export * from './lib/deal-fields';
+export * from './lib/step-value';

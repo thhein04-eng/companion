@@ -1,4 +1,4 @@
-import type { FieldError, RentalAssumptions } from 'shared-calculations';
+import type { FieldError, RentalAssumptions } from './types';
 
 /** The optional annual growth assumptions (spec 005 FR-013); a missing value means 0%. */
 type GrowthField = 'rentGrowthPct' | 'expenseGrowthPct' | 'appreciationPct';
@@ -12,6 +12,7 @@ type NumericRentalField = Exclude<
   | 'financing'
   | 'financingSelection'
   | 'wealth'
+  | 'exit'
 >;
 
 const GROWTH_FIELDS: { field: GrowthField; label: string }[] = [
