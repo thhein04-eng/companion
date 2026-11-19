@@ -8,6 +8,7 @@ import {
 } from 'shared-calculations';
 import { referenceScenario } from './__fixtures__/dscr-reference';
 import { generatedScenarios } from './__fixtures__/generated-scenarios';
+import { annualCashToInvestor } from './cash-to-investor';
 import { compareHolds, projectExit } from './project-exit';
 import { projectWealth } from './project-wealth';
 import type { ExitResult } from './types';
@@ -263,5 +264,20 @@ describe('compareHolds', () => {
     expect(holds(scenario({}, { exit: { holdYears: 12 } }))).toEqual([
       5, 7, 10, 12,
     ]);
+  });
+});
+
+describe('annualCashToInvestor (spec 013 T009)', () => {
+  const cases: [string, LoanScenario][] = [
+    ['reference', scenario()],
+    ...generatedScenarios(25).map((s): [string, LoanScenario] => [s.id, s]),
+  ];
+
+  it.each(cases)('matches projectExit cash to investor (%s)', (_, s) => {
+    const schedule = computeSchedule(s);
+    for (const k of [1, 7, 30]) {
+      const expected = exit(s, k).years.map((y) => y.cashToInvestor);
+      expect(annualCashToInvestor(s, schedule, k)).toEqual(expected);
+    }
   });
 });

@@ -25,6 +25,17 @@ Pure rental-analysis functions for the Rental Deal Analyzer.
   - `DEFAULT_EXIT`, `HOLD_PRESETS`, `EXAMPLE_GROWTH`, `EXIT_NO_PRICE_REASON`, `EXIT_INVALID_REASON`
   - Types: `ProFormaYear`, `ExitReturns`, `ExitResult`, `ExitProjection`
   - `projectWealth(scenario, schedule, { horizonYears })`: the override replaces the stored horizon
+- Sale profit & exit (spec 013):
+  - `analyzeSale(scenario, schedule)`: the sale, cumulative cash flow, profit, return on cash,
+    verdict, break-even price and the optional tax-on-sale estimate for one exit month. Works
+    without a rental (cash flow 0).
+  - `validateSale`, `resolveSaleAssumptions`, `saleVerdict`
+  - `DEFAULT_SALE`, `DEFAULT_SALE_TAX`, `SALE_NON_RENTAL_DEFAULT_MONTHS`, `SALE_TAX_FIELDS`,
+    `SALE_NO_PRICE_REASON`, `SALE_INVALID_REASON`, `SALE_TAX_INVALID_REASON`
+  - Types: `ResolvedSaleAssumptions`, `SaleResult`, `SaleBreakEven`, `SaleTaxEstimate`, `SaleAnalysis`
+  - `downPaymentDollars(scenario)` is now exported (non-rental cash invested).
+  - Internal: `annualCashToInvestor` / `operatingCashYears` (`cash-to-investor.ts`) are shared by
+    `projectExit` and `analyzeSale`, so whole-year exits agree to the cent.
 - `onePercentRatio(rule)` (spec 011): rent ÷ price for the 1% Rule card's headline.
 - Moved to `shared-calculations` in spec 010 (still re-exported here): `validateRental`,
   `DEFAULT_RENTAL_ASSUMPTIONS`.

@@ -27,6 +27,34 @@ export interface LoanScenario {
   principalIsOverridden: boolean;
   /** Rental/investment inputs for the Deal Analyzer. `null`/absent = not analyzing as a rental. */
   rental?: RentalAssumptions | null;
+  /** Sale Profit & Exit Analyzer inputs (spec 013). Optional; missing = defaults. */
+  sale?: SaleAssumptions | null;
+}
+
+/**
+ * Sale Profit & Exit Analyzer assumptions (spec 013 data-model §A). Every field optional;
+ * missing = default. Scenario-level (not under `rental`) so a non-rental can be analysed.
+ */
+export interface SaleAssumptions {
+  /** Integer ≥ 1; > term is clamped, not an error. Default: valid stored hold × 12, else 84. */
+  exitMonth?: number;
+  /** Display unit for the exit input. Default 'years'. */
+  exitUnit?: 'years' | 'months';
+  /** −10 ≤ x ≤ 25; used only when no rental (otherwise `rental.appreciationPct`). Default 0. */
+  appreciationPct?: number;
+  /** 0 ≤ x ≤ 15. Default 7; used only when no rental (otherwise `rental.exit.sellingCostsPct`). */
+  sellingCostsPct?: number;
+  tax?: SaleTaxAssumptions | null;
+}
+
+/** Illustrative tax-on-sale estimate (spec 013 US3). Every field optional. */
+export interface SaleTaxAssumptions {
+  /** Default `false`. */
+  enabled?: boolean;
+  /** 0 ≤ x ≤ 40. Default 15. */
+  capitalGainsRatePct?: number;
+  /** 0 ≤ x ≤ 40. Default 25. */
+  recaptureRatePct?: number;
 }
 
 /**
@@ -162,7 +190,9 @@ export interface FieldError {
     | `rental.dscrMinimum`
     | `rental.financing.${FinancingOptionId}.${string}`
     | `rental.wealth.${keyof WealthAssumptions}`
-    | `rental.exit.${keyof ExitAssumptions}`;
+    | `rental.exit.${keyof ExitAssumptions}`
+    | `sale.${'exitMonth' | 'appreciationPct' | 'sellingCostsPct'}`
+    | `sale.tax.${'capitalGainsRatePct' | 'recaptureRatePct'}`;
   message: string;
 }
 

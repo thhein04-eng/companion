@@ -5,9 +5,8 @@ import {
   type RatioResult,
   type RentalAssumptions,
 } from 'shared-calculations';
+import { operatingCashYears } from './cash-to-investor';
 import { irr } from './irr';
-import { operatingYear } from './operating-year';
-import { projectRental } from './project-rental';
 import { projectWealth } from './project-wealth';
 import type { ExitProjection, ExitReturns, ProFormaYear } from './types';
 import {
@@ -74,33 +73,25 @@ export function projectExit(
       errors: [...errors, ...wealth.errors],
     };
   }
-  const rentalYears = projectRental(scenario, schedule).years;
+  // Operating cash comes from the shared helper (spec 013 T010), so /sale agrees to the cent.
+  const cash = operatingCashYears(scenario, schedule, hold);
 
   const years: ProFormaYear[] = [];
   for (let y = 1; y <= hold; y++) {
     const w = wealth.years[y];
-    const inTerm = rentalYears[y - 1];
-    let grossIncome: number;
-    let operatingExpenses: number;
-    if (inTerm) {
-      ({ grossIncome, operatingExpenses } = inTerm);
-    } else {
-      const { gsiMonthly, opexMonthly } = operatingYear(scenario, y);
-      grossIncome = roundCents(gsiMonthly * 12);
-      operatingExpenses = roundCents(opexMonthly * 12);
-    }
-    const debtService = inTerm?.debtService ?? 0;
-    const extraPrincipal = roundCents(
-      schedule.periods
-        .slice((y - 1) * 12, y * 12)
-        .reduce((sum, p) => sum + p.extraPrincipalApplied, 0),
-    );
-    const cashToInvestor = roundCents(w.noi - debtService - extraPrincipal);
+    const {
+      grossIncome,
+      operatingExpenses,
+      noi,
+      debtService,
+      extraPrincipal,
+      cashToInvestor,
+    } = cash[y - 1];
     years.push({
       year: y,
       grossIncome,
       operatingExpenses,
-      noi: w.noi,
+      noi,
       debtService,
       extraPrincipal,
       cashToInvestor,

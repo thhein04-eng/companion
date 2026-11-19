@@ -32,7 +32,7 @@ function fromAnnual(rawAnnual: number): MonthlyAnnual {
 }
 
 /** The down payment in dollars: a percent resolves against `homePrice`; none counts as $0. */
-function downPaymentDollars(scenario: LoanScenario): number {
+export function downPaymentDollars(scenario: LoanScenario): number {
   const down = scenario.downPayment;
   if (!down) return 0;
   if ('amount' in down) return down.amount;

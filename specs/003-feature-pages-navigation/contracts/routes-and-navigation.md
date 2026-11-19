@@ -10,6 +10,7 @@
 | `/financing`     | `FinancingView` (added by spec 006)       | `DSCR & Financing · Companion`        | "DSCR & Financing"        |
 | `/wealth`        | `WealthView` (added by spec 008)          | `Wealth Projection · Companion`       | "Wealth Projection"       |
 | `/pro-forma`     | `ProFormaView` (added by spec 009)        | `Hold & Exit Pro Forma · Companion`   | "Hold & Exit Pro Forma"   |
+| `/sale`          | `SaleView` (added by spec 013)            | `Sale Profit & Exit Analyzer · Companion` | "Sale Profit & Exit Analyzer" |
 | any other path   | `not-found.tsx` rendered inside the shell | `Not found · Companion`               | "Page not found"          |
 
 ### Page section contract
