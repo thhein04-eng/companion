@@ -34,19 +34,18 @@ export function ChartFrame({
   return (
     <figure
       data-testid={testId}
-      className={`chart-root m-0 flex min-w-0 flex-col gap-2 rounded-md p-3 ${className ?? ''}`}
-      style={{ boxShadow: '0 0 0 1px var(--chart-border)' }}
+      className={`chart-root m-0 flex min-w-0 flex-col gap-3 rounded-xl border border-line p-[18px] ${className ?? ''}`}
     >
       <div className="flex flex-col gap-0.5">
         <h3
-          className="m-0 text-sm font-medium"
+          className="m-0 font-display text-h3 font-semibold"
           style={{ color: 'var(--chart-ink)' }}
         >
           {title}
         </h3>
         {description ? (
           <p
-            className="m-0 text-xs"
+            className="m-0 text-small"
             style={{ color: 'var(--chart-ink-secondary)' }}
           >
             {description}

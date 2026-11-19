@@ -12,8 +12,13 @@ import { rentalLineItems } from './rental-line-items';
 import type { WealthYear } from './types';
 import { resolveWealthAssumptions } from './validate-wealth';
 import { referenceScenario } from './__fixtures__/dscr-reference';
+import { generatedScenarios } from './__fixtures__/generated-scenarios';
 
-const TYPICAL = { appreciationPct: 3, rentGrowthPct: 2.5, expenseGrowthPct: 2.5 };
+const TYPICAL = {
+  appreciationPct: 3,
+  rentGrowthPct: 2.5,
+  expenseGrowthPct: 2.5,
+};
 
 function scenario(
   overrides: Partial<LoanScenario> = {},
@@ -39,54 +44,72 @@ function rows(s: LoanScenario): WealthYear[] {
 
 /** research.md § Reference scenario, every column. */
 const REFERENCE: Record<number, Partial<WealthYear>> = {
-  1: { noi: 28512, cashFlow: 4561.08, interest: 20903.45, taxableIncome: -4027.81, taxEffect: 966.67, propertyValue: 412000, loanBalance: 296952.57, equity: 115047.43, cumulativeCashFlow: 4561.08, netWorth: 119608.51, netWorthAfterTax: 120575.18 },
-  2: { noi: 29224.8, cashFlow: 5273.88, interest: 20683.16, taxableIncome: -3094.72, taxEffect: 742.73, propertyValue: 424360, loanBalance: 293684.84, equity: 130675.16, cumulativeCashFlow: 9834.96, netWorth: 140510.12, netWorthAfterTax: 142219.52 },
-  5: { noi: 31471.91, cashFlow: 7520.99, interest: 19922, taxableIncome: -86.45, taxEffect: 20.75, propertyValue: 463709.63, loanBalance: 282394.77, equity: 181314.86, cumulativeCashFlow: 30113.84, netWorth: 211428.7, netWorthAfterTax: 213939.7 },
-  6: { noi: 32258.71, cashFlow: 8307.79, interest: 19630.79, taxableIncome: 991.56, taxEffect: -237.97, propertyValue: 477620.92, loanBalance: 278074.66, equity: 199546.26, cumulativeCashFlow: 38421.63, netWorth: 237967.89, netWorthAfterTax: 240240.92 },
-  10: { noi: 35607.58, cashFlow: 11656.66, interest: 18239.46, taxableIncome: 5731.76, taxEffect: -1375.62, propertyValue: 537566.55, loanBalance: 257437.15, equity: 280129.4, cumulativeCashFlow: 79921.62, netWorth: 360051.02, netWorthAfterTax: 358581.92 },
+  1: {
+    noi: 28512,
+    cashFlow: 4561.08,
+    interest: 20903.45,
+    taxableIncome: -4027.81,
+    taxEffect: 966.67,
+    propertyValue: 412000,
+    loanBalance: 296952.57,
+    equity: 115047.43,
+    cumulativeCashFlow: 4561.08,
+    netWorth: 119608.51,
+    netWorthAfterTax: 120575.18,
+  },
+  2: {
+    noi: 29224.8,
+    cashFlow: 5273.88,
+    interest: 20683.16,
+    taxableIncome: -3094.72,
+    taxEffect: 742.73,
+    propertyValue: 424360,
+    loanBalance: 293684.84,
+    equity: 130675.16,
+    cumulativeCashFlow: 9834.96,
+    netWorth: 140510.12,
+    netWorthAfterTax: 142219.52,
+  },
+  5: {
+    noi: 31471.91,
+    cashFlow: 7520.99,
+    interest: 19922,
+    taxableIncome: -86.45,
+    taxEffect: 20.75,
+    propertyValue: 463709.63,
+    loanBalance: 282394.77,
+    equity: 181314.86,
+    cumulativeCashFlow: 30113.84,
+    netWorth: 211428.7,
+    netWorthAfterTax: 213939.7,
+  },
+  6: {
+    noi: 32258.71,
+    cashFlow: 8307.79,
+    interest: 19630.79,
+    taxableIncome: 991.56,
+    taxEffect: -237.97,
+    propertyValue: 477620.92,
+    loanBalance: 278074.66,
+    equity: 199546.26,
+    cumulativeCashFlow: 38421.63,
+    netWorth: 237967.89,
+    netWorthAfterTax: 240240.92,
+  },
+  10: {
+    noi: 35607.58,
+    cashFlow: 11656.66,
+    interest: 18239.46,
+    taxableIncome: 5731.76,
+    taxEffect: -1375.62,
+    propertyValue: 537566.55,
+    loanBalance: 257437.15,
+    equity: 280129.4,
+    cumulativeCashFlow: 79921.62,
+    netWorth: 360051.02,
+    netWorthAfterTax: 358581.92,
+  },
 };
-
-/** A small deterministic PRNG so the invariant scenarios are reproducible. */
-function seeded(seed: number) {
-  let s = seed;
-  return () => {
-    s = (s * 1664525 + 1013904223) % 2 ** 32;
-    return s / 2 ** 32;
-  };
-}
-
-function generatedScenarios(count: number): LoanScenario[] {
-  const rand = seeded(42);
-  const pick = (lo: number, hi: number) =>
-    Math.round((lo + rand() * (hi - lo)) * 10) / 10;
-  return Array.from({ length: count }, (_, i) => {
-    const down = pick(10, 40);
-    const price = 400_000;
-    return referenceScenario(
-      {
-        id: `gen-${i}`,
-        annualInterestRatePct: pick(3, 9),
-        downPayment: { percent: down },
-        principal: roundCents(price * (1 - down / 100)),
-        pmiAnnualRatePct: down < 20 ? 0.5 : null,
-        extraPayments:
-          i % 2 === 0
-            ? [{ id: 'x', kind: 'recurring', amount: 300, startPeriod: 1 }]
-            : [],
-      },
-      {
-        appreciationPct: pick(-2, 6),
-        rentGrowthPct: pick(-1, 5),
-        expenseGrowthPct: pick(0, 4),
-        rehabBudget: i % 3 === 0 ? 15_000 : 0,
-        wealth: {
-          horizonYears: 1 + Math.floor(rand() * 30),
-          forcedAppreciation: i % 4 === 0 ? 25_000 : 0,
-        },
-      },
-    );
-  });
-}
 
 describe('projectWealth — reference scenario (US1)', () => {
   const projection = project(scenario());
@@ -121,6 +144,16 @@ describe('projectWealth — reference scenario (US1)', () => {
     expect(projection.errors).toEqual([]);
   });
 
+  it('override ignores an invalid stored horizon (spec 009 T007)', () => {
+    const s = scenario({}, {}, { horizonYears: 31 });
+    const result = projectWealth(s, computeSchedule(s), { horizonYears: 3 });
+    expect(result.years).toHaveLength(4);
+    expect(result.horizonYears).toBe(3);
+    expect(result.errors.map((e) => e.field)).toContain(
+      'rental.wealth.horizonYears',
+    );
+  });
+
   it('ends at year 5 with a 5-year horizon', () => {
     const years = rows(scenario({}, {}, { horizonYears: 5 }));
     expect(years).toHaveLength(6);
@@ -141,11 +174,7 @@ describe('projectWealth — reference scenario (US1)', () => {
   });
 
   it('continues past the loan term with no debt', () => {
-    const s = scenario(
-      { termMonths: 180 },
-      {},
-      { horizonYears: 20 },
-    );
+    const s = scenario({ termMonths: 180 }, {}, { horizonYears: 20 });
     const years = rows(s);
     expect(years).toHaveLength(21);
     for (const y of years.slice(16)) {
@@ -264,10 +293,17 @@ describe('projectWealth — drivers (US2)', () => {
 
   it('keeps value and NOI flat at 0% growth', () => {
     const years = rows(
-      scenario({}, { appreciationPct: 0, rentGrowthPct: 0, expenseGrowthPct: 0 }),
+      scenario(
+        {},
+        { appreciationPct: 0, rentGrowthPct: 0, expenseGrowthPct: 0 },
+      ),
     );
-    expect(new Set(years.map((y) => y.propertyValue))).toEqual(new Set([400_000]));
-    expect(new Set(years.slice(1).map((y) => y.noi))).toEqual(new Set([28_512]));
+    expect(new Set(years.map((y) => y.propertyValue))).toEqual(
+      new Set([400_000]),
+    );
+    expect(new Set(years.slice(1).map((y) => y.noi))).toEqual(
+      new Set([28_512]),
+    );
   });
 
   it('handles falling values', () => {
@@ -296,7 +332,9 @@ describe('projectWealth — tax (US3)', () => {
     const projection = project(scenario());
     expect(projection.depreciableBasis).toBe(320_000);
     expect(projection.taxNaReason).toBeNull();
-    expect(projection.years?.slice(1).every((y) => y.depreciation === 11636.36)).toBe(true);
+    expect(
+      projection.years?.slice(1).every((y) => y.depreciation === 11636.36),
+    ).toBe(true);
   });
 
   it('includes rehab in the basis', () => {
@@ -311,9 +349,9 @@ describe('projectWealth — tax (US3)', () => {
     expect(years[28].depreciation).toBe(5818.28);
     expect(years[29].depreciation).toBe(0);
     expect(years[30].depreciation).toBe(0);
-    expect(
-      roundCents(years.reduce((sum, y) => sum + y.depreciation, 0)),
-    ).toBe(320_000);
+    expect(roundCents(years.reduce((sum, y) => sum + y.depreciation, 0))).toBe(
+      320_000,
+    );
   });
 
   it('equals pre-tax net worth at a 0% rate', () => {
@@ -327,7 +365,9 @@ describe('projectWealth — tax (US3)', () => {
     const plain = rows(scenario());
     const extra = rows(
       scenario({
-        extraPayments: [{ id: 'x', kind: 'recurring', amount: 500, startPeriod: 1 }],
+        extraPayments: [
+          { id: 'x', kind: 'recurring', amount: 500, startPeriod: 1 },
+        ],
       }),
     );
     expect(extra[5].interest).toBeLessThan(plain[5].interest);
@@ -335,20 +375,29 @@ describe('projectWealth — tax (US3)', () => {
     expect(extra[5].cashFlow).toBe(plain[5].cashFlow);
   });
 
-  it.each([
-    [{ landValuePct: 100 }],
-    [{ marginalTaxRatePct: 61 }],
-  ])('blanks only the tax figures for %o', (wealth) => {
-    const valid = project(scenario());
-    const invalid = project(scenario({}, {}, wealth));
-    expect(invalid.taxNaReason).toBe(
-      'Fix the tax assumptions to see after-tax figures.',
-    );
-    expect(invalid.depreciableBasis).toBeNull();
-    for (const [i, y] of (invalid.years as WealthYear[]).entries()) {
-      expect([y.taxableIncome, y.taxEffect, y.cumulativeTaxEffect, y.netWorthAfterTax]).toEqual([null, null, null, null]);
-      const v = (valid.years as WealthYear[])[i];
-      expect([y.netWorth, y.equity, y.cashFlow]).toEqual([v.netWorth, v.equity, v.cashFlow]);
-    }
-  });
+  it.each([[{ landValuePct: 100 }], [{ marginalTaxRatePct: 61 }]])(
+    'blanks only the tax figures for %o',
+    (wealth) => {
+      const valid = project(scenario());
+      const invalid = project(scenario({}, {}, wealth));
+      expect(invalid.taxNaReason).toBe(
+        'Fix the tax assumptions to see after-tax figures.',
+      );
+      expect(invalid.depreciableBasis).toBeNull();
+      for (const [i, y] of (invalid.years as WealthYear[]).entries()) {
+        expect([
+          y.taxableIncome,
+          y.taxEffect,
+          y.cumulativeTaxEffect,
+          y.netWorthAfterTax,
+        ]).toEqual([null, null, null, null]);
+        const v = (valid.years as WealthYear[])[i];
+        expect([y.netWorth, y.equity, y.cashFlow]).toEqual([
+          v.netWorth,
+          v.equity,
+          v.cashFlow,
+        ]);
+      }
+    },
+  );
 });

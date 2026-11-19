@@ -14,34 +14,30 @@ import {
   withDealMetrics,
   type DealAnalysis,
 } from 'deal-analyzer-calculations';
-import { useScenarios } from 'shared-data-access';
+import { useDealEdits, useScenarios } from 'shared-data-access';
 import {
   ComparisonGrid,
-  CostBreakdownPanel,
-  LoanInputForm,
+  currency,
+  DEAL_ANALYZER_PROFILE,
+  dealPayment,
+  DealStrip,
+  GrowthFields,
+  InputsMessage,
   MetricBadge,
   MetricBadgeGroup,
-  ScenarioTabs,
+  PageHeader,
+  Section,
+  SectionHeader,
 } from 'shared-ui';
 import { RentalChartsSection } from './charts/rental-charts-section';
 import { DEAL_COMPARISON_COLUMNS } from './deal-comparison-columns';
 import { DealMetrics } from './deal-metrics';
 import { IncomeExpenseCard } from './income-expense-card';
-import { RentalInputsPanel } from './rental-inputs-panel';
-import { useRentalEditor } from './use-rental-editor';
 
 /** The Rental Deal Analyzer page (spec 002), rendered at `/deal-analyzer`. */
 export function DealAnalyzerView() {
-  const {
-    scenarios,
-    activeScenarioId,
-    activeScenario,
-    setActiveScenarioId,
-    updateActiveScenario,
-    addScenario,
-    removeScenario,
-  } = useScenarios();
-  const { updateActiveRental } = useRentalEditor();
+  const { scenarios, activeScenario } = useScenarios();
+  const { editRental } = useDealEdits();
 
   // Memoized on the scenario so unrelated re-renders don't recompute the
   // schedule or the deal analysis.
@@ -88,19 +84,37 @@ export function DealAnalyzerView() {
     scenarios.map((s) => [s.id, s.name]),
   );
 
+  const payment = dealPayment(activeScenario, schedule);
+  const errors = [
+    ...(validation.valid ? [] : validation.errors),
+    ...rentalErrors,
+  ];
+
   return (
     <>
-      <header>
-        <h1
-          tabIndex={-1}
-          className="text-2xl font-semibold text-neutral-900 focus:outline-none"
-        >
-          Rental Deal Analyzer
-        </h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          Analyze a rental&apos;s cash flow, returns, and rules of thumb.
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="Analysis"
+        title="Rental Deal Analyzer"
+        lede="Analyze a rental's cash flow, returns, and rules of thumb."
+      />
+
+      <DealStrip
+        profile={DEAL_ANALYZER_PROFILE}
+        headline={{
+          label: 'Cash flow',
+          value: analysis?.cashFlow.monthly ?? null,
+          naReason: !validation.valid
+            ? 'Fix the loan inputs to see cash flow.'
+            : activeScenario.rental
+              ? 'Fix the rental inputs to see cash flow.'
+              : 'Add rent to see cash flow.',
+          format: (n) => `${currency.format(n)}/mo`,
+          betterWhen: 'higher',
+        }}
+        errors={errors}
+        payment={payment}
+        sheet={{ totalCashInvested: analysis?.totalCashInvested ?? null }}
+      />
 
       {activeScenario.homePrice != null || analysis ? (
         <MetricBadgeGroup>
@@ -122,76 +136,61 @@ export function DealAnalyzerView() {
         </MetricBadgeGroup>
       ) : null}
 
-      <ScenarioTabs
-        scenarios={scenarios}
-        activeScenarioId={activeScenarioId}
-        onActiveScenarioIdChange={setActiveScenarioId}
-        onAddScenario={addScenario}
-        onRemoveScenario={removeScenario}
-      />
-
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium text-neutral-800">Loan</h2>
-        <LoanInputForm
-          scenario={activeScenario}
-          errors={validation.valid ? [] : validation.errors}
-          onChange={updateActiveScenario}
-        />
-      </section>
-
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium text-neutral-800">
-          Real-estate costs
-        </h2>
-        <CostBreakdownPanel
-          scenario={activeScenario}
-          onChange={updateActiveScenario}
-          monthlyPrincipalAndInterest={
-            schedule?.summary.monthlyPrincipalAndInterest ?? 0
-          }
-          totalMonthlyPayment={schedule?.summary.totalMonthlyPayment ?? 0}
-          pmiDropPeriod={schedule?.summary.pmiDropPeriod ?? null}
-        />
-      </section>
-
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium text-neutral-800">Deal analyzer</h2>
-        <RentalInputsPanel
-          rental={activeScenario.rental ?? null}
-          errors={rentalErrors}
-          onChange={updateActiveRental}
-          totalCashInvested={analysis?.totalCashInvested ?? null}
+      <Section>
+        <SectionHeader
+          title="Deal analyzer"
+          lede="Income, expenses, returns and rules of thumb for this deal."
         />
         {analysis ? (
           <>
             <IncomeExpenseCard analysis={analysis} />
             <DealMetrics analysis={analysis} />
-            {validation.valid && schedule ? (
-              <RentalChartsSection
-                scenario={validation.scenario}
-                schedule={schedule}
-              />
-            ) : null}
           </>
-        ) : null}
-        {!validation.valid ? (
-          <p className="text-sm text-red-600">
-            Fix the highlighted loan fields above to see the deal analysis.
-          </p>
-        ) : null}
-      </section>
+        ) : (
+          <InputsMessage
+            data-testid="deal-na"
+            errors={errors}
+            message={
+              !validation.valid
+                ? 'Fix the loan inputs to see the deal analysis.'
+                : activeScenario.rental
+                  ? 'Fix the rental inputs to see the deal analysis.'
+                  : 'Add rent to see the deal analysis.'
+            }
+          />
+        )}
+      </Section>
+
+      {activeScenario.rental ? (
+        <Section>
+          <SectionHeader
+            title="Projection assumptions"
+            lede="Annual growth used by the multi-year charts below."
+          />
+          <GrowthFields
+            rental={activeScenario.rental}
+            errors={rentalErrors}
+            onChange={(patch) => editRental(patch, 'sheet')}
+          />
+        </Section>
+      ) : null}
+
+      {analysis && validation.valid && schedule ? (
+        <RentalChartsSection
+          scenario={validation.scenario}
+          schedule={schedule}
+        />
+      ) : null}
 
       {comparison ? (
-        <section className="flex flex-col gap-4">
-          <h2 className="text-lg font-medium text-neutral-800">
-            Compare scenarios
-          </h2>
+        <Section>
+          <SectionHeader title="Compare scenarios" />
           <ComparisonGrid
             comparison={comparison}
             columns={DEAL_COMPARISON_COLUMNS}
             scenarioNames={scenarioNames}
           />
-        </section>
+        </Section>
       ) : null}
     </>
   );

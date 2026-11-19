@@ -20,6 +20,13 @@ Pure rental-analysis functions for the Rental Deal Analyzer.
   - `projectWealth`, `resolveWealthAssumptions`, `validateWealth`
   - `DEFAULT_WEALTH`, `TYPICAL_GROWTH`, `DEPRECIATION_YEARS`, `WEALTH_*_REASON`
   - Types: `WealthYear`, `WealthProjection`
+- Hold & exit pro forma (spec 009):
+  - `irr`, `projectExit`, `compareHolds`, `validateExit`, `resolveExitAssumptions`
+  - `DEFAULT_EXIT`, `HOLD_PRESETS`, `EXAMPLE_GROWTH`, `EXIT_NO_PRICE_REASON`, `EXIT_INVALID_REASON`
+  - Types: `ProFormaYear`, `ExitReturns`, `ExitResult`, `ExitProjection`
+  - `projectWealth(scenario, schedule, { horizonYears })`: the override replaces the stored horizon
+- Moved to `shared-calculations` in spec 010 (still re-exported here): `validateRental`,
+  `DEFAULT_RENTAL_ASSUMPTIONS`.
 
 Import only from the package name (`'deal-analyzer-calculations'`), never from a deep path.
 

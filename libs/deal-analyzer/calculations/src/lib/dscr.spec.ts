@@ -110,9 +110,9 @@ describe('resolveDscrMinimum (spec 006 FR-002)', () => {
     [Number.NaN, null],
     ['1.2', null],
   ])('%s → %s', (stored, expected) => {
-    expect(
-      resolveDscrMinimum({ ...base, dscrMinimum: stored as number }),
-    ).toBe(expected);
+    expect(resolveDscrMinimum({ ...base, dscrMinimum: stored as number })).toBe(
+      expected,
+    );
   });
 });
 

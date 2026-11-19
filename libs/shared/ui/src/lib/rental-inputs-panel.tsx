@@ -1,7 +1,8 @@
 'use client';
 
 import type { FieldError, RentalAssumptions } from 'shared-calculations';
-import { currency, NumberField } from 'shared-ui';
+import { currency } from './formatters';
+import { NumberField } from './number-field';
 
 export interface RentalInputsPanelProps {
   rental: RentalAssumptions | null;
@@ -43,24 +44,31 @@ export function RentalInputsPanel({
   hideGrowth = false,
 }: RentalInputsPanelProps) {
   const rentField = (
-    <NumberField
-      label="Monthly rent"
-      variant="currency"
-      min={0}
-      value={rental?.grossMonthlyRent ?? null}
-      onValueChange={(value) => {
-        if (rental == null && value == null) return;
-        onChange({ grossMonthlyRent: value ?? 0 });
-      }}
-      error={errorFor(errors, 'grossMonthlyRent')}
-    />
+    <div data-deal-field="rental.grossMonthlyRent">
+      <NumberField
+        label="Monthly rent"
+        variant="currency"
+        min={0}
+        value={rental?.grossMonthlyRent ?? null}
+        onValueChange={(value) => {
+          if (rental == null && value == null) return;
+          onChange({ grossMonthlyRent: value ?? 0 });
+        }}
+        error={errorFor(errors, 'grossMonthlyRent')}
+      />
+    </div>
   );
 
   if (rental == null) {
     return (
       <div className="flex flex-col gap-2">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">{rentField}</div>
-        <p className="text-sm text-neutral-500">
+        <div
+          data-input-grid=""
+          className="grid grid-cols-1 gap-[var(--space-grid)] sm:grid-cols-2"
+        >
+          {rentField}
+        </div>
+        <p className="m-0 text-small text-muted">
           Enter rent to analyze this as a rental.
         </p>
       </div>
@@ -92,7 +100,6 @@ export function RentalInputsPanel({
       error={errorFor(errors, field)}
     />
   );
-  const growthOptions = { min: null, step: 0.1, description: 'per year' };
 
   const customExpenses = rental.customExpenses ?? [];
 
@@ -103,8 +110,11 @@ export function RentalInputsPanel({
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div className="flex flex-col gap-[var(--space-card)]">
+      <div
+        data-input-grid=""
+        className="grid grid-cols-1 gap-[var(--space-grid)] sm:grid-cols-2"
+      >
         {rentField}
         <NumberField
           label="Other monthly income"
@@ -124,24 +134,16 @@ export function RentalInputsPanel({
       </div>
 
       {hideGrowth ? null : (
-        <div className="flex flex-col gap-3 border-t border-neutral-200 pt-4">
-          <h3 className="text-sm font-medium text-neutral-800">
-            Growth assumptions
-          </h3>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {percentField('rentGrowthPct', 'Rent growth', growthOptions)}
-            {percentField('expenseGrowthPct', 'Expense growth', growthOptions)}
-            {percentField('appreciationPct', 'Appreciation', growthOptions)}
-          </div>
+        <div className="flex flex-col gap-3 border-t border-line pt-4">
+          <h4 className="eyebrow m-0">Growth assumptions</h4>
+          <GrowthFields rental={rental} errors={errors} onChange={onChange} />
         </div>
       )}
 
       {/* Custom Operating Expenses Sub-Section */}
-      <div className="flex flex-col gap-3 border-t border-neutral-200 pt-4">
+      <div className="flex flex-col gap-3 border-t border-line pt-4">
         <div className="flex items-baseline justify-between">
-          <h3 className="text-sm font-medium text-neutral-800">
-            Custom operating expenses
-          </h3>
+          <h4 className="eyebrow m-0">Custom operating expenses</h4>
           <button
             type="button"
             onClick={() =>
@@ -150,7 +152,7 @@ export function RentalInputsPanel({
                 { id: Date.now().toString(), label: '', monthlyAmount: 0 },
               ])
             }
-            className="text-xs font-medium text-neutral-600 underline underline-offset-2 hover:text-neutral-900"
+            className="cursor-pointer rounded-xs text-[13px] font-medium text-accent underline-offset-2 hover:underline"
           >
             + Add expense
           </button>
@@ -161,10 +163,14 @@ export function RentalInputsPanel({
             {customExpenses.map((item, index) => (
               <div key={item.id ?? index} className="flex items-end gap-2">
                 <div className="flex-1">
-                  <label className="block text-xs text-neutral-500 mb-1">
+                  <label
+                    htmlFor={`custom-expense-${index}`}
+                    className="mb-1.5 block text-label font-medium text-muted"
+                  >
                     Expense name
                   </label>
                   <input
+                    id={`custom-expense-${index}`}
                     type="text"
                     value={item.label}
                     onChange={(e) => {
@@ -176,7 +182,7 @@ export function RentalInputsPanel({
                       handleCustomExpensesChange(updated);
                     }}
                     placeholder="e.g. Utilities, Water, Trash"
-                    className="h-9 w-full rounded-md border border-neutral-300 px-3 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none"
+                    className="h-[38px] w-full rounded-sm border border-line bg-surface px-3 text-[15px] text-fg placeholder:text-muted focus:border-accent focus:outline-2 focus:outline-offset-1 focus:outline-accent"
                   />
                 </div>
                 <div className="w-36">
@@ -210,7 +216,7 @@ export function RentalInputsPanel({
                     );
                     handleCustomExpensesChange(updated);
                   }}
-                  className="h-9 px-2 text-xs text-red-500 hover:text-red-700 font-medium"
+                  className="h-9 cursor-pointer rounded-xs px-2 text-[13px] font-medium text-bad hover:bg-bad-soft"
                 >
                   Remove
                 </button>
@@ -218,27 +224,28 @@ export function RentalInputsPanel({
             ))}
           </div>
         ) : (
-          <p className="text-xs text-neutral-400 italic">
+          <p className="m-0 text-small text-muted">
             No custom utility or service expenses added.
           </p>
         )}
       </div>
 
-      <div className="flex flex-col gap-2 border-t border-neutral-200 pt-4">
+      <div className="flex flex-col gap-2 border-t border-line pt-4">
         <div className="flex items-baseline justify-between">
-          <h3 className="text-sm font-medium text-neutral-800">
-            Cash invested
-          </h3>
+          <h4 className="eyebrow m-0">Cash invested</h4>
           {totalCashInvested != null ? (
             <span
               data-testid="total-cash-invested"
-              className="text-sm tabular-nums text-neutral-700"
+              className="num text-small text-fg"
             >
               Total {currency.format(totalCashInvested)} (incl. down payment)
             </span>
           ) : null}
         </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div
+          data-input-grid=""
+          className="grid grid-cols-1 gap-[var(--space-grid)] sm:grid-cols-2"
+        >
           <NumberField
             label="Closing costs"
             variant="currency"
@@ -257,19 +264,59 @@ export function RentalInputsPanel({
           />
         </div>
       </div>
-      <p className="text-xs text-neutral-500">
+      <p className="m-0 text-[12.5px] text-muted">
         Percentages are of gross scheduled income. Property tax, insurance, and
-        HOA come from Real-estate costs above.
+        HOA come from Monthly costs.
       </p>
       <div>
         <button
           type="button"
           onClick={() => onChange(null)}
-          className="text-sm text-neutral-500 underline underline-offset-2 hover:text-neutral-800"
+          className="cursor-pointer self-start rounded-xs text-[13px] text-muted underline underline-offset-2 hover:text-bad"
         >
           Remove rental analysis
         </button>
       </div>
+    </div>
+  );
+}
+
+/**
+ * The annual growth assumptions (spec 005 FR-013): rent, expense and appreciation growth.
+ * Page-only inputs on the Deal Analyzer (its projection charts); the Wealth page has its own
+ * assumptions panel. Growth fields accept negatives, so no `min` (research R14).
+ */
+export function GrowthFields({
+  rental,
+  errors,
+  onChange,
+}: {
+  rental: RentalAssumptions;
+  errors: FieldError[];
+  onChange: (patch: Partial<RentalAssumptions>) => void;
+}) {
+  const field = (
+    key: 'rentGrowthPct' | 'expenseGrowthPct' | 'appreciationPct',
+    label: string,
+  ) => (
+    <NumberField
+      label={label}
+      suffix="%"
+      step={0.1}
+      description="per year"
+      value={rental[key] ?? 0}
+      onValueChange={(value) => onChange({ [key]: value ?? 0 })}
+      error={errorFor(errors, key)}
+    />
+  );
+  return (
+    <div
+      data-input-grid=""
+      className="grid grid-cols-1 gap-[var(--space-grid)] sm:grid-cols-2"
+    >
+      {field('rentGrowthPct', 'Rent growth')}
+      {field('expenseGrowthPct', 'Expense growth')}
+      {field('appreciationPct', 'Appreciation')}
     </div>
   );
 }

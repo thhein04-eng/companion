@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Ripple } from './ds/ripple';
 
 export type MetricBadgeTone = 'neutral' | 'positive' | 'negative';
 
@@ -21,9 +22,9 @@ function kebab(label: string): string {
 }
 
 const toneClasses: Record<MetricBadgeTone, string> = {
-  neutral: 'border-neutral-300 bg-neutral-50 text-neutral-800',
-  positive: 'border-emerald-300 bg-emerald-50 text-emerald-800',
-  negative: 'border-red-300 bg-red-50 text-red-800',
+  neutral: 'border-line bg-sunk text-fg',
+  positive: 'border-transparent bg-good-soft text-good',
+  negative: 'border-transparent bg-bad-soft text-bad',
 };
 
 /**
@@ -51,12 +52,14 @@ export function MetricBadge({
     <span
       data-testid={`badge-${kebab(label)}`}
       title={isNa && naReason ? naReason : undefined}
-      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm ${toneClasses[effectiveTone]}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[13px] ${toneClasses[effectiveTone]}`}
     >
       <span className="font-medium">{label}</span>
-      <span className="tabular-nums font-semibold">{formatted}</span>
+      <Ripple value={value}>
+        <span className="num font-semibold">{formatted}</span>
+      </Ripple>
       {effectiveTone === 'negative' ? (
-        <span className="text-xs font-medium">▼ Negative</span>
+        <span className="text-[12px] font-semibold">▼ Negative</span>
       ) : null}
       {isNa && naReason ? <span className="sr-only">{naReason}</span> : null}
     </span>

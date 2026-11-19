@@ -327,7 +327,7 @@ function BarPlot<K extends string>({
         tabIndex={0}
         onKeyDown={onKeyDown}
         onBlur={onBlur}
-        className="relative h-full w-full rounded outline-none focus-visible:ring-2 focus-visible:ring-neutral-400"
+        className="relative h-full w-full rounded outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
         <svg
           width={width}

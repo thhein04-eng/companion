@@ -1,5 +1,16 @@
 import { expect, test, type Page } from '@playwright/test';
-import { clearNumberField, fillNumberField } from './helpers';
+import {
+  clearNumberField,
+  closeDealSheet,
+  fillNumberField,
+  openDealSheet,
+  skipSetupFor,
+} from './helpers';
+
+// Spec 010 US3: these specs test other stories, so first-run setup never opens.
+test.beforeEach(async ({ page }) => {
+  await skipSetupFor(page);
+});
 
 /**
  * Spec 006 reference scenario (research.md § Reference scenario): $400k price,
@@ -101,14 +112,20 @@ test.describe('DSCR card (spec 006 US1)', () => {
 
   test('adds a DSCR column to the scenario comparison', async ({ page }) => {
     await enterReferenceScenario(page);
-    await page.getByRole('button', { name: '+ Add scenario' }).click();
     await page
+      .getByRole('button', { name: 'Add scenario', exact: true })
+      .click();
+    await (
+      await openDealSheet(page)
+    )
       .getByRole('button', { name: 'Remove rental analysis' })
       .click();
+    await closeDealSheet(page);
 
     const grid = page
-      .getByText('Compare scenarios')
-      .locator('..')
+      .locator('section', {
+        has: page.getByRole('heading', { name: 'Compare scenarios' }),
+      })
       .locator('table');
     await expect(grid.locator('thead')).toContainText('DSCR');
     await expect(grid.locator('tbody tr').nth(0)).toContainText('1.19×');
@@ -147,7 +164,10 @@ test.describe('Financing matrix (spec 006 US2)', () => {
     await expect(cell('dscr-dscr')).toContainText('1.08×');
 
     // SC-005: the untouched conventional column equals the Deal Analyzer's cash flow.
-    await page.getByRole('link', { name: 'Rental Deal Analyzer' }).first().click();
+    await page
+      .getByRole('link', { name: 'Rental Deal Analyzer' })
+      .first()
+      .click();
     await expect(page.getByTestId('row-cash-flow')).toContainText('$380.09');
   });
 
@@ -160,14 +180,16 @@ test.describe('Financing matrix (spec 006 US2)', () => {
     await page.keyboard.press('ArrowRight');
     await page.keyboard.press('ArrowRight');
 
-    await expect(toggle.getByRole('radio', { name: 'DSCR loan' })).toBeChecked();
+    await expect(
+      toggle.getByRole('radio', { name: 'DSCR loan' }),
+    ).toBeChecked();
     await expect(page.getByTestId('financing-col-dscr')).toHaveAttribute(
       'aria-current',
       'true',
     );
-    await expect(page.getByTestId('financing-col-conventional')).not.toHaveAttribute(
-      'aria-current',
-    );
+    await expect(
+      page.getByTestId('financing-col-conventional'),
+    ).not.toHaveAttribute('aria-current');
     await expect(page.getByTestId('financing-breakdown')).toContainText(
       'NOI $2,376.00 − P&I $2,201.29 − PMI $0.00 = Cash flow $174.71 /mo',
     );
@@ -291,7 +313,10 @@ test.describe('Editing financing terms (spec 006 US3)', () => {
     page,
   }) => {
     await enterReferenceScenario(page);
-    await page.getByTestId('dscr').getByRole('radio', { name: '1.15×' }).click();
+    await page
+      .getByTestId('dscr')
+      .getByRole('radio', { name: '1.15×' })
+      .click();
     await page
       .getByTestId('financing-toggle')
       .getByRole('radio', { name: 'ARM' })

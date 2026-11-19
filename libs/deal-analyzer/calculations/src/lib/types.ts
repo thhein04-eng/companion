@@ -220,3 +220,66 @@ export interface RentalProjection {
   /** Set when there is no purchase price, so equity cannot be computed. */
   equityNaReason: string | null;
 }
+
+/** One operating year of the hold & exit pro forma (spec 009 data-model §B). */
+export interface ProFormaYear {
+  /** 1…N */
+  year: number;
+  grossIncome: number;
+  operatingExpenses: number;
+  noi: number;
+  /** Scheduled P&I + PMI; 0 past the term. */
+  debtService: number;
+  /** Σ extraPrincipalApplied in the year. */
+  extraPrincipal: number;
+  /** noi − debtService − extraPrincipal (R2). */
+  cashToInvestor: number;
+  /** = projectWealth */
+  interest: number;
+  /** = projectWealth */
+  depreciation: number;
+  /** = projectWealth */
+  taxableIncome: number | null;
+  /** = projectWealth */
+  taxEffect: number | null;
+  /** cashToInvestor + taxEffect */
+  afterTaxCashFlow: number | null;
+  loanBalance: number;
+  propertyValue: number;
+}
+
+/** Totals and returns for one cash-flow series (pre- or after-tax; R4, R5). */
+export interface ExitReturns {
+  /** Σ cash flows (pre- or after-tax). */
+  totalCashFlow: number;
+  /** totalCashFlow + netSaleProceeds − invested */
+  totalNetProfit: number;
+  /** (totalCashFlow + netSaleProceeds) / invested */
+  equityMultiple: RatioResult;
+  /** Fraction, e.g. 0.156607. */
+  irr: RatioResult;
+}
+
+/** The sale at the end of year N and the returns from buying, holding and selling. */
+export interface ExitResult {
+  holdYears: number;
+  years: ProFormaYear[];
+  salePrice: number;
+  sellingCosts: number;
+  loanPayoff: number;
+  netSaleProceeds: number;
+  totalCashInvested: number;
+  /** > 0 shows the "includes forced appreciation" note. */
+  forcedAppreciation: number;
+  preTax: ExitReturns;
+  /** Null when the tax inputs are invalid. */
+  afterTax: ExitReturns | null;
+  taxNaReason: string | null;
+}
+
+export interface ExitProjection {
+  /** Null with naReason when no price, or exit/horizon inputs invalid. */
+  result: ExitResult | null;
+  naReason: string | null;
+  errors: FieldError[];
+}

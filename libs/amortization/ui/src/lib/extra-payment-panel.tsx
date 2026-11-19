@@ -6,7 +6,6 @@ import { currency, DateField, NumberField } from 'shared-ui';
 import { Tabs, TabsList, TabsTab } from '@ui-sdk/react/tabs';
 import { Button } from '@ui-sdk/react/button';
 
-
 export interface ExtraPaymentPanelProps {
   extraPayments: ExtraPaymentRule[];
   onChange: (next: ExtraPaymentRule[]) => void;
@@ -16,17 +15,27 @@ export interface ExtraPaymentPanelProps {
  * Add, list, and remove recurring or one-time extra principal payments
  * (FR-007), each applied to `computeSchedule()`'s extra-payment handling.
  */
-export function ExtraPaymentPanel({ extraPayments, onChange }: ExtraPaymentPanelProps) {
+export function ExtraPaymentPanel({
+  extraPayments,
+  onChange,
+}: ExtraPaymentPanelProps) {
   const [kind, setKind] = useState<'recurring' | 'oneTime'>('recurring');
   const [amount, setAmount] = useState<number | null>(100);
-  const [date, setDate] = useState<string | null>(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState<string | null>(
+    new Date().toISOString().slice(0, 10),
+  );
 
   const addRule = () => {
     if (amount == null || amount <= 0) return;
     const rule: ExtraPaymentRule =
       kind === 'recurring'
         ? { id: crypto.randomUUID(), kind: 'recurring', amount, startPeriod: 1 }
-        : { id: crypto.randomUUID(), kind: 'oneTime', amount, date: date ?? new Date().toISOString().slice(0, 10) };
+        : {
+            id: crypto.randomUUID(),
+            kind: 'oneTime',
+            amount,
+            date: date ?? new Date().toISOString().slice(0, 10),
+          };
     onChange([...extraPayments, rule]);
   };
 
@@ -41,7 +50,7 @@ export function ExtraPaymentPanel({ extraPayments, onChange }: ExtraPaymentPanel
           {extraPayments.map((rule) => (
             <li
               key={rule.id}
-              className="flex items-center justify-between rounded-md border border-neutral-200 px-3 py-1.5 text-sm"
+              className="flex items-center justify-between rounded-lg border border-line bg-surface px-3.5 py-2 text-[14px]"
             >
               <span>
                 {rule.kind === 'recurring'
@@ -52,7 +61,7 @@ export function ExtraPaymentPanel({ extraPayments, onChange }: ExtraPaymentPanel
                 type="button"
                 aria-label="Remove extra payment"
                 onClick={() => removeRule(rule.id)}
-                className="text-neutral-400 hover:text-red-600"
+                className="text-muted hover:text-bad"
               >
                 ×
               </button>
@@ -61,25 +70,39 @@ export function ExtraPaymentPanel({ extraPayments, onChange }: ExtraPaymentPanel
         </ul>
       ) : null}
 
-      <div className="flex flex-wrap items-end gap-3 rounded-md border border-dashed border-neutral-300 p-3">
-        <Tabs value={kind} onValueChange={(next) => next && setKind(next as 'recurring' | 'oneTime')}>
-          <TabsList aria-label="Extra payment type" className="flex gap-1 text-xs">
+      <div className="flex flex-wrap items-end gap-3 rounded-xl border border-dashed border-line p-[18px]">
+        <Tabs
+          value={kind}
+          onValueChange={(next) =>
+            next && setKind(next as 'recurring' | 'oneTime')
+          }
+        >
+          <TabsList
+            aria-label="Extra payment type"
+            className="flex gap-1 text-xs"
+          >
             <TabsTab
               value="recurring"
-              className="rounded px-2 py-1 text-neutral-500 data-selected:bg-neutral-900 data-selected:text-white"
+              className="cursor-pointer rounded-sm border border-transparent px-2 py-1 text-muted hover:bg-sunk data-selected:border-ink data-selected:bg-ink data-selected:text-ink-fg"
             >
               Recurring
             </TabsTab>
             <TabsTab
               value="oneTime"
-              className="rounded px-2 py-1 text-neutral-500 data-selected:bg-neutral-900 data-selected:text-white"
+              className="cursor-pointer rounded-sm border border-transparent px-2 py-1 text-muted hover:bg-sunk data-selected:border-ink data-selected:bg-ink data-selected:text-ink-fg"
             >
               One-time
             </TabsTab>
           </TabsList>
         </Tabs>
         <div className="w-32">
-          <NumberField label="Amount" variant="currency" min={0} value={amount} onValueChange={setAmount} />
+          <NumberField
+            label="Amount"
+            variant="currency"
+            min={0}
+            value={amount}
+            onValueChange={setAmount}
+          />
         </div>
         {kind === 'oneTime' ? (
           <div className="w-44">
@@ -88,7 +111,7 @@ export function ExtraPaymentPanel({ extraPayments, onChange }: ExtraPaymentPanel
         ) : null}
         <Button
           onClick={addRule}
-          className="rounded-md bg-neutral-900 px-3 py-1.5 text-sm text-white hover:bg-neutral-700"
+          className="cursor-pointer rounded-md border border-ink bg-ink px-3 py-2 text-[14px] font-medium text-ink-fg hover:opacity-90"
         >
           Add
         </Button>

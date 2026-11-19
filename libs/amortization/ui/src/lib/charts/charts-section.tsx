@@ -16,9 +16,9 @@ export interface ChartsSectionProps {
 export function ChartsSection({ scenario, schedule }: ChartsSectionProps) {
   const baseline = useMemo(() => computeBaselineSchedule(scenario), [scenario]);
   return (
-    <section className="flex flex-col gap-4">
-      <h2 className="text-lg font-medium text-neutral-800">Charts</h2>
-      <div className="grid gap-6">
+    <section className="flex flex-col gap-[var(--space-section)]">
+      <h2 className="m-0 font-display text-h2 font-semibold text-fg">Charts</h2>
+      <div className="grid gap-[var(--space-card)]">
         <PaymentCompositionBar scenario={scenario} schedule={schedule} />
         <BalanceChart schedule={schedule} baseline={baseline} />
         <PrincipalInterestChart schedule={schedule} />

@@ -1,5 +1,5 @@
 import type { WealthProjection, WealthYear } from 'deal-analyzer-calculations';
-import { currency } from 'shared-ui';
+import { Ripple, currency } from 'shared-ui';
 
 function Tile({
   label,
@@ -15,17 +15,15 @@ function Tile({
   testId: string;
 }) {
   return (
-    <div className="flex flex-col gap-1 rounded-md border border-neutral-200 bg-white p-3">
-      <span className="text-sm font-medium text-neutral-900">{label}</span>
+    <div className="flex flex-col gap-1 rounded-lg border border-line bg-surface px-3.5 py-3">
+      <span className="text-sm font-medium text-fg">{label}</span>
       <span
         data-testid={testId}
-        className={`text-lg font-semibold tabular-nums ${negative ? 'text-red-700' : ''}`}
+        className={`num font-display text-[20px] font-semibold ${negative ? 'text-bad' : ''}`}
       >
-        {value}
+        <Ripple value={value}>{value}</Ripple>
       </span>
-      {caption ? (
-        <span className="text-xs text-neutral-500">{caption}</span>
-      ) : null}
+      {caption ? <span className="text-xs text-muted">{caption}</span> : null}
     </div>
   );
 }
@@ -40,10 +38,8 @@ export function WealthSummary({
   const { multiple, taxNaReason } = projection;
   return (
     <div data-testid="wealth-summary" className="flex flex-col gap-3">
-      <h3 className="text-sm font-medium text-neutral-700">
-        In year {last.year}
-      </h3>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <h3 className="eyebrow m-0">In year {last.year}</h3>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Tile
           label="Net worth"
           testId="wealth-net-worth"
@@ -77,7 +73,9 @@ export function WealthSummary({
         <Tile
           label="Multiple on cash invested"
           testId="wealth-multiple"
-          value={multiple.value != null ? `${multiple.value.toFixed(1)}×` : 'N/A'}
+          value={
+            multiple.value != null ? `${multiple.value.toFixed(1)}×` : 'N/A'
+          }
           caption={
             multiple.naReason ??
             `Net worth ÷ ${currency.format(projection.totalCashInvested)} invested`

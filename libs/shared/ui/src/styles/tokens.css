@@ -1,0 +1,232 @@
+/*
+ * Companion design tokens (spec 010, contracts/design-system.md §1–§3).
+ * Values are copied verbatim from specs/010-deal-strip-redesign/design-reference.html.
+ * Raw tokens keep the reference's own names (--bg, --surface, …); `@theme inline` maps them to
+ * Tailwind utilities (bg-bg, text-muted, border-line, …) so one attribute flips the whole app.
+ *
+ * Theme: <html data-color-scheme="system|light|dark"> is written by ui-sdk `Preferences`
+ * before hydration (research R3). "system" (or no attribute) follows prefers-color-scheme.
+ *
+ * Contrast (spec FR-035): `faint` is decoration only (borders, dividers, fills), never text.
+ */
+
+:root {
+  --bg: #f6f7f8;
+  --surface: #ffffff;
+  --sunk: #eef0f2;
+  --line: #dde1e5;
+  --fg: #16191d;
+  --muted: #5d6670;
+  --faint: #8a939c;
+  --ink: #16191d;
+  --ink-fg: #ffffff;
+  --accent: #2f5d8a;
+  --accent-soft: #e4edf6;
+  --good: #11795a;
+  --good-soft: #e2f4ec;
+  --bad: #b4262b;
+  --bad-soft: #fbe7e7;
+  --warn: #9a6300;
+  --warn-soft: #fbf1dc;
+  --seg1: #2f5d8a;
+  --seg2: #6b8fb3;
+  --seg3: #9bb4cc;
+  --seg4: #c79a3b;
+  --seg5: #8e7cc3;
+  --shadow: 0 8px 28px rgba(16, 24, 40, 0.12);
+
+  /* Spacing (FR-033) */
+  --space-page: 56px;
+  --space-section: 18px;
+  --space-card: 20px;
+  --space-grid: 14px;
+
+  color-scheme: light;
+}
+
+@media (max-width: 639px) {
+  :root {
+    --space-page: 32px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-color-scheme='light']) {
+    --bg: #111417;
+    --surface: #191d21;
+    --sunk: #22272c;
+    --line: #2f363c;
+    --fg: #e8ebee;
+    --muted: #a0a9b2;
+    --faint: #76808a;
+    --ink: #e8ebee;
+    --ink-fg: #111417;
+    --accent: #8db4dc;
+    --accent-soft: #1f2e3d;
+    --good: #5cc79f;
+    --good-soft: #163328;
+    --bad: #f08a8d;
+    --bad-soft: #3a1d1f;
+    --warn: #e0b25a;
+    --warn-soft: #352a14;
+    --seg1: #8db4dc;
+    --seg2: #5f87ad;
+    --seg3: #3f5f7e;
+    --seg4: #d6aa4e;
+    --seg5: #a796d8;
+    --shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
+    color-scheme: dark;
+  }
+}
+
+:root[data-color-scheme='dark'] {
+  --bg: #111417;
+  --surface: #191d21;
+  --sunk: #22272c;
+  --line: #2f363c;
+  --fg: #e8ebee;
+  --muted: #a0a9b2;
+  --faint: #76808a;
+  --ink: #e8ebee;
+  --ink-fg: #111417;
+  --accent: #8db4dc;
+  --accent-soft: #1f2e3d;
+  --good: #5cc79f;
+  --good-soft: #163328;
+  --bad: #f08a8d;
+  --bad-soft: #3a1d1f;
+  --warn: #e0b25a;
+  --warn-soft: #352a14;
+  --seg1: #8db4dc;
+  --seg2: #5f87ad;
+  --seg3: #3f5f7e;
+  --seg4: #d6aa4e;
+  --seg5: #a796d8;
+  --shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+
+:root[data-color-scheme='light'] {
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-sunk: var(--sunk);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-ink: var(--ink);
+  --color-ink-fg: var(--ink-fg);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-good: var(--good);
+  --color-good-soft: var(--good-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-seg-1: var(--seg1);
+  --color-seg-2: var(--seg2);
+  --color-seg-3: var(--seg3);
+  --color-seg-4: var(--seg4);
+  --color-seg-5: var(--seg5);
+
+  --font-display:
+    var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, Menlo, monospace;
+
+  --radius-xs: 4px;
+  --radius-sm: 5px;
+  --radius-md: 7px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+
+  --shadow-float: var(--shadow);
+
+  /* Type scale (contracts/design-system.md §2) */
+  --text-title: clamp(28px, 4.5vw, 40px);
+  --text-title--line-height: 1.1;
+  --text-h2: 24px;
+  --text-h2--line-height: 1.25;
+  --text-h3: 17px;
+  --text-h3--line-height: 1.35;
+  --text-body: 15px;
+  --text-body--line-height: 1.55;
+  --text-lede: 17px;
+  --text-lede--line-height: 1.55;
+  --text-small: 13.5px;
+  --text-small--line-height: 1.5;
+  --text-label: 12.5px;
+  --text-label--line-height: 1.4;
+  --text-eyebrow: 12px;
+  --text-eyebrow--line-height: 1.4;
+}
+
+@utility eyebrow {
+  font-size: 12px;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+@utility num {
+  font-variant-numeric: tabular-nums;
+}
+
+@layer base {
+  html {
+    background: var(--bg);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family:
+      var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  p {
+    max-width: 68ch;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  table {
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0s !important;
+      animation-duration: 0s !important;
+    }
+  }
+}
+
+@utility page-gutter {
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}

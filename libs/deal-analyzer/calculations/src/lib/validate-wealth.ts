@@ -64,7 +64,11 @@ export function validateWealth(rental: RentalAssumptions): FieldError[] {
   for (const { field, valid, message } of RULES) {
     const value = stored[field];
     if (value === undefined) continue;
-    if (!(typeof value === 'number' && Number.isFinite(value) && valid(value))) {
+    if (!(
+      typeof value === 'number' &&
+      Number.isFinite(value) &&
+      valid(value)
+    )) {
       errors.push({ field: `rental.wealth.${field}`, message });
     }
   }

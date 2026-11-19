@@ -49,17 +49,17 @@ const statusStyles: Record<
   pass: {
     icon: '✓',
     text: 'Pass',
-    className: 'bg-emerald-50 text-emerald-800 border-emerald-300',
+    className: 'bg-good-soft text-good border-good',
   },
   fail: {
     icon: '✕',
     text: 'Fail',
-    className: 'bg-red-50 text-red-800 border-red-300',
+    className: 'bg-bad-soft text-bad border-bad',
   },
   na: {
     icon: '–',
     text: 'N/A',
-    className: 'bg-neutral-50 text-neutral-600 border-neutral-300',
+    className: 'bg-sunk text-muted border-line',
   },
 };
 
@@ -84,30 +84,30 @@ export function RuleIndicator({
   return (
     <div
       data-testid={testIdFor(name)}
-      className="flex flex-col gap-1 rounded-md border border-neutral-200 bg-white p-3"
+      className="flex flex-col gap-1 rounded-lg border border-line bg-surface px-3.5 py-3"
     >
       <div className="flex items-center justify-between gap-2">
-        <span className="text-sm font-medium text-neutral-900">{name}</span>
+        <span className="text-sm font-medium text-fg">{name}</span>
         <div className="flex items-center gap-1.5">
           <StatusPill status={status} />
           <Popover openOnHover>
             <PopoverTrigger
               aria-label={`About the ${name}`}
-              className="flex h-5 w-5 items-center justify-center rounded-full border border-neutral-300 text-xs text-neutral-500 hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400"
+              className="flex h-5 w-5 items-center justify-center rounded-full border border-line text-xs text-muted hover:bg-sunk focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               i
             </PopoverTrigger>
             <PopoverContent
               side="top"
               sideOffset={6}
-              className="max-w-xs rounded-md border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-700 shadow-md"
+              className="max-w-xs rounded-md border border-line bg-surface px-3 py-2 text-xs text-fg shadow-float"
             >
               {explanation}
             </PopoverContent>
           </Popover>
         </div>
       </div>
-      <p className="text-xs text-neutral-600">{detail}</p>
+      <p className="text-xs text-muted">{detail}</p>
     </div>
   );
 }

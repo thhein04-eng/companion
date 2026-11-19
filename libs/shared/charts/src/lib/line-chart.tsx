@@ -178,9 +178,13 @@ function LinePlot<K extends string>({
 
     // About one label per 80px of plot area (not the full width, which includes the axis margins).
     const tickCount = clamp(Math.floor(innerW / 80), 2, 8);
-    const xTicks = (
+    const inRange = (
       xTickValues ?? niceTicks(xMin, xMax, tickCount, { integer: true })
     ).filter((t) => t >= xMin && t <= xMax);
+    // Caller-supplied ticks are thinned to the same ~80px budget, so labels never collide on
+    // narrow screens (spec 010 visual review at 390px).
+    const stride = Math.max(1, Math.ceil(inRange.length / tickCount));
+    const xTicks = inRange.filter((_, i) => i % stride === 0);
 
     const paths = series.map((s) =>
       linePath(
@@ -287,7 +291,7 @@ function LinePlot<K extends string>({
         tabIndex={0}
         onKeyDown={onKeyDown}
         onBlur={onBlur}
-        className="relative h-full w-full rounded outline-none focus-visible:ring-2 focus-visible:ring-neutral-400"
+        className="relative h-full w-full rounded outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
         <svg
           width={width}

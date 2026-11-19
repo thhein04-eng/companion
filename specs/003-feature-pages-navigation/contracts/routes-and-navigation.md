@@ -9,6 +9,7 @@
 | `/deal-analyzer` | `DealAnalyzerView`                        | `Rental Deal Analyzer · Companion`    | "Rental Deal Analyzer"    |
 | `/financing`     | `FinancingView` (added by spec 006)       | `DSCR & Financing · Companion`        | "DSCR & Financing"        |
 | `/wealth`        | `WealthView` (added by spec 008)          | `Wealth Projection · Companion`       | "Wealth Projection"       |
+| `/pro-forma`     | `ProFormaView` (added by spec 009)        | `Hold & Exit Pro Forma · Companion`   | "Hold & Exit Pro Forma"   |
 | any other path   | `not-found.tsx` rendered inside the shell | `Not found · Companion`               | "Page not found"          |
 
 ### Page section contract
@@ -65,3 +66,8 @@ These are the e2e test hooks. The structure is shown in its ≥ 1024px form.
 5. The current link has `aria-current="page"` and a distinct visual style that does not rely on color alone (it also gets a left border/indicator).
 6. Reduced motion: the width and drawer transitions are disabled under `prefers-reduced-motion: reduce`.
 7. No horizontal page scroll at ≥ 320px. The schedule and comparison tables scroll inside `overflow-x-auto` wrappers.
+
+> **Spec 010**: Every page renders the sticky **Deal Strip** (scenario tabs, summary chips and
+> Edit deal) right under its header, instead of inline Loan, Real-estate costs and Rental
+> sections. The nav also holds the System / Light / Dark theme switcher.
+

@@ -1,14 +1,29 @@
 import { expect, test } from '@playwright/test';
+import { closeDealSheet, openDealSheet, skipSetupFor } from './helpers';
+
+// Spec 010 US3: these specs test other stories, so first-run setup never opens.
+test.beforeEach(async ({ page }) => {
+  await skipSetupFor(page);
+});
 
 // quickstart.md Scenario 1: baseline schedule (User Story 1 / P1).
-test('shows the monthly payment and a full schedule ending at $0.00', async ({ page }) => {
+test('shows the monthly payment and a full schedule ending at $0.00', async ({
+  page,
+}) => {
   await page.goto('/amortization');
 
-  await expect(page.getByRole('heading', { name: 'Amortization Calculator', level: 1 })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Amortization Calculator', level: 1 }),
+  ).toBeVisible();
 
   // Defaults already match the $300,000 / 6.5% / 30yr scenario from quickstart.md.
-  await expect(page.getByText('Principal & interest only')).toBeVisible();
-  await expect(page.getByText('$1,896.20', { exact: false }).first()).toBeVisible();
+  // Spec 010: the payment breakdown lives in the Edit deal sheet.
+  const sheet = await openDealSheet(page);
+  await expect(sheet.getByText('Principal & interest only')).toBeVisible();
+  await expect(
+    sheet.getByText('$1,896.20', { exact: false }).first(),
+  ).toBeVisible();
+  await closeDealSheet(page);
 
   // 004: the schedule is paginated (12 rows per page); the full length shows in the range text.
   const rows = page.locator('table').last().locator('tbody tr');

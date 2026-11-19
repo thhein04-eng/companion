@@ -10,14 +10,18 @@ import {
 } from 'shared-calculations';
 import { useScenarios } from 'shared-data-access';
 import {
+  AMORTIZATION_PROFILE,
   ComparisonGrid,
-  CostBreakdownPanel,
   currency,
+  dealPayment,
+  DealStrip,
+  InputsMessage,
   LOAN_COMPARISON_COLUMNS,
-  LoanInputForm,
   MetricBadge,
   MetricBadgeGroup,
-  ScenarioTabs,
+  PageHeader,
+  Section,
+  SectionHeader,
 } from 'shared-ui';
 import { ChartsSection } from './charts/charts-section';
 import { ScenarioBalanceChart } from './charts/scenario-balance-chart';
@@ -31,15 +35,8 @@ import { ScheduleTable } from './schedule-table';
 
 /** The Amortization Calculator page (spec 001), rendered at `/amortization`. */
 export function AmortizationCalculatorView() {
-  const {
-    scenarios,
-    activeScenarioId,
-    activeScenario,
-    setActiveScenarioId,
-    updateActiveScenario,
-    addScenario,
-    removeScenario,
-  } = useScenarios();
+  const { scenarios, activeScenarioId, activeScenario, updateActiveScenario } =
+    useScenarios();
 
   // 004 FR-005: schedule paging lives here, outside the `schedule ? … : …`
   // branch, so it survives the table unmounting while inputs are invalid.
@@ -81,20 +78,29 @@ export function AmortizationCalculatorView() {
     scenarios.map((s) => [s.id, s.name]),
   );
 
+  const payment = dealPayment(activeScenario, schedule);
+  const errors = validation.valid ? [] : validation.errors;
+
   return (
     <>
-      <header>
-        <h1
-          tabIndex={-1}
-          className="text-2xl font-semibold text-neutral-900 focus:outline-none"
-        >
-          Amortization Calculator
-        </h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          Model a mortgage payment, its full schedule, real-estate costs, and
-          early-payoff savings.
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="Analysis"
+        title="Amortization Calculator"
+        lede="Model a mortgage payment, its full schedule, real-estate costs, and early-payoff savings."
+      />
+
+      <DealStrip
+        profile={AMORTIZATION_PROFILE}
+        headline={{
+          label: 'Total monthly payment',
+          value: schedule?.summary.totalMonthlyPayment ?? null,
+          naReason: schedule ? null : 'Fix the loan inputs to see the payment.',
+          format: (n) => currency.format(n),
+          betterWhen: 'lower',
+        }}
+        errors={errors}
+        payment={payment}
+      />
 
       {activeScenario.homePrice != null ? (
         <MetricBadgeGroup>
@@ -102,83 +108,54 @@ export function AmortizationCalculatorView() {
         </MetricBadgeGroup>
       ) : null}
 
-      <ScenarioTabs
-        scenarios={scenarios}
-        activeScenarioId={activeScenarioId}
-        onActiveScenarioIdChange={setActiveScenarioId}
-        onAddScenario={addScenario}
-        onRemoveScenario={removeScenario}
-      />
-
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium text-neutral-800">Loan</h2>
-        <LoanInputForm
-          scenario={activeScenario}
-          errors={validation.valid ? [] : validation.errors}
-          onChange={updateActiveScenario}
+      <Section>
+        <SectionHeader
+          title="Extra payments"
+          lede="Pay down principal early and see the interest you save."
         />
-      </section>
-
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium text-neutral-800">
-          Real-estate costs
-        </h2>
-        <CostBreakdownPanel
-          scenario={activeScenario}
-          onChange={updateActiveScenario}
-          monthlyPrincipalAndInterest={
-            schedule?.summary.monthlyPrincipalAndInterest ?? 0
-          }
-          totalMonthlyPayment={schedule?.summary.totalMonthlyPayment ?? 0}
-          pmiDropPeriod={schedule?.summary.pmiDropPeriod ?? null}
-        />
-      </section>
-
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium text-neutral-800">Extra payments</h2>
         <ExtraPaymentPanel
           extraPayments={activeScenario.extraPayments}
           onChange={(extraPayments) => updateActiveScenario({ extraPayments })}
         />
         {schedule?.baselineComparison ? (
-          <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+          <p className="m-0 rounded-md bg-good-soft px-3.5 py-2.5 text-[14px] text-good">
             Paying extra saves{' '}
-            {currency.format(schedule.baselineComparison.interestSaved)} in
-            interest and {schedule.baselineComparison.periodsSaved} payments
-            versus the baseline schedule.
+            <b className="num">
+              {currency.format(schedule.baselineComparison.interestSaved)}
+            </b>{' '}
+            in interest and{' '}
+            <b className="num">{schedule.baselineComparison.periodsSaved}</b>{' '}
+            payments versus the baseline schedule.
           </p>
         ) : null}
-      </section>
+      </Section>
 
       {schedule && validation.valid ? (
         <ChartsSection scenario={validation.scenario} schedule={schedule} />
       ) : null}
 
       {schedule ? (
-        <section className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-medium text-neutral-800">
-              Amortization schedule
-            </h2>
-            <ExportScheduleButton schedule={schedule} />
-          </div>
+        <Section>
+          <SectionHeader
+            title="Amortization schedule"
+            actions={<ExportScheduleButton schedule={schedule} />}
+          />
           <ScheduleTable
             periods={schedule.periods}
             pagination={schedulePagination}
             onPaginationChange={setSchedulePagination}
           />
-        </section>
+        </Section>
       ) : (
-        <p className="text-sm text-red-600">
-          Fix the highlighted fields above to see the amortization schedule.
-        </p>
+        <InputsMessage
+          errors={errors}
+          message="Fix the loan inputs to see the amortization schedule."
+        />
       )}
 
       {comparison ? (
-        <section className="flex flex-col gap-4">
-          <h2 className="text-lg font-medium text-neutral-800">
-            Compare scenarios
-          </h2>
+        <Section>
+          <SectionHeader title="Compare scenarios" />
           <ComparisonGrid
             comparison={comparison}
             columns={LOAN_COMPARISON_COLUMNS}
@@ -188,7 +165,7 @@ export function AmortizationCalculatorView() {
             schedules={comparisonData?.schedules ?? []}
             scenarios={scenarios}
           />
-        </section>
+        </Section>
       ) : null}
     </>
   );

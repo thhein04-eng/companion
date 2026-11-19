@@ -1,5 +1,10 @@
 import { expect, type Page, test } from '@playwright/test';
-import { clearNumberField, fillNumberField } from './helpers';
+import { clearNumberField, fillNumberField, skipSetupFor } from './helpers';
+
+// Spec 010 US3: these specs test other stories, so first-run setup never opens.
+test.beforeEach(async ({ page }) => {
+  await skipSetupFor(page);
+});
 
 // specs/004-amortization-schedule-pagination — quickstart.md scenarios 1–8.
 
@@ -243,7 +248,9 @@ test.describe('page survives recalculation (US3)', () => {
     await pageLink(page, 5).click();
     await expect(range(page)).toHaveText('Payments 97–120 of 360');
 
-    await page.getByRole('button', { name: '+ Add scenario' }).click();
+    await page
+      .getByRole('button', { name: 'Add scenario', exact: true })
+      .click();
     await expect(range(page)).toHaveText(/^Payments 1–24 of /);
   });
 });

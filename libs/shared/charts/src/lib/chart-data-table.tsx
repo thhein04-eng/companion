@@ -33,10 +33,10 @@ export function ChartDataTable({
     <Collapsible
       open={open}
       onOpenChange={(next) => setOpen(next)}
-      className="text-xs"
+      className="text-small"
     >
       <CollapsibleTrigger
-        className="rounded px-1 py-0.5 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400"
+        className="rounded px-1 py-0.5 underline-offset-2 hover:underline text-accent focus-visible:outline-2 focus-visible:outline-accent"
         style={{ color: 'var(--chart-ink-secondary)' }}
       >
         {open ? 'Hide data' : 'Show data'}
@@ -55,7 +55,7 @@ export function ChartDataTable({
                     <th
                       key={col.key}
                       scope="col"
-                      className={`sticky top-0 px-2 py-1 font-medium ${i === 0 ? 'text-left' : 'text-right'}`}
+                      className={`sticky top-0 border-b border-line bg-surface px-2.5 py-2 text-[13px] font-medium text-muted ${i === 0 ? 'text-left' : 'text-right'}`}
                       style={{
                         background: 'var(--chart-surface)',
                         color: 'var(--chart-ink-secondary)',
@@ -83,7 +83,7 @@ export function ChartDataTable({
                       return (
                         <td
                           key={col.key}
-                          className={`px-2 py-0.5 ${i === 0 ? 'text-left' : 'text-right'}`}
+                          className={`border-b border-line px-2.5 py-1.5 ${i === 0 ? 'text-left' : 'text-right'}`}
                         >
                           {text}
                         </td>

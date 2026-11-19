@@ -35,14 +35,14 @@ export function SegmentedOptions<T extends string>({
       onValueChange={(next) => {
         if (next != null) onValueChange(next as T);
       }}
-      className="relative isolate inline-flex rounded-md border border-neutral-300 bg-neutral-100 p-0.5"
+      className="relative isolate inline-flex rounded-md border border-line bg-sunk p-0.5"
     >
-      <SegmentedControlIndicator className="absolute left-[var(--segmented-control-indicator-left)] top-[var(--segmented-control-indicator-top)] -z-10 h-[var(--segmented-control-indicator-height)] w-[var(--segmented-control-indicator-width)] rounded bg-white shadow-sm transition-all duration-200" />
+      <SegmentedControlIndicator className="absolute left-[var(--segmented-control-indicator-left)] top-[var(--segmented-control-indicator-top)] -z-10 h-[var(--segmented-control-indicator-height)] w-[var(--segmented-control-indicator-width)] rounded-sm border border-ink bg-ink transition-all duration-200 motion-reduce:transition-none" />
       {options.map((option) => (
         <SegmentedControlItem
           key={option.value}
           value={option.value}
-          className="rounded px-3 py-1 text-sm text-neutral-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 data-[checked]:font-medium data-[checked]:text-neutral-900"
+          className="cursor-pointer rounded-sm px-3 py-1 text-[14px] text-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent data-[checked]:font-medium data-[checked]:text-ink-fg"
         >
           {option.label}
         </SegmentedControlItem>

@@ -2,7 +2,7 @@
 
 import type { LoanScenario } from 'shared-calculations';
 import { Tabs, TabsList, TabsTab } from '@ui-sdk/react/tabs';
-import { Button } from '@ui-sdk/react/button';
+import { Button } from './ds/button';
 
 export interface ScenarioTabsProps {
   scenarios: LoanScenario[];
@@ -27,17 +27,17 @@ export function ScenarioTabs({
     <Tabs
       value={activeScenarioId}
       onValueChange={(id) => id && onActiveScenarioIdChange(id)}
-      className="flex items-center gap-2"
+      className="flex min-w-0 items-center gap-1.5"
     >
       <TabsList
         aria-label="Loan scenarios"
-        className="flex items-center gap-1 overflow-x-auto"
+        className="flex min-w-0 items-center gap-1 overflow-x-auto"
       >
         {scenarios.map((scenario) => (
           <div key={scenario.id} className="group flex items-center">
             <TabsTab
               value={scenario.id}
-              className="rounded-md px-3 py-1.5 text-sm text-neutral-600 data-selected:bg-neutral-900 data-selected:text-white hover:bg-neutral-100 data-selected:hover:bg-neutral-900"
+              className="cursor-pointer whitespace-nowrap rounded-md px-2.5 py-1 text-[13px] text-muted hover:bg-sunk hover:text-fg data-selected:bg-ink data-selected:text-ink-fg data-selected:hover:bg-ink"
             >
               {scenario.name}
             </TabsTab>
@@ -46,7 +46,7 @@ export function ScenarioTabs({
                 type="button"
                 aria-label={`Remove ${scenario.name}`}
                 onClick={() => onRemoveScenario(scenario.id)}
-                className="ml-0.5 rounded px-1 text-xs text-neutral-400 hover:bg-red-50 hover:text-red-600"
+                className="ml-0.5 cursor-pointer rounded-xs px-1 text-[13px] text-muted hover:bg-bad-soft hover:text-bad"
               >
                 ×
               </button>
@@ -55,10 +55,13 @@ export function ScenarioTabs({
         ))}
       </TabsList>
       <Button
+        variant="ghost"
+        size="sm"
         onClick={onAddScenario}
-        className="rounded-md border border-dashed border-neutral-300 px-3 py-1.5 text-sm text-neutral-500 hover:bg-neutral-50"
+        aria-label="Add scenario"
+        title="Add scenario"
       >
-        + Add scenario
+        +
       </Button>
     </Tabs>
   );

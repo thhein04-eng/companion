@@ -29,22 +29,22 @@ export function DateField({
   error,
 }: DateFieldProps) {
   return (
-    <Field invalid={error ? true : undefined} className="flex flex-col gap-1">
-      <FieldLabel className="text-sm font-medium text-neutral-700">
+    <Field invalid={error ? true : undefined} className="flex flex-col gap-1.5">
+      <FieldLabel className="text-label font-medium text-muted">
         {label}
       </FieldLabel>
       <DateInput
         value={value}
         onValueChange={(next) => onValueChange(next)}
-        className="flex items-center gap-0.5 rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-sm focus-within:ring-2 focus-within:ring-neutral-400 data-[invalid]:border-red-500"
+        className="num flex items-center gap-0.5 rounded-sm border border-line bg-surface px-3 py-2 text-[15px] text-fg focus-within:border-accent focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-accent data-[invalid]:border-bad data-[invalid]:bg-bad-soft"
       />
       {description ? (
-        <FieldDescription className="text-xs text-neutral-500">
+        <FieldDescription className="text-[12.5px] text-muted">
           {description}
         </FieldDescription>
       ) : null}
       {error ? (
-        <FieldError match className="text-xs text-red-600">
+        <FieldError match className="text-[12.5px] font-medium text-bad">
           {error}
         </FieldError>
       ) : null}

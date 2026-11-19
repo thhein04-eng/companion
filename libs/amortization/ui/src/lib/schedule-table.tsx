@@ -43,9 +43,9 @@ const count = new Intl.NumberFormat('en-US');
 const PERIODS_PER_YEAR = 12;
 
 const stepClass =
-  'rounded px-2 py-1 text-neutral-600 hover:bg-neutral-100 data-[disabled]:cursor-default data-[disabled]:opacity-40 data-[disabled]:hover:bg-transparent';
+  'rounded px-2 py-1 text-muted hover:bg-sunk data-[disabled]:cursor-default data-[disabled]:opacity-40 data-[disabled]:hover:bg-transparent';
 const linkClass =
-  'min-w-8 rounded px-2 py-1 text-center text-neutral-700 hover:bg-neutral-100 data-[current]:bg-neutral-900 data-[current]:text-white';
+  'min-w-8 rounded px-2 py-1 text-center text-fg hover:bg-sunk data-[current]:bg-ink data-[current]:text-ink-fg';
 
 function parsePageSize(value: string): SchedulePageSize {
   return value === 'all' ? 'all' : (Number(value) as SchedulePageSize);
@@ -96,46 +96,56 @@ export function ScheduleTable({
 
   return (
     <div className="flex flex-col gap-3">
-      <ScrollArea className="max-h-96 rounded-md border border-neutral-200">
+      <ScrollArea className="max-h-96 rounded-xl border border-line bg-surface">
         <ScrollAreaViewport
           role="region"
           aria-label="Amortization schedule"
           className="max-h-96 w-full"
         >
           <ScrollAreaContent>
-            <table className="w-full border-collapse text-sm">
-              <thead className="sticky top-0 bg-neutral-100 text-left text-neutral-600">
+            <table className="num w-full border-collapse text-[14px]">
+              <thead className="sticky top-0 z-[1] bg-surface text-left">
                 <tr>
-                  <th className="px-3 py-2 font-medium">#</th>
-                  <th className="px-3 py-2 font-medium">Date</th>
-                  <th className="px-3 py-2 font-medium">Payment</th>
-                  <th className="px-3 py-2 font-medium">Principal</th>
-                  <th className="px-3 py-2 font-medium">Interest</th>
-                  <th className="px-3 py-2 font-medium">Remaining Balance</th>
+                  <th className="border-b border-line px-3 py-2.5 text-[13px] font-medium text-muted">
+                    #
+                  </th>
+                  <th className="border-b border-line px-3 py-2.5 text-[13px] font-medium text-muted">
+                    Date
+                  </th>
+                  <th className="border-b border-line px-3 py-2.5 text-[13px] font-medium text-muted">
+                    Payment
+                  </th>
+                  <th className="border-b border-line px-3 py-2.5 text-[13px] font-medium text-muted">
+                    Principal
+                  </th>
+                  <th className="border-b border-line px-3 py-2.5 text-[13px] font-medium text-muted">
+                    Interest
+                  </th>
+                  <th className="border-b border-line px-3 py-2.5 text-[13px] font-medium text-muted">
+                    Remaining Balance
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((period) => (
                   <tr
                     key={period.periodNumber}
-                    className="border-t border-neutral-100"
+                    className="border-t border-line"
                   >
-                    <td className="px-3 py-1.5 text-neutral-500">
+                    <td className="px-3 py-2 text-muted">
                       {period.periodNumber}
                     </td>
-                    <td className="px-3 py-1.5">
-                      {formatIsoDate(period.date)}
-                    </td>
-                    <td className="px-3 py-1.5">
+                    <td className="px-3 py-2">{formatIsoDate(period.date)}</td>
+                    <td className="px-3 py-2">
                       {currency.format(period.paymentAmount)}
                     </td>
-                    <td className="px-3 py-1.5">
+                    <td className="px-3 py-2">
                       {currency.format(period.principalPortion)}
                     </td>
-                    <td className="px-3 py-1.5">
+                    <td className="px-3 py-2">
                       {currency.format(period.interestPortion)}
                     </td>
-                    <td className="px-3 py-1.5 font-medium">
+                    <td className="px-3 py-2 font-medium">
                       {currency.format(period.remainingBalance)}
                     </td>
                   </tr>
@@ -146,14 +156,14 @@ export function ScheduleTable({
         </ScrollAreaViewport>
         <ScrollAreaScrollbar className="w-2 bg-transparent p-0.5">
           <ScrollAreaThumb
-            className="rounded-full bg-neutral-300"
+            className="rounded-full bg-line"
             data-slot="scroll-area-scroll-to-end"
           />
         </ScrollAreaScrollbar>
       </ScrollArea>
 
       <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
-        <p aria-live="polite" className="text-neutral-600">
+        <p aria-live="polite" className="text-muted">
           Payments {count.format(range.firstRow)}–{count.format(range.lastRow)}{' '}
           of {count.format(total)}
         </p>
@@ -191,7 +201,7 @@ export function ScheduleTable({
                       {typeof item === 'number' ? (
                         <PaginationLink page={item} className={linkClass} />
                       ) : (
-                        <PaginationEllipsis className="px-1 text-neutral-400" />
+                        <PaginationEllipsis className="px-1 text-muted" />
                       )}
                     </PaginationItem>
                   ))}
@@ -253,22 +263,22 @@ export function ScheduleTable({
             }}
           >
             <div className="flex flex-col gap-1">
-              <SelectLabel className="text-sm font-medium text-neutral-700">
+              <SelectLabel className="text-label font-medium text-muted">
                 Rows per page
               </SelectLabel>
-              <SelectTrigger className="flex min-w-20 items-center justify-between gap-2 rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400">
+              <SelectTrigger className="flex min-w-20 items-center justify-between gap-2 rounded-md border border-line bg-surface px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
                 <SelectValue />
-                <span aria-hidden="true" className="text-neutral-400">
+                <span aria-hidden="true" className="text-muted">
                   ▾
                 </span>
               </SelectTrigger>
             </div>
-            <SelectContent className="z-10 min-w-20 rounded-md border border-neutral-200 bg-white p-1 text-sm shadow-md">
+            <SelectContent className="z-10 min-w-20 rounded-lg border border-line bg-surface p-1 text-[14px] shadow-float">
               {SCHEDULE_PAGE_SIZES.map((size) => (
                 <SelectItem
                   key={size}
                   value={String(size)}
-                  className="cursor-default rounded px-2 py-1 data-[highlighted]:bg-neutral-100 data-[selected]:font-medium"
+                  className="cursor-default rounded-xs px-2 py-1 data-[highlighted]:bg-sunk data-[selected]:font-medium"
                 >
                   {size === 'all' ? 'All' : size}
                 </SelectItem>

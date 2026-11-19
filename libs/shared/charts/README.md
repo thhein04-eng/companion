@@ -67,7 +67,7 @@ tooltip (focus the plot, then use ←/→, Shift+←/→, Home/End and Esc) and 
 - Series take a **slot** (`1`–`8`) or `'muted'`, never a hex value. Slots map to the validated
   palette in `theme.css`, with selected dark-mode steps.
 - Use slots in their fixed order and never cycle them. **Color follows the entity**: assign a
-  slot by what the series *is* (for example, its position in a user's list), not by its rank
+  slot by what the series _is_ (for example, its position in a user's list), not by its rank
   after filtering. Otherwise the colors of the remaining series change when one is filtered out.
 - More than 8 entities: fold the extras into "Other", or cap them with `capSeries` (or a
   position cap) and tell the reader how many were not drawn.

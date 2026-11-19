@@ -1,13 +1,35 @@
 # Companion: real-estate calculators
 
-A Next.js app (`apps/amortization-calculator`) with two features, each on its own page, behind a responsive, collapsible left-side menu:
+A Next.js app (`apps/amortization-calculator`) with five analysis pages behind a responsive, collapsible left-side menu:
 
-| Route            | Feature                                                                                        |
+| Route            | Page                                                                                           |
 | ---------------- | ---------------------------------------------------------------------------------------------- |
-| `/amortization`  | Amortization Calculator: payment, full schedule, real-estate costs, extra payments, CSV export |
+| `/amortization`  | Amortization Calculator: payment, full schedule, extra payments, CSV export                    |
 | `/deal-analyzer` | Rental Deal Analyzer: cash flow, NOI, cap rate, cash-on-cash, 1% and 50% rules                 |
+| `/financing`     | DSCR & Financing: debt coverage and conventional / ARM / DSCR loan comparison                  |
+| `/wealth`        | Wealth Projection: equity, cash flow and net worth over 1–30 years                             |
+| `/pro-forma`     | Hold & Exit Pro Forma: sale, IRR, profit and equity multiple                                   |
 
-`/` redirects to `/amortization`. Both pages share one session-scoped set of loan scenarios.
+`/` redirects to `/amortization`. Every page shares one session-scoped set of scenarios. The shared
+deal inputs (property, loan, monthly costs, rent) are edited from the **Deal Strip** at the top of
+each page and its **Edit deal** sheet (spec 010). Each page keeps only its own inputs inline.
+
+## Design system
+
+The look follows [`specs/010-deal-strip-redesign/design-reference.html`](specs/010-deal-strip-redesign/design-reference.html).
+
+- **Tokens**: [`libs/shared/ui/src/styles/tokens.css`](libs/shared/ui/src/styles/tokens.css)
+  holds every color (light and dark), the type scale, the radii and the spacing, exposed as
+  Tailwind utilities (`bg-surface`, `text-muted`, `border-line`, `rounded-xl`, …). The rules are in
+  [contracts/design-system.md](specs/010-deal-strip-redesign/contracts/design-system.md).
+- **No raw palette classes**: ESLint rejects `neutral-*`, `red-*` and the like in UI code. It also
+  rejects `text-faint`, since `faint` is for decoration only (contrast rule FR-035).
+- **Components**: `libs/shared/ui/src/lib/ds/` holds the styled layer (Button, Chip, Card, Kpi,
+  Sheet, Popover, Toast, …) on the headless `@ui-sdk/react` behaviors.
+- **Theme**: System / Light / Dark switcher in the nav (`ThemeSwitcher`). The choice is kept in
+  `localStorage['companion.colorScheme']` and applied before first paint.
+- **Fonts**: Space Grotesk (display), Inter (body), JetBrains Mono (data), self-hosted with
+  `next/font`.
 
 ## Library layout
 

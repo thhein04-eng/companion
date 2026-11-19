@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { validateRental } from './validate-rental';
-import type { RentalAssumptions } from 'shared-calculations';
+import type { RentalAssumptions } from './types';
 
 const valid: RentalAssumptions = {
   grossMonthlyRent: 2_400,

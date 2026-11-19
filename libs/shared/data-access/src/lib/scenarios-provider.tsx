@@ -53,6 +53,14 @@ export interface ScenariosStore {
   updateActiveScenario: (patch: Partial<LoanScenario>) => void;
   addScenario: () => void;
   removeScenario: (id: string) => void;
+  /**
+   * Puts back an exact earlier copy of a scenario (matched by id), bypassing
+   * `applyScenarioPatch`. Only undo uses it (spec 010 US6), so a restored
+   * derived principal / override flag is exactly what it was.
+   */
+  restoreScenario: (scenario: LoanScenario) => void;
+  /** True once the session's saved scenarios have been read (client only). */
+  ready: boolean;
 }
 
 const ScenariosContext = createContext<ScenariosStore | null>(null);
@@ -144,6 +152,12 @@ export function ScenariosProvider({ children }: { children: ReactNode }) {
     [scenarios],
   );
 
+  const restoreScenario = useCallback((scenario: LoanScenario) => {
+    setScenarios((prev) =>
+      prev.map((s) => (s.id === scenario.id ? scenario : s)),
+    );
+  }, []);
+
   const store = useMemo<ScenariosStore>(
     () => ({
       scenarios,
@@ -153,6 +167,8 @@ export function ScenariosProvider({ children }: { children: ReactNode }) {
       updateActiveScenario,
       addScenario,
       removeScenario,
+      restoreScenario,
+      ready: hasLoadedPersisted,
     }),
     [
       scenarios,
@@ -161,6 +177,8 @@ export function ScenariosProvider({ children }: { children: ReactNode }) {
       updateActiveScenario,
       addScenario,
       removeScenario,
+      restoreScenario,
+      hasLoadedPersisted,
     ],
   );
 

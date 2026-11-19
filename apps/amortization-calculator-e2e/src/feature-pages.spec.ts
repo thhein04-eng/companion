@@ -1,5 +1,15 @@
 import { expect, test } from '@playwright/test';
-import { fillNumberField } from './helpers';
+import {
+  closeDealSheet,
+  dealField,
+  fillNumberField,
+  skipSetupFor,
+} from './helpers';
+
+// Spec 010 US3: these specs test other stories, so first-run setup never opens.
+test.beforeEach(async ({ page }) => {
+  await skipSetupFor(page);
+});
 
 /**
  * Spec 003 User Story 1 — each feature on its own page
@@ -47,8 +57,15 @@ test.describe('Feature pages', () => {
     page,
   }) => {
     await page.goto('/deal-analyzer');
-    for (const name of ['Deal analyzer', 'Loan', 'Real-estate costs']) {
-      await expect(page.getByRole('heading', { name, level: 2 })).toBeVisible();
+    // Spec 010: the shared loan and cost inputs moved into the Deal Strip's sheet.
+    await expect(page.getByRole('region', { name: 'Deal' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Deal analyzer', level: 2 }),
+    ).toBeVisible();
+    for (const name of ['Loan', 'Real-estate costs']) {
+      await expect(page.getByRole('heading', { name, level: 2 })).toHaveCount(
+        0,
+      );
     }
     await expect(
       page.getByRole('heading', { name: 'Amortization schedule', level: 2 }),
@@ -66,9 +83,10 @@ test.describe('Feature pages', () => {
     await page.keyboard.press('Tab');
 
     await page.goto('/deal-analyzer');
-    await expect(
-      page.getByRole('textbox', { name: 'Home price', exact: true }),
-    ).toHaveValue('$250,000.00');
+    await expect(await dealField(page, 'Home price')).toHaveValue(
+      '$250,000.00',
+    );
+    await closeDealSheet(page);
   });
 
   test('(f) editing on /amortization keeps the rental data', async ({
@@ -83,26 +101,31 @@ test.describe('Feature pages', () => {
     await page.keyboard.press('Tab');
 
     await page.goto('/deal-analyzer');
-    await expect(
-      page.getByRole('textbox', { name: 'Monthly rent', exact: true }),
-    ).toHaveValue('$2,400.00');
+    await expect(await dealField(page, 'Monthly rent')).toHaveValue(
+      '$2,400.00',
+    );
+    await closeDealSheet(page);
   });
 
   test('(g) comparison columns differ by page', async ({ page }) => {
     await page.goto('/amortization');
-    await page.getByRole('button', { name: '+ Add scenario' }).click();
+    await page
+      .getByRole('button', { name: 'Add scenario', exact: true })
+      .click();
 
     const grid = page
-      .getByText('Compare scenarios')
-      .locator('..')
+      .locator('section', {
+        has: page.getByRole('heading', { name: 'Compare scenarios' }),
+      })
       .locator('table');
     await expect(grid.locator('tbody tr')).toHaveCount(2);
     await expect(grid.locator('thead')).not.toContainText('Cap Rate');
 
     await page.goto('/deal-analyzer');
     const dealGrid = page
-      .getByText('Compare scenarios')
-      .locator('..')
+      .locator('section', {
+        has: page.getByRole('heading', { name: 'Compare scenarios' }),
+      })
       .locator('table');
     await expect(dealGrid.locator('tbody tr')).toHaveCount(2);
     await expect(dealGrid.locator('thead')).toContainText('Cap Rate');
@@ -119,9 +142,7 @@ test.describe('Feature pages', () => {
     await fillNumberField(page, 'Loan amount', '0');
     await page.keyboard.press('Tab');
     await expect(
-      page.getByText(
-        'Fix the highlighted loan fields above to see the deal analysis.',
-      ),
+      page.getByText('Fix the loan inputs to see the deal analysis.'),
     ).toBeVisible();
     await expect(page.getByTestId('deal-metrics')).toHaveCount(0);
   });
@@ -134,7 +155,9 @@ test.describe('Feature pages', () => {
     await page.goto('/deal-analyzer');
     await fillNumberField(page, 'Home price', '400000');
     await page.keyboard.press('Tab');
-    await page.getByRole('button', { name: '+ Add scenario' }).click();
+    await page
+      .getByRole('button', { name: 'Add scenario', exact: true })
+      .click();
     await page
       .getByRole('button', { name: 'Remove Scenario 1', exact: true })
       .click();
@@ -145,8 +168,9 @@ test.describe('Feature pages', () => {
       .getByRole('tab');
     await expect(tabs).toHaveCount(1);
     await expect(tabs.first()).toHaveText('Scenario 2');
-    await expect(
-      page.getByRole('textbox', { name: 'Home price', exact: true }),
-    ).toHaveValue('$400,000.00');
+    await expect(await dealField(page, 'Home price')).toHaveValue(
+      '$400,000.00',
+    );
+    await closeDealSheet(page);
   });
 });

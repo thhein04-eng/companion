@@ -51,7 +51,7 @@ export function NetWorthChart({
             {
               key: 'netWorthAfterTax' as const,
               label: 'Net worth after tax',
-              color: 2 as const,
+              color: 4 as const,
             },
           ]
         : []),

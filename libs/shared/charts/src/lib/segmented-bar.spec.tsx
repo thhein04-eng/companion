@@ -99,4 +99,53 @@ describe('SegmentedBar', () => {
     ).toThrow(/at most 6/);
     spy.mockRestore();
   });
+
+  describe('onSegmentActivate (spec 010 US4)', () => {
+    it('calls the handler with the segment key on click and on Enter', () => {
+      const onActivate = vi.fn();
+      const { container } = render(
+        <SegmentedBar
+          title="Budget"
+          segments={budget}
+          total={2500}
+          formatValue={usd}
+          onSegmentActivate={onActivate}
+        />,
+      );
+      const food = container.querySelector('[data-segment="food"]') as Element;
+      fireEvent.click(food);
+      expect(onActivate).toHaveBeenLastCalledWith('food');
+      const rent = container.querySelector('[data-segment="rent"]') as Element;
+      act(() => (rent as unknown as HTMLElement).focus());
+      fireEvent.keyDown(rent, { key: 'Enter' });
+      expect(onActivate).toHaveBeenLastCalledWith('rent');
+    });
+
+    it('makes legend entries buttons that call the handler', () => {
+      const onActivate = vi.fn();
+      render(
+        <SegmentedBar
+          title="Budget"
+          segments={budget}
+          total={2500}
+          formatValue={usd}
+          onSegmentActivate={onActivate}
+        />,
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Fun' }));
+      expect(onActivate).toHaveBeenCalledWith('fun');
+    });
+
+    it('stays read-only without the handler', () => {
+      render(
+        <SegmentedBar
+          title="Budget"
+          segments={budget}
+          total={2500}
+          formatValue={usd}
+        />,
+      );
+      expect(screen.queryByRole('button', { name: 'Fun' })).toBeNull();
+    });
+  });
 });
