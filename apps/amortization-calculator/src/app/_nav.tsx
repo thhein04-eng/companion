@@ -1,5 +1,6 @@
 import {
   BankIcon,
+  BookIcon,
   BuildingIcon,
   CalculatorIcon,
   KeyIcon,
@@ -48,5 +49,11 @@ export const NAV_ITEMS: NavItem[] = [
     label: 'Sale Profit',
     href: '/sale',
     icon: <TagIcon />,
+  },
+  {
+    id: 'glossary',
+    label: 'Glossary',
+    href: '/glossary',
+    icon: <BookIcon />,
   },
 ];

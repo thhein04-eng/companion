@@ -27,6 +27,7 @@ export function DealMetrics({ analysis }: DealMetricsProps) {
       {housing ? (
         <MetricCard
           data-testid="net-housing-cost"
+          glossaryId="net-housing-cost"
           label="Net housing cost"
           info="What living here costs you each month: the loan payment and operating expenses, less the rent and reimbursements your tenants pay."
           value={`${currency.format(Math.max(housing.monthly, 0))}/mo`}
@@ -41,6 +42,7 @@ export function DealMetrics({ analysis }: DealMetricsProps) {
       ) : null}
       <MetricCard
         data-testid="cap-rate"
+        glossaryId="cap-rate"
         label="Cap rate"
         info="Net operating income per year ÷ purchase price, before financing."
         value={capRate.value != null ? percent2.format(capRate.value) : 'N/A'}
@@ -50,6 +52,7 @@ export function DealMetrics({ analysis }: DealMetricsProps) {
       />
       <MetricCard
         data-testid="rule-1-rule"
+        glossaryId="one-percent-rule"
         label="1% Rule"
         info="Monthly rent should be at least 1% of the purchase price."
         value={oneRatio != null ? percent2.format(oneRatio) : 'N/A'}
@@ -63,6 +66,7 @@ export function DealMetrics({ analysis }: DealMetricsProps) {
       />
       <MetricCard
         data-testid="rule-50-rule"
+        glossaryId="fifty-percent-rule"
         label="50% Rule"
         info="Operating expenses (excluding the mortgage) typically run about 50% of gross rent."
         value={fifty ? percent1.format(fifty.opexRatio) : 'N/A'}

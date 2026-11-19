@@ -2,6 +2,7 @@
 
 import { Popover, PopoverContent, PopoverTrigger } from '@ui-sdk/react/popover';
 import { Ripple } from 'shared-ui';
+import { GlossaryLink } from './glossary-link';
 import { StatusPill, type RuleStatus } from './rule-indicator';
 
 export interface MetricCardProps {
@@ -17,6 +18,8 @@ export interface MetricCardProps {
   explanation: string;
   /** Raw value for the change highlight (spec 010 FR-029). */
   rippleValue?: number | null;
+  /** Glossary entry id; adds a "Full definition" link to the info popover (spec 015). */
+  glossaryId?: string;
   'data-testid': string;
 }
 
@@ -32,6 +35,7 @@ export function MetricCard({
   statusText,
   explanation,
   rippleValue,
+  glossaryId,
   'data-testid': testId,
 }: MetricCardProps) {
   return (
@@ -54,6 +58,7 @@ export function MetricCard({
             className="z-30 max-w-xs rounded-lg border border-line bg-surface px-3 py-2 text-[13px] text-fg shadow-float"
           >
             {info}
+            {glossaryId ? <GlossaryLink id={glossaryId} /> : null}
           </PopoverContent>
         </Popover>
       </div>
