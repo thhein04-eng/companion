@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { validateRental } from './validate-rental';
-import type { RentalAssumptions } from './types';
+import type { RentalAssumptions, RentUnit } from './types';
 
 const valid: RentalAssumptions = {
   grossMonthlyRent: 2_400,
@@ -165,5 +165,108 @@ describe('validateRental growth assumptions (spec 005 FR-013)', () => {
         message: `${labels[field]} must be between -10% and 25%.`,
       },
     ]);
+  });
+});
+
+describe('validateRental rent roll and RUBS (spec 012 data-model §F)', () => {
+  const unit = (over: Partial<RentUnit> = {}): RentUnit => ({
+    id: 'a',
+    name: 'Unit A',
+    bedrooms: 2,
+    bathrooms: 1,
+    rent: 1_350,
+    vacancyPct: null,
+    ownerOccupied: false,
+    rentAfterMoveOut: null,
+    ...over,
+  });
+  const withUnits = (
+    units: RentUnit[],
+    over: Partial<RentalAssumptions> = {},
+  ) => validateRental({ ...valid, units, ...over });
+
+  it('accepts a valid 1–4 unit rent roll, an owner unit and the move-out bounds', () => {
+    expect(withUnits([unit()])).toEqual([]);
+    expect(
+      withUnits(
+        [
+          unit({ ownerOccupied: true, rentAfterMoveOut: 1_350, vacancyPct: 0 }),
+          unit({ id: 'b', name: 'Unit B', vacancyPct: 100 }),
+          unit({ id: 'c', name: 'Unit C', rent: 0 }),
+          unit({ id: 'd', name: 'x'.repeat(40) }),
+        ],
+        { moveOutYears: 30 },
+      ),
+    ).toEqual([]);
+    expect(withUnits([unit()], { moveOutYears: 1 })).toEqual([]);
+  });
+
+  it('rejects an empty or oversized rent roll and two owner units', () => {
+    expect(withUnits([])).toEqual([
+      { field: 'rental.units', message: 'Add at least one unit' },
+    ]);
+    expect(withUnits([unit(), unit(), unit(), unit(), unit()])).toEqual([
+      { field: 'rental.units', message: 'Up to 4 units' },
+    ]);
+    expect(
+      withUnits([
+        unit({ ownerOccupied: true }),
+        unit({ id: 'b', ownerOccupied: true }),
+      ]),
+    ).toEqual([
+      { field: 'rental.units', message: 'Only one unit can be yours' },
+    ]);
+  });
+
+  it('rejects bad unit fields with keys rental.units.<i>.*', () => {
+    expect(
+      withUnits([
+        unit(),
+        unit({
+          name: '  ',
+          rent: -1,
+          vacancyPct: 100.5,
+          rentAfterMoveOut: -5,
+        }),
+      ]),
+    ).toEqual([
+      { field: 'rental.units.1.name', message: 'Enter a unit name' },
+      { field: 'rental.units.1.rent', message: "Rent can't be negative" },
+      { field: 'rental.units.1.vacancyPct', message: 'Use 0–100%' },
+      {
+        field: 'rental.units.1.rentAfterMoveOut',
+        message: "Rent can't be negative",
+      },
+    ]);
+    expect(withUnits([unit({ name: 'x'.repeat(41) })])).toEqual([
+      { field: 'rental.units.0.name', message: '40 characters max' },
+    ]);
+  });
+
+  it('rejects a move-out outside 1–30 whole years', () => {
+    for (const moveOutYears of [0, 31, 2.5]) {
+      expect(withUnits([unit()], { moveOutYears })).toEqual([
+        { field: 'rental.moveOutYears', message: 'Use 1–30 years' },
+      ]);
+    }
+  });
+
+  it('rejects a RUBS recovery rate outside 0–100%', () => {
+    const expense = (recoveryPct: number) =>
+      validateRental({
+        ...valid,
+        customExpenses: [
+          { label: 'Water', monthlyAmount: 180, paidBy: 'rubs', recoveryPct },
+        ],
+      });
+    expect(expense(0)).toEqual([]);
+    expect(expense(100)).toEqual([]);
+    expect(expense(101)).toEqual([
+      { field: 'rental.customExpenses.0.recoveryPct', message: 'Use 0–100%' },
+    ]);
+  });
+
+  it('adds no errors to a rental without units', () => {
+    expect(validateRental(valid)).toEqual([]);
   });
 });

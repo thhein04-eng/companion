@@ -66,4 +66,59 @@ test.describe('Accessibility (spec 010 SC-005, SC-006)', () => {
     await expect(page.getByRole('dialog', { name: /Edit Rate/ })).toBeVisible();
     expect((await scan(page)).violations).toEqual([]);
   });
+
+  for (const theme of ['light', 'dark'] as const) {
+    test(`a 4-unit house-hack with RUBS has no violations in ${theme} (spec 012 SC-006)`, async ({
+      page,
+    }) => {
+      await page.goto('/deal-analyzer');
+      await setTheme(page, theme);
+      await reference(page);
+      const sheet = await openDealSheet(page);
+      for (let i = 0; i < 3; i++) await sheet.getByTestId('add-unit').click();
+      await sheet
+        .getByRole('group', { name: 'Unit A' })
+        .getByRole('checkbox', { name: 'I live here' })
+        .check();
+      await sheet.getByRole('button', { name: '+ Add expense' }).click();
+      // No name is typed: in Playwright's Firefox, an axe scan right after typing into the
+      // (pre-spec-012) expense-name input crashes the page (isolated 2026-11-19 by excluding it).
+      await sheet
+        .getByRole('radiogroup', { name: 'Paid by' })
+        .getByRole('radio', { name: 'Tenants (RUBS)' })
+        .click();
+      expect((await scan(page)).violations).toEqual([]);
+      await closeDealSheet(page);
+      await expect(page.getByTestId('occupancy-view').first()).toBeVisible();
+      expect((await scan(page)).violations).toEqual([]);
+    });
+  }
+
+  test('the rent roll, owner toggle and view switch work by keyboard alone (spec 012 SC-006)', async ({
+    page,
+  }) => {
+    await page.goto('/deal-analyzer');
+    await reference(page);
+    const sheet = await openDealSheet(page);
+    await sheet.getByTestId('add-unit').focus();
+    await page.keyboard.press('Enter');
+    await expect(sheet.getByTestId('rent-unit')).toHaveCount(2);
+    const mine = sheet
+      .getByRole('group', { name: 'Unit A' })
+      .getByRole('checkbox', { name: 'I live here' });
+    await mine.focus();
+    await page.keyboard.press('Space');
+    await expect(mine).toBeChecked();
+    await closeDealSheet(page);
+    const living = page
+      .getByRole('region', { name: 'Deal' })
+      .getByRole('radio', { name: 'Living there' });
+    await living.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(
+      page
+        .getByRole('region', { name: 'Deal' })
+        .getByRole('radio', { name: 'After move-out' }),
+    ).toBeChecked();
+  });
 });

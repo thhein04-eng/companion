@@ -45,7 +45,12 @@ export function dismissToast(id: string) {
   toast.dismiss(id);
 }
 
-/** The app's one toast region, bottom center (rendered once in AppShell). Copies `.toast`. */
+/**
+ * The app's one toast region, bottom center (rendered once in AppShell). Copies `.toast`.
+ * The region spans the width (`inset-x-0`) and centers its toasts with flex, so ui-sdk's own
+ * bottom-center `translate: -50%` (meant for `left: 50%`) is cancelled; otherwise every toast
+ * sat half off-screen to the left.
+ */
 export function ToastRegion() {
   return (
     <SdkToastRegion
@@ -53,7 +58,7 @@ export function ToastRegion() {
       align="center"
       maxVisible={3}
       aria-label="Notifications"
-      className="pointer-events-none fixed inset-x-0 bottom-[calc(16px+env(safe-area-inset-bottom,0px))] z-[60] flex flex-col items-center gap-2 px-4"
+      className="pointer-events-none fixed inset-x-0 translate-none! bottom-[calc(16px+env(safe-area-inset-bottom,0px))] z-[60] flex flex-col items-center gap-2 px-4"
     >
       {(t) => (
         <Toast

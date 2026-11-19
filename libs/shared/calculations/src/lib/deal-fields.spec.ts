@@ -3,11 +3,12 @@ import {
   DEAL_FIELD_LABELS,
   dealFieldPatch,
   formatDealField,
+  formatRentWithUnits,
   readDealField,
   type DealFieldKey,
 } from './deal-fields';
 import { DEFAULT_RENTAL_ASSUMPTIONS } from './rental-defaults';
-import type { LoanScenario } from './types';
+import type { LoanScenario, RentalAssumptions, RentUnit } from './types';
 
 const base: LoanScenario = {
   id: 's1',
@@ -119,4 +120,77 @@ it('labels every chip field', () => {
   expect(DEAL_FIELD_LABELS.annualInterestRatePct).toBe('Rate');
   expect(DEAL_FIELD_LABELS.termMonths).toBe('Term');
   expect(DEAL_FIELD_LABELS['rental.grossMonthlyRent']).toBe('Rent');
+});
+
+describe('rent roll (spec 012 T011)', () => {
+  const unit = (over: Partial<RentUnit> & { id: string }): RentUnit => ({
+    name: `Unit ${over.id.toUpperCase()}`,
+    bedrooms: null,
+    bathrooms: null,
+    rent: 0,
+    vacancyPct: null,
+    ownerOccupied: false,
+    rentAfterMoveOut: null,
+    ...over,
+  });
+  const withRental = (rental: Partial<RentalAssumptions>): LoanScenario =>
+    ({
+      rental: { ...DEFAULT_RENTAL_ASSUMPTIONS, grossMonthlyRent: 0, ...rental },
+    }) as LoanScenario;
+  const duplex = (
+    a: Partial<RentUnit> = {},
+    over: Partial<RentalAssumptions> = {},
+  ) =>
+    withRental({
+      grossMonthlyRent: 2_750,
+      units: [
+        unit({ id: 'a', rent: 1_350, ...a }),
+        unit({ id: 'b', rent: 1_400 }),
+      ],
+      ...over,
+    });
+  const owner = { ownerOccupied: true, rentAfterMoveOut: 1_350 };
+
+  it('reads Rent as the rent roll total in the current view', () => {
+    expect(readDealField(duplex(), 'rental.grossMonthlyRent')).toBe(2_750);
+    expect(readDealField(duplex(owner), 'rental.grossMonthlyRent')).toBe(1_400);
+    expect(
+      readDealField(
+        duplex(owner, { occupancyView: 'afterMoveOut' }),
+        'rental.grossMonthlyRent',
+      ),
+    ).toBe(2_750);
+  });
+
+  it('formats the rent with the unit count, per view', () => {
+    const r = (s: LoanScenario) => s.rental as RentalAssumptions;
+    expect(formatRentWithUnits(r(duplex()))).toBe('$2,750 · 2 units');
+    expect(formatRentWithUnits(r(duplex(owner)))).toBe('$1,400 · 2 units');
+    expect(formatRentWithUnits(r(duplex(owner)), 'afterMoveOut')).toBe(
+      '$2,750 · 2 units',
+    );
+    expect(
+      formatRentWithUnits(r(withRental({ grossMonthlyRent: 2_750 }))),
+    ).toBe('$2,750');
+  });
+
+  it('edits Unit A’s rent through the single-rent popover, keeping the total in sync', () => {
+    const one = withRental({
+      grossMonthlyRent: 2_000,
+      units: [unit({ id: 'a', rent: 2_000 })],
+    });
+    const patch = dealFieldPatch(one, 'rental.grossMonthlyRent', 2_100);
+    expect(patch.rental?.grossMonthlyRent).toBe(2_100);
+    expect(patch.rental?.units?.[0].rent).toBe(2_100);
+  });
+
+  it('ignores a single-number rent edit for a larger or house-hacked rent roll', () => {
+    expect(dealFieldPatch(duplex(), 'rental.grossMonthlyRent', 3_000)).toEqual(
+      {},
+    );
+    const hacked = withRental({ units: [unit({ id: 'a', ...owner })] });
+    expect(dealFieldPatch(hacked, 'rental.grossMonthlyRent', 3_000)).toEqual(
+      {},
+    );
+  });
 });

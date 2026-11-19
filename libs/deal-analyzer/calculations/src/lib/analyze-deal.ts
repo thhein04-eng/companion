@@ -1,8 +1,14 @@
 import {
+  currentView,
+  hasOwnerUnit,
+  normalizeUnits,
+  rentRollIncome,
+  rentRollTotal,
   roundCents,
   type AmortizationSchedule,
   type LoanScenario,
   type MonthlyAnnual,
+  type OccupancyView,
   type RatioResult,
   type RentalAssumptions,
 } from 'shared-calculations';
@@ -52,11 +58,17 @@ export function downPaymentDollars(scenario: LoanScenario): number {
 export function analyzeDeal(
   scenario: LoanScenario,
   schedule: AmortizationSchedule,
+  options: { view?: OccupancyView } = {},
 ): DealAnalysis {
   const rental = scenario.rental as RentalAssumptions;
 
-  const gsiMonthly = rental.grossMonthlyRent + rental.otherMonthlyIncome;
-  const rawLines = rentalLineItems(scenario, gsiMonthly, 1);
+  // Spec 012: income from the rent roll in the chosen view (stored view by default).
+  const owner = hasOwnerUnit(rental);
+  const view = options.view ?? currentView(rental);
+  const income = rentRollIncome(rental, view);
+  const gsiMonthly = income.pctBaseMonthly;
+  const reimbursementMonthly = income.reimbursementMonthly;
+  const rawLines = rentalLineItems(scenario, income, 1);
 
   const operatingExpenses: OperatingExpenseLine[] = rawLines.map(
     ({ category, label, monthly }) => ({
@@ -66,7 +78,7 @@ export function analyzeDeal(
     }),
   );
   const opexMonthly = rawLines.reduce((sum, line) => sum + line.monthly, 0);
-  const noiMonthly = gsiMonthly - opexMonthly;
+  const noiMonthly = gsiMonthly + reimbursementMonthly - opexMonthly;
 
   const yearOne = schedule.periods.slice(0, 12);
   const pmiMonths = yearOne.filter((p) => p.pmiApplies).length;
@@ -101,24 +113,41 @@ export function analyzeDeal(
           value: null,
           naReason: 'Enter a purchase price to see the cap rate.',
         };
+  // The rules of thumb judge the property, so they always use the full rent roll with the owner's
+  // unit at its rent after move-out (spec 012 FR-015).
+  const fullRent = rentRollTotal(rental);
+  const full =
+    view === 'afterMoveOut' || !owner
+      ? { gsiMonthly, opexMonthly }
+      : (() => {
+          const fullIncome = rentRollIncome(rental, 'afterMoveOut');
+          return {
+            gsiMonthly: fullIncome.pctBaseMonthly,
+            opexMonthly: rentalLineItems(scenario, fullIncome, 1).reduce(
+              (sum, line) => sum + line.monthly,
+              0,
+            ),
+          };
+        })();
   const onePercentRule: OnePercentRuleResult | null =
     purchasePrice != null
       ? {
-          pass: rental.grossMonthlyRent >= 0.01 * purchasePrice,
+          pass: fullRent >= 0.01 * purchasePrice,
           targetRent: roundCents(0.01 * purchasePrice),
-          actualRent: rental.grossMonthlyRent,
+          actualRent: fullRent,
         }
       : null;
   const fiftyPercentRule: FiftyPercentRuleResult | null =
-    gsiMonthly > 0
+    full.gsiMonthly > 0
       ? {
-          opexRatio: opexMonthly / gsiMonthly,
-          withinRule: opexMonthly / gsiMonthly <= 0.5,
+          opexRatio: full.opexMonthly / full.gsiMonthly,
+          withinRule: full.opexMonthly / full.gsiMonthly <= 0.5,
           estimatedMonthlyCashFlow: roundCents(
-            0.5 * gsiMonthly - debtService.monthly,
+            0.5 * full.gsiMonthly - debtService.monthly,
           ),
         }
       : null;
+  const unitCount = normalizeUnits(rental).length;
 
   return {
     grossScheduledIncome: fromMonthly(gsiMonthly),
@@ -134,6 +163,27 @@ export function analyzeDeal(
     fiftyPercentRule,
     pmiEndsInYearOne: pmiMonths > 0 && pmiMonths < yearOne.length,
     pmiDropPeriod: schedule.summary.pmiDropPeriod,
+    view: owner ? view : null,
+    income: {
+      rent: fromMonthly(income.rentMonthly),
+      other: fromMonthly(income.otherMonthly),
+      reimbursements: fromMonthly(reimbursementMonthly),
+    },
+    unitBreakdown:
+      unitCount >= 2
+        ? income.units.map((u) => ({
+            id: u.id,
+            name: u.name,
+            rent: roundCents(u.effectiveRent),
+            vacancy: roundCents(u.vacancyMonthly),
+            ratePct: u.rate,
+          }))
+        : [],
+    // What living there costs the owner each month (spec 012 FR-014): −cash flow.
+    netHousingCost:
+      owner && view === 'living'
+        ? { monthly: -cashFlow.monthly, annual: -cashFlow.annual }
+        : null,
     dscr: computeDscr({
       scenario,
       annualNoi: netOperatingIncome.annual,

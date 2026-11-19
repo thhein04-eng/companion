@@ -57,6 +57,31 @@ export interface SaleTaxAssumptions {
   recaptureRatePct?: number;
 }
 
+/** Which income a house-hacked deal shows (spec 012 FR-012). */
+export type OccupancyView = 'living' | 'afterMoveOut';
+
+/**
+ * One unit of a scenario's rent roll (spec 012 data-model §A). An owner-occupied unit earns $0
+ * while the owner lives there and `rentAfterMoveOut` afterwards; its `rent` is not used.
+ */
+export interface RentUnit {
+  id: string;
+  /** 1–40 characters, trimmed. */
+  name: string;
+  /** Integer 0–10, or null when not given. */
+  bedrooms: number | null;
+  /** 0–10 in steps of 0.5, or null when not given. */
+  bathrooms: number | null;
+  /** Monthly rent, ≥ 0. */
+  rent: number;
+  /** 0–100; null = use the rental's overall `vacancyPct`. */
+  vacancyPct: number | null;
+  /** At most one unit in a rent roll may be owner-occupied. */
+  ownerOccupied: boolean;
+  /** ≥ 0; the owner-occupied unit's rent after move-out. Null reads as $0 with a missing hint. */
+  rentAfterMoveOut: number | null;
+}
+
 /**
  * Rental-property assumptions for one scenario (Deal Analyzer).
  * Dollar fields (`grossMonthlyRent`, `otherMonthlyIncome`, `closingCosts`,
@@ -65,7 +90,17 @@ export interface SaleTaxAssumptions {
  * percentages of Gross Scheduled Income.
  */
 export interface RentalAssumptions {
+  /**
+   * Total monthly rent. With a rent roll (`units`), this is always the after-move-out rent-roll
+   * total, kept in sync by every rent-roll write (spec 012 research R1).
+   */
   grossMonthlyRent: number;
+  /** The rent roll, 1–4 units (spec 012). Missing = one implicit unit at `grossMonthlyRent`. */
+  units?: RentUnit[];
+  /** Whole years from purchase until the owner moves out, 1–30. Missing = 1 (spec 012 FR-011). */
+  moveOutYears?: number;
+  /** The income view shown for a house-hacked deal. Missing = 'living' (spec 012 FR-013). */
+  occupancyView?: OccupancyView;
   otherMonthlyIncome: number;
   vacancyPct: number;
   managementPct: number;
@@ -187,6 +222,8 @@ export interface FieldError {
     | `extraPayments.${number}.${string}`
     | `rental.${keyof RentalAssumptions}`
     | `rental.customExpenses.${number}.monthlyAmount`
+    | `rental.customExpenses.${number}.recoveryPct`
+    | `rental.units.${number}.${'name' | 'rent' | 'vacancyPct' | 'rentAfterMoveOut'}`
     | `rental.dscrMinimum`
     | `rental.financing.${FinancingOptionId}.${string}`
     | `rental.wealth.${keyof WealthAssumptions}`
@@ -225,6 +262,10 @@ export interface CustomExpenseItem {
   id?: string;
   label: string; // e.g., "Utilities (Water/Trash)", "Landscaping"
   monthlyAmount: number;
+  /** Who pays (spec 012 FR-017). Missing = 'landlord'. 'rubs' = tenants reimburse a share. */
+  paidBy?: 'landlord' | 'rubs';
+  /** Share of a RUBS expense recovered from tenants, 0–100. Missing = 100. */
+  recoveryPct?: number;
 }
 
 /** An unrounded ratio (fraction, e.g. `0.0376`), or `null` with a human-readable reason when not applicable. */

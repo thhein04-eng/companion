@@ -24,7 +24,8 @@ import {
 
 export const SALE_NO_PRICE_REASON = 'Enter a purchase price to model a sale.';
 export const SALE_INVALID_REASON = 'Fix the sale inputs to see the result.';
-export const SALE_TAX_INVALID_REASON = 'Fix the tax inputs to see the estimate.';
+export const SALE_TAX_INVALID_REASON =
+  'Fix the tax inputs to see the estimate.';
 const NO_INVESTMENT = 'No cash invested — return is undefined.';
 
 /** Profit / Loss / Break-even from the cents-rounded profit (spec 013 US1). */
@@ -52,7 +53,7 @@ function cumulativeCashFlow(
   );
   const { monthlyPrincipalAndInterest, monthlyPmiAmount } = schedule.summary;
   for (let k = fullYears * 12 + 1; k <= exitMonth; k++) {
-    const { gsiMonthly, opexMonthly } = operatingYear(
+    const { gsiMonthly, reimbursementMonthly, opexMonthly } = operatingYear(
       scenario,
       Math.ceil(k / 12),
     );
@@ -60,7 +61,12 @@ function cumulativeCashFlow(
     const debtService = period
       ? monthlyPrincipalAndInterest + (period.pmiApplies ? monthlyPmiAmount : 0)
       : 0;
-    total += gsiMonthly - opexMonthly - debtService - (period?.extraPrincipalApplied ?? 0);
+    total +=
+      gsiMonthly +
+      reimbursementMonthly -
+      opexMonthly -
+      debtService -
+      (period?.extraPrincipalApplied ?? 0);
   }
   return roundCents(total);
 }
@@ -157,9 +163,7 @@ export function analyzeSale(
           ? 0
           : Math.min(
               basis,
-              roundCents(
-                (roundCents(basis / DEPRECIATION_YEARS) * m) / 12,
-              ),
+              roundCents((roundCents(basis / DEPRECIATION_YEARS) * m) / 12),
             );
       const adjustedBasis = roundCents(
         price + closing + rehab - depreciationTaken,

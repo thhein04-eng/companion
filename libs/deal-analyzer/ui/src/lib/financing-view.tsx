@@ -23,6 +23,7 @@ import {
   DealStrip,
   FINANCING_PROFILE,
   InputsMessage,
+  OccupancyViewSwitch,
   PageHeader,
   Section,
   SectionHeader,
@@ -148,6 +149,7 @@ export function FinancingView() {
               </>
             }
           />
+          <OccupancyViewSwitch showLabel />
           <div className="max-w-md">
             <DscrCard
               dscr={analysis.dscr}

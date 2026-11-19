@@ -13,7 +13,7 @@ export function normalizeUnits(rental: RentalAssumptions): RentUnit[];
 export function hasOwnerUnit(rental: RentalAssumptions): boolean;
 export function rentRollTotal(rental: RentalAssumptions): number;        // after move-out
 export function rentRollIncome(rental: RentalAssumptions, view: OccupancyView): IncomeBasis;
-export function currentView(rental: RentalAssumptions): OccupancyView;   // stored or 'living'
+export function currentView(rental: RentalAssumptions): OccupancyView;   // owner unit: stored or 'living'; else 'afterMoveOut'
 ```
 
 `IncomeBasis` fields per data-model §D. All pure, no I/O; cent tests in `rent-roll.spec.ts`.

@@ -4,6 +4,9 @@ import { useRef, useState } from 'react';
 import {
   DEAL_FIELD_LABELS,
   formatDealField,
+  formatRentWithUnits,
+  hasOwnerUnit,
+  normalizeUnits,
   readDealField,
   type FieldError,
 } from 'shared-calculations';
@@ -33,7 +36,14 @@ export interface ChipPopoverProps {
 }
 
 const errorFor = (errors: FieldError[], field: string) =>
-  errors.find((e) => e.field === field)?.message;
+  errors.find(
+    (e) =>
+      e.field === field ||
+      // Rent roll errors show on the Rent value (spec 012 R7).
+      (field === 'rental.grossMonthlyRent' &&
+        (e.field.startsWith('rental.units') ||
+          e.field === 'rental.moveOutYears')),
+  )?.message;
 
 /** The headline preview line: "DSCR 1.18 → 1.24", or why it can't be shown (FR-005). */
 export function HeadlinePreview({
@@ -99,8 +109,36 @@ export function ChipPopover({
       : '—'
     : raw == null
       ? 'Add'
-      : formatDealField(chip, raw);
+      : chip === 'rental.grossMonthlyRent' && scenario.rental
+        ? formatRentWithUnits(scenario.rental)
+        : formatDealField(chip, raw);
   const effectiveTone: ChipTone = error ? 'err' : tone;
+
+  // A rent roll of 2+ units, or one the owner lives in, is edited in the sheet's rent roll, not
+  // through one number (spec 012 FR-005).
+  if (
+    chip === 'rental.grossMonthlyRent' &&
+    scenario.rental &&
+    (normalizeUnits(scenario.rental).length >= 2 ||
+      hasOwnerUnit(scenario.rental))
+  ) {
+    return (
+      <DealValue
+        tone={effectiveTone}
+        label={label}
+        value={value}
+        data-chip={chip}
+        aria-label={`${label} ${value}${error ? ' invalid' : ''}, edit the rent roll`}
+        aria-invalid={error ? true : undefined}
+        onClick={(event) =>
+          sheet.open({
+            focusField: 'rental.grossMonthlyRent',
+            returnFocus: event.currentTarget,
+          })
+        }
+      />
+    );
+  }
 
   const editor = (() => {
     switch (chip) {

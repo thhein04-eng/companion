@@ -1,5 +1,11 @@
 import { DEFAULT_RENTAL_ASSUMPTIONS } from './rental-defaults';
-import type { DownPayment, LoanScenario, RentalAssumptions } from './types';
+import { currentView, normalizeUnits, rentRollIncome } from './rent-roll';
+import type {
+  DownPayment,
+  LoanScenario,
+  OccupancyView,
+  RentalAssumptions,
+} from './types';
 
 /** The single-number rental inputs the deal UI edits (spec 010 data-model §A). */
 export type RentalDealField =
@@ -72,6 +78,11 @@ export function readDealField(
   key: DealFieldKey,
 ): number | DownPayment | string | null {
   const rk = rentalKey(key);
+  // Spec 012: the rent is the rent roll's total in the current view (FR-002, FR-005).
+  if (rk === 'grossMonthlyRent' && scenario.rental?.units?.length) {
+    return rentRollIncome(scenario.rental, currentView(scenario.rental))
+      .rentMonthly;
+  }
   if (rk) return scenario.rental?.[rk] ?? null;
   return (
     (
@@ -104,7 +115,37 @@ export function dealFieldPatch(
       } as RentalAssumptions,
     };
   }
+  const units = scenario.rental.units;
+  if (rk === 'grossMonthlyRent' && units?.length) {
+    // One plain unit: the single-rent popover edits Unit A (spec 012 FR-005). A larger or
+    // house-hacked rent roll is edited in the sheet, never through this one number.
+    if (units.length > 1 || units[0].ownerOccupied) return {};
+    const rent = (value as number | null) ?? 0;
+    return {
+      rental: {
+        ...scenario.rental,
+        grossMonthlyRent: rent,
+        units: [{ ...units[0], rent }],
+      },
+    };
+  }
   return { rental: { ...scenario.rental, [rk]: value ?? 0 } };
+}
+
+/**
+ * The deal card's Rent text (spec 012 FR-005, data-model §E): the rent in `view`, plus
+ * " · N units" when the rent roll has 2 or more units.
+ */
+export function formatRentWithUnits(
+  rental: RentalAssumptions,
+  view: OccupancyView = currentView(rental),
+): string {
+  const n = normalizeUnits(rental).length;
+  const rent = formatDealField(
+    'rental.grossMonthlyRent',
+    rentRollIncome(rental, view).rentMonthly,
+  );
+  return n >= 2 ? `${rent} · ${n} units` : rent;
 }
 
 const money = (n: number) =>

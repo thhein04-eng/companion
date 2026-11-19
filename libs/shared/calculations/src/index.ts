@@ -1,4 +1,6 @@
 export * from './lib/types';
+export * from './lib/rent-roll';
+export * from './lib/rent-roll-edits';
 export * from './lib/round';
 export * from './lib/validate-scenario';
 export * from './lib/compute-schedule';

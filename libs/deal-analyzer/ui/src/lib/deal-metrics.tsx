@@ -13,11 +13,32 @@ export interface DealMetricsProps {
 export function DealMetrics({ analysis }: DealMetricsProps) {
   const { capRate, onePercentRule: one, fiftyPercentRule: fifty } = analysis;
   const oneRatio = one ? onePercentRatio(one) : null;
+  const housing = analysis.netHousingCost;
+  // House-hack: the rules judge the property at full rent (spec 012 FR-015).
+  const fullRentNote =
+    analysis.view != null ? ' · Based on full rent after move-out' : '';
   return (
     <div
       data-testid="deal-metrics"
-      className="grid grid-cols-1 items-stretch gap-[var(--space-grid)] sm:grid-cols-3"
+      className={`grid grid-cols-1 items-stretch gap-[var(--space-grid)] ${
+        housing ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-3'
+      }`}
     >
+      {housing ? (
+        <MetricCard
+          data-testid="net-housing-cost"
+          label="Net housing cost"
+          info="What living here costs you each month: the loan payment and operating expenses, less the rent and reimbursements your tenants pay."
+          value={`${currency.format(Math.max(housing.monthly, 0))}/mo`}
+          rippleValue={housing.monthly}
+          status={housing.monthly <= 0 ? 'pass' : 'info'}
+          explanation={
+            housing.monthly <= 0
+              ? `You live for free and net ${currency.format(-housing.monthly)}/mo`
+              : 'While you live in your unit'
+          }
+        />
+      ) : null}
       <MetricCard
         data-testid="cap-rate"
         label="Cap rate"
@@ -36,7 +57,7 @@ export function DealMetrics({ analysis }: DealMetricsProps) {
         status={one ? (one.pass ? 'pass' : 'fail') : 'na'}
         explanation={
           one
-            ? `Rent ${currency.format(one.actualRent)} vs. target ${currency.format(one.targetRent)}`
+            ? `Rent ${currency.format(one.actualRent)} vs. target ${currency.format(one.targetRent)}${fullRentNote}`
             : 'Enter a purchase price to check the 1% Rule.'
         }
       />
@@ -49,7 +70,7 @@ export function DealMetrics({ analysis }: DealMetricsProps) {
         status={fifty ? (fifty.withinRule ? 'pass' : 'fail') : 'na'}
         explanation={
           fifty
-            ? `Expenses vs. the 50% guideline · Rule estimate ${currency.format(fifty.estimatedMonthlyCashFlow)}/mo`
+            ? `Expenses vs. the 50% guideline · Rule estimate ${currency.format(fifty.estimatedMonthlyCashFlow)}/mo${fullRentNote}`
             : 'Enter rent greater than $0 to check the 50% Rule.'
         }
       />

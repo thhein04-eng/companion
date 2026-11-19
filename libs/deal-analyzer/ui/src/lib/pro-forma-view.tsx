@@ -148,7 +148,10 @@ export function ProFormaView() {
       {result ? (
         <Section>
           <SectionHeader title="Pro forma" />
-          <ProFormaTable result={result} />
+          <ProFormaTable
+            result={result}
+            moveOutYear={projection?.moveOutYear ?? null}
+          />
         </Section>
       ) : null}
     </>

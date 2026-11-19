@@ -45,6 +45,13 @@ test.describe('Change ripple and undo (spec 010 US6)', () => {
 
     await changeRentByChip(page, '3500');
     await expect(toast(page)).toHaveText('Rent changed $3,200 → $3,500');
+    // The toast sits fully on screen, centered (it once rendered half off the left edge).
+    const { left, right, viewport } = await toast(page).evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return { left: r.left, right: r.right, viewport: window.innerWidth };
+    });
+    expect(left).toBeGreaterThanOrEqual(0);
+    expect(right).toBeLessThanOrEqual(viewport);
     await expect(cashFlow.locator('[data-rippling="true"]')).toHaveCount(1);
     await expect(
       page.getByTestId('badge-cash-on-cash').locator('[data-rippling="true"]'),

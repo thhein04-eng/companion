@@ -43,7 +43,14 @@ function Money({ value }: { value: number | null }) {
 }
 
 /** Year-by-year pro forma with the sale row (spec 009 contracts § ProFormaTable). */
-export function ProFormaTable({ result }: { result: ExitResult }) {
+export function ProFormaTable({
+  result,
+  moveOutYear = null,
+}: {
+  result: ExitResult;
+  /** The owner's move-out year of a house-hacked deal, marked on its row (spec 012 FR-016). */
+  moveOutYear?: number | null;
+}) {
   const sale: [string, string, number][] = [
     ['sale-price', 'Sale price', result.salePrice],
     ['selling-costs', 'Selling costs', -result.sellingCosts],
@@ -83,6 +90,14 @@ export function ProFormaTable({ result }: { result: ExitResult }) {
               <tr key={y.year} data-testid={`pro-forma-row-${y.year}`}>
                 <th scope="row" className={`${tdClass} text-left font-medium`}>
                   {y.year}
+                  {y.year === moveOutYear ? (
+                    <span
+                      data-testid="move-out-marker"
+                      className="ml-2 rounded-full bg-sunk px-2 py-0.5 text-[11.5px] font-semibold text-fg"
+                    >
+                      Move out
+                    </span>
+                  ) : null}
                 </th>
                 {COLUMNS.map((c) => (
                   <td

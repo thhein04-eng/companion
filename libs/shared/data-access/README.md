@@ -12,6 +12,9 @@ The single session-scoped scenario store. Mounted once in the root layout so bot
 - `useScenarios()`: returns scenarios, the active scenario, `updateActiveScenario`, `addScenario`, and `removeScenario`. Throws outside the provider.
 - `DealEditsProvider` / `useDealEdits()`: the recorded write path (`editDeal`, `editRental`, and, since spec 013, `editSale(patch, source)`, which merges into `scenario.sale` and records a "Sale inputs" change for undo).
 
+- `useRentRoll(source?)` (spec 012): rent-roll, house-hack and RUBS edits through `editRental`
+  (recorded and undoable). `setOccupancyView` saves without an undo entry.
+
 Import only from the package name (`'shared-data-access'`), never from a deep path.
 
 ## Running unit tests

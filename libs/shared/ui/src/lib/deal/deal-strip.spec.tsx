@@ -6,6 +6,11 @@ import {
   screen,
   within,
 } from '@testing-library/react';
+import {
+  DEFAULT_RENTAL_ASSUMPTIONS,
+  serializeScenarios,
+  type LoanScenario,
+} from 'shared-calculations';
 import { DealEditsProvider, ScenariosProvider } from 'shared-data-access';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { DealSheetProvider } from './deal-sheet-context';
@@ -132,5 +137,79 @@ describe('DealStrip (spec 010 US1)', () => {
       .getAllByRole('heading', { level: 3 })
       .map((h) => h.textContent);
     expect(headings).toEqual(['Property', 'Loan', 'Monthly costs', 'Rental']);
+  });
+});
+
+describe('DealStrip with a house-hack (spec 012)', () => {
+  function seed(rentAfterMoveOut: number | null) {
+    const scenario = {
+      id: 's1',
+      name: 'Scenario 1',
+      principal: 300_000,
+      annualInterestRatePct: 6.5,
+      termMonths: 360,
+      startDate: '2027-01-01',
+      paymentFrequency: 'monthly',
+      homePrice: 400_000,
+      downPayment: { percent: 25 },
+      annualPropertyTax: null,
+      annualInsurance: null,
+      pmiAnnualRatePct: null,
+      monthlyHoa: null,
+      extraPayments: [],
+      principalIsOverridden: false,
+      rental: {
+        ...DEFAULT_RENTAL_ASSUMPTIONS,
+        grossMonthlyRent: 1_400 + (rentAfterMoveOut ?? 0),
+        units: [
+          {
+            id: 'a',
+            name: 'Unit A',
+            bedrooms: null,
+            bathrooms: null,
+            rent: 0,
+            vacancyPct: null,
+            ownerOccupied: true,
+            rentAfterMoveOut,
+          },
+          {
+            id: 'b',
+            name: 'Unit B',
+            bedrooms: null,
+            bathrooms: null,
+            rent: 1_400,
+            vacancyPct: null,
+            ownerOccupied: false,
+            rentAfterMoveOut: null,
+          },
+        ],
+      },
+    };
+    window.sessionStorage.setItem(
+      'amortization:scenarios',
+      serializeScenarios([scenario as LoanScenario], 's1'),
+    );
+  }
+
+  it('asks for the rent after move-out when it is missing', () => {
+    seed(null);
+    renderStrip(FINANCING_PROFILE);
+    expect(
+      screen.getByRole('button', {
+        name: '+ Add rent after move-out to see the full rental',
+      }),
+    ).toBeTruthy();
+  });
+
+  it('shows the living-there rent with the unit count, and no hint once it is set', () => {
+    seed(1_350);
+    renderStrip(FINANCING_PROFILE);
+    expect(
+      document.querySelector('[data-chip="rental.grossMonthlyRent"]')
+        ?.textContent,
+    ).toContain('$1,400 · 2 units');
+    expect(
+      document.querySelector('[data-missing="rentAfterMoveOut"]'),
+    ).toBeNull();
   });
 });

@@ -31,7 +31,7 @@ export function NetWorthChart({
 }: {
   projection: WealthProjection & { years: WealthYear[] };
 }) {
-  const { years, taxNaReason } = projection;
+  const { years, taxNaReason, moveOutYear } = projection;
   const data = useMemo(
     () =>
       years.map((y) => ({
@@ -61,33 +61,49 @@ export function NetWorthChart({
   const lastYear = years[years.length - 1].year;
   const xTickValues = useMemo(() => ticks(lastYear), [lastYear]);
 
+  const moveOutLater = moveOutYear != null && moveOutYear > lastYear;
   return (
-    <LineChart
-      title="Net worth over time"
-      description="Equity + cumulative cash flow"
-      data-testid="chart-net-worth"
-      data={data}
-      series={series}
-      xTickValues={xTickValues}
-      formatters={{
-        x: (n) => (n === 0 ? 'Purchase' : `Yr ${n}`),
-        tooltipX: (n) => (n === 0 ? 'Purchase' : `Year ${n}`),
-        y: formatCompactCurrency,
-        tooltipY: usd,
-      }}
-      tooltipExtras={(i) => {
-        const y = years[i];
-        return [
-          { label: 'Property value', value: usd(y.propertyValue) },
-          { label: 'Loan balance', value: usd(y.loanBalance) },
-          { label: 'Cumulative cash flow', value: usd(y.cumulativeCashFlow) },
-          {
-            label: 'Cumulative tax effect',
-            value:
-              y.cumulativeTaxEffect == null ? '—' : usd(y.cumulativeTaxEffect),
-          },
-        ];
-      }}
-    />
+    <>
+      <LineChart
+        title="Net worth over time"
+        description="Equity + cumulative cash flow"
+        data-testid="chart-net-worth"
+        data={data}
+        series={series}
+        xTickValues={xTickValues}
+        markers={
+          moveOutYear != null && moveOutYear <= lastYear
+            ? [{ x: moveOutYear, label: 'Move out', testId: 'move-out-marker' }]
+            : []
+        }
+        formatters={{
+          x: (n) => (n === 0 ? 'Purchase' : `Yr ${n}`),
+          tooltipX: (n) => (n === 0 ? 'Purchase' : `Year ${n}`),
+          y: formatCompactCurrency,
+          tooltipY: usd,
+        }}
+        tooltipExtras={(i) => {
+          const y = years[i];
+          return [
+            { label: 'Property value', value: usd(y.propertyValue) },
+            { label: 'Loan balance', value: usd(y.loanBalance) },
+            { label: 'Cumulative cash flow', value: usd(y.cumulativeCashFlow) },
+            {
+              label: 'Cumulative tax effect',
+              value:
+                y.cumulativeTaxEffect == null
+                  ? '—'
+                  : usd(y.cumulativeTaxEffect),
+            },
+          ];
+        }}
+      />
+      {moveOutLater ? (
+        <p data-testid="move-out-note" className="m-0 text-[12.5px] text-muted">
+          Move-out (year {moveOutYear}) is after the horizon, so every year
+          shown is while you live there.
+        </p>
+      ) : null}
+    </>
   );
 }
