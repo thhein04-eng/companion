@@ -100,7 +100,9 @@ export function ScheduleTable({
         <ScrollAreaViewport
           role="region"
           aria-label="Amortization schedule"
-          className="max-h-96 w-full"
+          // Focusable so keyboard users can scroll it (WCAG 2.1.1; axe scrollable-region-focusable).
+          tabIndex={0}
+          className="max-h-96 w-full rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
           <ScrollAreaContent>
             <table className="num w-full border-collapse text-[14px]">

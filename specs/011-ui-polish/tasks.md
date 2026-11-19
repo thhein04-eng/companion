@@ -121,7 +121,7 @@ column.
 The user saw the bar and asked for a card above the title, with the chips replaced by a labeled
 value grid (spec Clarifications). T009–T013 above shipped the bar; these tasks replace it.
 
-- [ ] T030 [US1] Add `DealValue` to `libs/shared/ui/src/lib/deal/deal-value.tsx`:
+- [X] T030 [US1] Add `DealValue` to `libs/shared/ui/src/lib/deal/deal-value.tsx`:
   - A `forwardRef` button with `label`, `value`, `tone: 'default' | 'pin' | 'err' | 'muted' | 'total' | 'missing'`,
     and `data-chip` / `data-tone`.
   - Layout: `flex flex-col items-start gap-0.5 rounded-md px-2.5 py-2 text-left hover:bg-sunk`,
@@ -129,10 +129,10 @@ value grid (spec Clarifications). T009–T013 above shipped the bar; these tasks
     `num font-display text-[17px] font-semibold` (pin = `text-accent`, err = `text-bad` plus
     "· invalid", muted = `text-muted`, missing value "Add" in `text-accent`).
   - `total` tone renders as a row: "Monthly payment" plus the value `text-[20px]`.
-- [ ] T031 [US1] Make `libs/shared/ui/src/lib/deal/chip-popover.tsx` render a `DealValue` as its
+- [X] T031 [US1] Make `libs/shared/ui/src/lib/deal/chip-popover.tsx` render a `DealValue` as its
   popover trigger instead of `Chip`, keeping the editor, headline preview, `data-chip` and the
   accessible name "{label} {value}".
-- [ ] T032 [US1] Rework `libs/shared/ui/src/lib/deal/deal-strip.tsx` into the card (spec FR-001–FR-003b):
+- [X] T032 [US1] Rework `libs/shared/ui/src/lib/deal/deal-strip.tsx` into the card (spec FR-001–FR-003b):
   - The section gets `sticky top-14 lg:top-0 z-20 rounded-xl border border-line bg-surface max-h-[33vh] overflow-y-auto`
     (no `col-full`).
   - Header row: `<Eyebrow>Your deal</Eyebrow>` + `ScenarioTabs` (left), then the actions (error
@@ -144,10 +144,10 @@ value grid (spec Clarifications). T009–T013 above shipped the bar; these tasks
   - Then the monthly payment row (`ChipPopover chip="total"`) and the missing-input hint chips
     (dashed `Chip`) in a `flex flex-wrap gap-2 px-[18px] pb-3`.
   - Drop the nowrap / 33vh measuring code.
-- [ ] T033 [US1] In `apps/amortization-calculator/src/app/layout.tsx`, set main to
+- [X] T033 [US1] In `apps/amortization-calculator/src/app/layout.tsx`, set main to
   `page-grid w-full pt-10 pb-10` (the card sits in the content column). The views keep
   `DealStrip` before `PageHeader`.
-- [ ] T034 [US1] Update the tests for the card:
+- [X] T034 [US1] Update the tests for the card:
   - `deal-bar.spec.ts` becomes the card: its x equals the h1's x (±1), it's above the h1, and
     tops are equal across pages. The value labels are in the same order on all pages. Edit deal
     is in the card header, plus the tab order and the phone checks.
@@ -296,16 +296,16 @@ value grid (spec Clarifications). T009–T013 above shipped the bar; these tasks
 - [X] T025 [P] Update `libs/shared/ui/README.md` (`SegmentedControl`, the date picker in
   `DateField`, the deal bar) and `libs/deal-analyzer/ui/README.md` (`MetricCard`; `SegmentedOptions`
   is now an alias) and `libs/deal-analyzer/calculations/README.md` (`onePercentRatio`).
-- [ ] T026 Re-run `visual.spec.ts`, review `test-output/visual/` against `design-reference.html`
+- [X] T026 Re-run `visual.spec.ts`, review `test-output/visual/` against `design-reference.html`
   (deal bar, extra payments, metric cards, open calendar, light and dark, 1280 and 390), fix any
   deviation, and note the review under "Baseline notes".
-- [ ] T027 Full gate: `nx run-many -t lint test typecheck`, then the build and full e2e on :3200
+- [X] T027 Full gate: `nx run-many -t lint test typecheck`, then the build and full e2e on :3200
   twice. Record the counts under "Baseline notes".
 - [X] T028 [P] Mark the Deal Strip as replaced by spec 011 US1 (app-level deal bar) in
   `specs/010-deal-strip-redesign/contracts/design-system.md` §4 and
   `specs/010-deal-strip-redesign/contracts/deal-ui.md` § DealStrip, so later checks against spec
   010's FR-034 don't flag the new bar.
-- [ ] T029 Run quickstart.md §1–§5 and append a "Verified on {date}" block to
+- [X] T029 Run quickstart.md §1–§5 and append a "Verified on {date}" block to
   `specs/011-ui-polish/quickstart.md`.
 
 ---
@@ -355,3 +355,25 @@ _(T001 / T026 / T027 record results here; T029 records the quickstart pass.)_
   after 2s, and the sheet's action rows got `data-drawer-no-drag` as a general guard. The root
   cause is unconfirmed (a WebKit/Playwright hit-testing quirk is suspected). Revisit if users report
   missed Done clicks in Safari.
+
+### Final verification (2026-11-19)
+
+- **Card rework fallout** (found in the first full e2e after T030–T034, 12 failures = 6 tests × 2
+  browsers):
+  - `DealValue` replaced a page's pin/muted tone with `missing` when the value was empty. Fixed:
+    `data-tone` keeps the page tone, and emptiness is a separate `data-empty`.
+  - `useDealEdits` merged a card-popover rent edit into an earlier sheet edit of the same field
+    (within 800 ms), so the toast read "Rent changed — → $3,500". Fixed: only edits from the same
+    source merge.
+- **Load-only accessibility failures** (1 in 505; reproduced 6 in 198 under `--workers=8`):
+  - The shared `SegmentedControl`'s checked label was ink-fg on the track until the separately
+    positioned indicator laid out (contrast 1.14 light / 1.22 dark). Fixed: the checked item paints
+    its own `bg-ink`, and the sliding indicator is removed.
+  - The amortization schedule's scroll viewport wasn't focusable (`scrollable-region-focusable`).
+    Fixed: `tabIndex={0}` plus a focus ring.
+  - After the fix: 198/198 under the same stress.
+- **T026**: `visual.spec` passes. Screenshots of the deal card (1280, 390), the calendar (light,
+  dark) and the extra-payment form (light, dark) were reviewed against `design-reference.html`.
+- **T027**: `nx run-many -t lint test typecheck` passes for 10 projects. The build passes. Full e2e
+  on a prod build at :3200, twice: **505 passed, 8 skipped, 0 failed** both times (baseline 436
+  passed / 8 skipped).

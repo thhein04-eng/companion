@@ -24,6 +24,7 @@ unfinished task.
 
 **Purpose**: A baseline to compare against.
 
+- [ ] T000 Finish spec 011: full e2e passing twice and every task checked off. Merge `011-ui-polish` into `main`. Create the `012-multi-unit-rent-roll` branch from `main`, and commit `specs/012-multi-unit-rent-roll/` there.
 - [ ] T001 Record the baseline in `specs/012-multi-unit-rent-roll/tasks.md` § Baseline notes:
   - unit test count;
   - e2e pass/skip counts (after the spec 011 e2e failures are resolved or listed as known);
@@ -65,6 +66,9 @@ must land before the UI stories. With one implicit unit and no RUBS, results mus
   - The functions: `normalizeUnits`, `hasOwnerUnit`, `rentRollTotal`, `currentView`, and
     `rentRollIncome(rental, view): IncomeBasis`.
   - `IncomeBasis` = `{ rentMonthly, otherMonthly, pctBaseMonthly, vacancyMonthly, reimbursementMonthly, units: { id, name, effectiveRent, rate, vacancyMonthly }[] }`.
+  - Group units by vacancy rate, so units without their own rate use `(Σ rent + other) × v` in
+    one multiplication. That way the old single-rent results round exactly as before (golden
+    test, T010).
   - Follow data-model §D exactly (contracts/calculations.md). Export it from
     `libs/shared/calculations/src/index.ts`, then make T004 pass.
 - [ ] T006 Extend `validateRental` in `libs/shared/calculations/src/lib/validate-rental.ts` and its spec `validate-rental.spec.ts` (data-model §F, R7). Add these errors, with these exact messages:
@@ -95,6 +99,17 @@ must land before the UI stories. With one implicit unit and no RUBS, results mus
     - `unitBreakdown`: when there are 2 or more units;
     - `netHousingCost`: `−monthlyCashFlow` in the living view with an owner unit, else null.
   - The 1% and 50% rules use `rentRollTotal(rental)` (FR-015).
+  - **Tests first**, in `analyze-deal.spec.ts`, to the cent (Constitution I, FR-023). All cases use
+    the duplex (Unit A $1,350 / Unit B $1,400, 5% vacancy):
+    - "After move-out" equals the same deal with a single $2,750 rent.
+    - "Living there" with Unit A owner-occupied: rent $1,400, and `netHousingCost` = −cash flow
+      (hand-computed).
+    - Raising Unit B's rent until the cash flow is above $0 gives `netHousingCost` ≤ 0.
+    - With RUBS Water/Sewer $180 at 100% and 0% vacancy, NOI is +$180 after move-out and +$90
+      living there.
+    - The 1%/50% rules are identical in both views.
+    - A single owner-occupied unit (no other units) gives rent $0 in "Living there".
+    - Without an owner unit: `view` is null and `netHousingCost` is null.
 - [ ] T009 Update the projections to use the shared income function, picking the view per year (R5):
   - **`operating-year.ts`**: use `rentRollIncome` with view = `hasOwnerUnit && year ≤ (moveOutYears ?? 1)` ? 'living' : 'afterMoveOut'.
     - Rent-side figures × `(1+rentGrowth)^(year−1)`; reimbursements × `(1+expenseGrowth)^(year−1)`.
@@ -104,11 +119,21 @@ must land before the UI stories. With one implicit unit and no RUBS, results mus
     reimbursements.
   - **Wealth and exit results** gain `moveOutYear: number | null` (null without an owner unit).
   - Update the `DealAnalysis` / projection types in `types.ts`.
+  - **Tests first**, in `project-wealth.spec.ts` / `project-exit.spec.ts` (Constitution I), using
+    the duplex with Unit A owner-occupied and 3% rent / 2% expense growth:
+    - `moveOutYears` 1: year 1 uses "Living there" income, year 2 uses "After move-out" with
+      Unit A at $1,350 × 1.03.
+    - `moveOutYears` 3: years 1–3 living there, year 4 after move-out.
+    - A move-out past the horizon: every year is "Living there", and `moveOutYear` is still
+      returned.
+    - RUBS reimbursement grows by 2% a year.
+    - `moveOutYear` is null without an owner unit.
 - [ ] T010 Add the golden test `libs/deal-analyzer/calculations/src/lib/golden-baseline.spec.ts`. Every fixture's `analyzeDeal` / `projectRental` / `projectWealth` / `projectExit` output must equal `__fixtures__/golden-baseline.json` (T002) field by field (the new fields excepted: `view: null`, `income`, `unitBreakdown: []`, `netHousingCost: null`, `moveOutYear: null`). This must pass before any UI work (SC-001).
 - [ ] T011 [P] Update `readDealField` / `formatDealField` in `libs/shared/calculations/src/lib/deal-fields.ts` and `deal-fields.spec.ts`:
   - `rental.grossMonthlyRent` reads `rentRollIncome(rental, currentView(rental)).rentMonthly`.
-  - Add `formatRentWithUnits(rental)`, which returns "$2,750 · 2 units" when N ≥ 2 and the
-    plain amount otherwise.
+  - Add `formatRentWithUnits(rental, view = currentView(rental))`, which returns the rent in
+    `view` plus " · N units" when N ≥ 2. Test cases: "$2,750 · 2 units" after move-out,
+    "$1,400 · 2 units" living there, and plain "$2,750.00" for a single unit.
   - `dealFieldPatch('rental.grossMonthlyRent', x)` on a one-unit roll also sets `units[0].rent`
     (keeping both in sync).
 - [ ] T012 [P] Update `rental-defaults.ts` in `libs/shared/calculations/src/lib/`: new rentals start with `units: [{ id, name: 'Unit A', bedrooms: null, bathrooms: null, rent: 0, vacancyPct: null, ownerOccupied: false, rentAfterMoveOut: null }]` (FR-003). Check `persistence.spec.ts` round-trips `units`, `moveOutYears`, `occupancyView`, `paidBy` and `recoveryPct`.
@@ -194,6 +219,10 @@ data layer can represent everything in the spec.
   - one "Move out after [N] years" `NumberField` (1–30) below the rows;
   - the total row adds "while living there $Y/mo".
   - Checking a second unit moves the flag (`setOwnerUnit`).
+  - When the owner unit's `rentAfterMoveOut` is null, the deal card (`deal-strip.tsx`) shows the
+    dashed hint "+ Add rent after move-out to see the full rental". Selecting it opens the sheet
+    with `focusField: 'rental.units.<i>.rentAfterMoveOut'`. Add a hint case to
+    `deal-strip.spec.tsx`.
   - Extend the component spec to cover these.
 - [ ] T025 [P] [US3] Create `libs/shared/ui/src/lib/occupancy-view-switch.tsx`:
   - a `SegmentedControl` with label "Income view" and the options "Living there" / "After move-out";
@@ -234,7 +263,7 @@ data layer can represent everything in the spec.
 **Independent Test**: Water/Sewer at $180, set to RUBS at 100% with 0% vacancy, gives a reimbursement of $180 and raises NOI by $180.
 
 - [ ] T030 [US4] Add the "Paid by" controls to each custom expense row in `libs/shared/ui/src/lib/rental-inputs-panel.tsx`:
-  - a `SegmentedControl label="Paid by"` (Landlord / Tenants (RUBS));
+  - a `SegmentedControl label="Paid by"` (**Landlord** / **Tenants (RUBS)**, the exact labels in FR-017);
   - for RUBS, a `NumberField "Recovered"` (%, 0–100, default 100);
   - wired to `updateCustomExpense`, with a component test.
 - [ ] T031 [US4] Add an income row "Utility reimbursements (RUBS)" to `libs/deal-analyzer/ui/src/lib/income-expense-card.tsx`, shown when `income.reimbursements > 0`. NOI and cash flow there use the T008 result.
@@ -261,7 +290,7 @@ data layer can represent everything in the spec.
 
 ## Dependencies & Execution Order
 
-- **Setup (T001–T002)** → **Foundational (T003–T013)** → the stories. T002 must run before
+- **T000** → **Setup (T001–T002)** → **Foundational (T003–T013)** → the stories. T002 must run before
   T005–T009 change any calculation.
 - In Foundational: T003 → T004 → T005 → (T006, T007, T011, T012 in parallel) → T008 → T009 → T010;
   T013 after T005.

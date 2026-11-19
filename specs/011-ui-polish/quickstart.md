@@ -19,3 +19,19 @@ then `BASE_URL=http://127.0.0.1:3200 npx nx e2e amortization-calculator-e2e`.
    works. The same works on the one-time extra payment date.
 5. **Regression**: The full gate and e2e pass. axe is clean in both themes, including with the
    calendar open.
+
+## Verified on 2026-11-19
+
+§1–§5 were checked through their automated equivalents on a prod build (:3200), in Chromium,
+Firefox and WebKit:
+
+| Section | Specs |
+|---|---|
+| Deal card | `deal-bar`, `deal-strip` |
+| Extra payments | `extra-payments-ui`, `extra-payments` |
+| Metric cards | `metric-cards` |
+| Date picker | `date-picker` |
+| Accessibility | `a11y` |
+
+The full suite passed twice (505 passed, 8 skipped), and the screenshots listed in tasks.md
+§ Final verification were reviewed by eye.
