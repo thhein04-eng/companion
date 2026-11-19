@@ -34,6 +34,12 @@ export type DealEditSource =
  */
 export type ChangeField = DealFieldKey | 'rental' | 'sale';
 
+/** A rental edit: a patch, `null` to remove rental analysis, or an updater of the latest rental. */
+export type RentalPatch =
+  | Partial<RentalAssumptions>
+  | null
+  | ((rental: RentalAssumptions | null) => Partial<RentalAssumptions> | null);
+
 /** The last shared-input change (spec 010 data-model §B). In memory only. */
 export interface ChangeRecord {
   scenarioId: string;
@@ -56,11 +62,12 @@ export interface ChangeRecord {
 export interface DealEdits {
   /** The one write path the deal UI uses for a single shared input. */
   editDeal(field: DealFieldKey, value: unknown, source: DealEditSource): void;
-  /** Rental-panel writes (several fields at once, or `null` to remove rental analysis). */
-  editRental(
-    patch: Partial<RentalAssumptions> | null,
-    source: DealEditSource,
-  ): void;
+  /**
+   * Rental-panel writes (several fields at once, or `null` to remove rental analysis). An updater
+   * function gets the latest rental at write time, so an edit right after another (e.g. checking
+   * "I live here" just after typing a rent) never builds on a stale copy (spec 012).
+   */
+  editRental(patch: RentalPatch, source: DealEditSource): void;
   /** Sale Profit & Exit Analyzer writes (spec 013 R10), merged into `scenario.sale`. */
   editSale(patch: Partial<SaleAssumptions>, source: DealEditSource): void;
   /** Ends a scrub gesture, so the next scrub starts a new record. */
@@ -202,8 +209,10 @@ export function DealEditsProvider({ children }: { children: ReactNode }) {
   );
 
   const editRental = useCallback<DealEdits['editRental']>(
-    (patch, source) => {
+    (input, source) => {
       const current = scenarioRef.current;
+      const patch =
+        typeof input === 'function' ? input(current.rental ?? null) : input;
       let rentalPatch: Partial<LoanScenario>;
       if (patch === null) {
         rentalPatch = { rental: null };

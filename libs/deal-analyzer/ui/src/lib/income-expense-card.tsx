@@ -102,6 +102,43 @@ export function IncomeExpenseCard({
           testId="row-gsi"
           emphasis
         />
+        {analysis.unitBreakdown.length >= 2 ? (
+          // The rent roll, one row per unit, with each unit's vacancy share (spec 012 FR-010).
+          <ul
+            aria-label="Rent by unit"
+            data-testid="unit-breakdown"
+            className="m-0 list-none py-1 pl-0"
+          >
+            {analysis.unitBreakdown.map((unit) => {
+              const k = current === 'annual' ? 12 : 1;
+              return (
+                <li
+                  key={unit.id}
+                  data-testid="row-unit"
+                  className="flex items-baseline justify-between gap-3 py-0.5 pl-3 text-sm text-fg"
+                >
+                  <span className="min-w-0 truncate">
+                    {unit.name}
+                    <span className="text-muted">
+                      {' '}
+                      · vacancy {unit.ratePct}% (
+                      {currency.format(unit.vacancy * k)})
+                    </span>
+                  </span>
+                  <span className="num">{currency.format(unit.rent * k)}</span>
+                </li>
+              );
+            })}
+          </ul>
+        ) : null}
+        {analysis.income.reimbursements.monthly > 0 ? (
+          // RUBS: the tenants' share of the utilities they're billed back (spec 012 FR-019).
+          <Row
+            label="Utility reimbursements (RUBS)"
+            amount={pick(analysis.income.reimbursements)}
+            testId="row-rubs"
+          />
+        ) : null}
         <div className="py-1">
           {analysis.operatingExpenses.map((line) => (
             <Row

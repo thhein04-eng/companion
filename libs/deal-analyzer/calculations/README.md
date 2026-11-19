@@ -37,6 +37,16 @@ Pure rental-analysis functions for the Rental Deal Analyzer.
   - Internal: `annualCashToInvestor` / `operatingCashYears` (`cash-to-investor.ts`) are shared by
     `projectExit` and `analyzeSale`, so whole-year exits agree to the cent.
 - `onePercentRatio(rule)` (spec 011): rent ÷ price for the 1% Rule card's headline.
+- Spec 012:
+  - `analyzeDeal(scenario, schedule, { view? })` uses the rent roll in that view (default: the
+    stored one).
+  - It returns `view`, `income` (rent, other, RUBS reimbursements), `unitBreakdown` and
+    `netHousingCost` (−cash flow while living there).
+  - The 1%/50% rules always use the full rent.
+  - `operatingYear` picks "Living there" until `moveOutYear`. `projectWealth` / `projectExit`
+    return `moveOutYear`.
+  - NOI everywhere = income + reimbursements − expenses.
+  - `golden-baseline.spec.ts` pins every pre-spec-012 result.
 - Moved to `shared-calculations` in spec 010 (still re-exported here): `validateRental`,
   `DEFAULT_RENTAL_ASSUMPTIONS`.
 

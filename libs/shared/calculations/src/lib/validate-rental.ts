@@ -13,7 +13,15 @@ type NumericRentalField = Exclude<
   | 'financingSelection'
   | 'wealth'
   | 'exit'
+  | 'units'
+  | 'moveOutYears'
+  | 'occupancyView'
 >;
+
+const MAX_UNITS = 4;
+const NAME_MAX = 40;
+const isPct = (v: number) => Number.isFinite(v) && v >= 0 && v <= 100;
+const isMoney = (v: number) => Number.isFinite(v) && v >= 0;
 
 const GROWTH_FIELDS: { field: GrowthField; label: string }[] = [
   { field: 'rentGrowthPct', label: 'Rent growth' },
@@ -80,7 +88,67 @@ export function validateRental(rental: RentalAssumptions): FieldError[] {
     }
   }
 
+  // Rent roll (spec 012 data-model §F, research R7).
+  if (rental.units !== undefined) {
+    const units = rental.units;
+    if (units.length === 0) {
+      errors.push({ field: 'rental.units', message: 'Add at least one unit' });
+    } else if (units.length > MAX_UNITS) {
+      errors.push({ field: 'rental.units', message: 'Up to 4 units' });
+    }
+    if (units.filter((u) => u.ownerOccupied).length > 1) {
+      errors.push({
+        field: 'rental.units',
+        message: 'Only one unit can be yours',
+      });
+    }
+    units.forEach((u, i) => {
+      const key = `rental.units.${i}` as const;
+      const name = u.name.trim();
+      if (name === '') {
+        errors.push({ field: `${key}.name`, message: 'Enter a unit name' });
+      } else if (name.length > NAME_MAX) {
+        errors.push({ field: `${key}.name`, message: '40 characters max' });
+      }
+      if (!isMoney(u.rent)) {
+        errors.push({
+          field: `${key}.rent`,
+          message: "Rent can't be negative",
+        });
+      }
+      if (u.vacancyPct != null && !isPct(u.vacancyPct)) {
+        errors.push({ field: `${key}.vacancyPct`, message: 'Use 0–100%' });
+      }
+      if (u.rentAfterMoveOut != null && !isMoney(u.rentAfterMoveOut)) {
+        errors.push({
+          field: `${key}.rentAfterMoveOut`,
+          message: "Rent can't be negative",
+        });
+      }
+    });
+  }
+  if (
+    rental.moveOutYears !== undefined &&
+    !(
+      Number.isInteger(rental.moveOutYears) &&
+      rental.moveOutYears >= 1 &&
+      rental.moveOutYears <= 30
+    )
+  ) {
+    errors.push({ field: 'rental.moveOutYears', message: 'Use 1–30 years' });
+  }
+
   (rental.customExpenses ?? []).forEach((expense, index) => {
+    if (
+      expense.paidBy === 'rubs' &&
+      expense.recoveryPct !== undefined &&
+      !isPct(expense.recoveryPct)
+    ) {
+      errors.push({
+        field: `rental.customExpenses.${index}.recoveryPct`,
+        message: 'Use 0–100%',
+      });
+    }
     if (!(
       Number.isFinite(expense.monthlyAmount) && expense.monthlyAmount >= 0
     )) {

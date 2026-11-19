@@ -7,7 +7,7 @@ import {
 } from 'shared-calculations';
 import { analyzeDeal } from './analyze-deal';
 import { growthRates, projectRental } from './project-rental';
-import { operatingYear } from './operating-year';
+import { moveOutYear, operatingYear } from './operating-year';
 import type { WealthProjection, WealthYear } from './types';
 import { resolveWealthAssumptions, validateWealth } from './validate-wealth';
 
@@ -60,7 +60,9 @@ export function projectWealth(
     !TAX_FIELDS.has(field) &&
     !(options?.horizonYears != null && field === 'rental.wealth.horizonYears');
 
+  const moveOut = scenario.rental ? moveOutYear(scenario.rental) : null;
   const empty = (naReason: string): WealthProjection => ({
+    moveOutYear: moveOut,
     years: null,
     naReason,
     horizonYears,
@@ -133,8 +135,11 @@ export function projectWealth(
       ({ noi, cashFlow, loanBalance } = inTerm);
     } else {
       // Past the loan term (R1): same growth rule as projectRental, no debt.
-      const { gsiMonthly, opexMonthly } = operatingYear(scenario, year);
-      noi = roundCents((gsiMonthly - opexMonthly) * 12);
+      const { gsiMonthly, reimbursementMonthly, opexMonthly } = operatingYear(
+        scenario,
+        year,
+      );
+      noi = roundCents((gsiMonthly + reimbursementMonthly - opexMonthly) * 12);
       cashFlow = noi;
       loanBalance = 0;
     }
@@ -196,6 +201,7 @@ export function projectWealth(
         };
 
   return {
+    moveOutYear: moveOut,
     years: rows,
     naReason: null,
     horizonYears,

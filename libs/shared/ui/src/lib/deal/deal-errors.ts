@@ -16,6 +16,10 @@ export function dealErrors(
   const rank = (field: string) => {
     const i = ORDER.indexOf(field as DealFieldKey);
     if (i >= 0) return i;
+    // The rent roll (spec 012 R7): unit and move-out errors sit with Rent.
+    if (field.startsWith('rental.units') || field === 'rental.moveOutYears') {
+      return ORDER.indexOf('rental.grossMonthlyRent');
+    }
     return field.startsWith('rental.customExpenses') ? ORDER.length : -1;
   };
   return errors
@@ -31,5 +35,8 @@ export function dealErrors(
 
 /** "Rate" for a shared field, or a readable fallback for nested rental fields. */
 export function errorLabel(field: string): string {
+  if (field.startsWith('rental.units') || field === 'rental.moveOutYears') {
+    return 'Rent roll';
+  }
   return DEAL_FIELD_LABELS[field as DealFieldKey] ?? 'Rental input';
 }

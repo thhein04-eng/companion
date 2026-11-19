@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import {
   DEAL_FIELD_LABELS,
+  normalizeUnits,
   readDealField,
   type FieldError,
 } from 'shared-calculations';
@@ -11,6 +12,7 @@ import { Button } from '../ds/button';
 import { Chip, type ChipTone } from '../ds/chip';
 import { Eyebrow } from '../ds/typography';
 import { PencilIcon } from '../icons';
+import { OccupancyViewSwitch } from '../occupancy-view-switch';
 import { ScenarioTabs } from '../scenario-tabs';
 import { ChipPopover } from './chip-popover';
 import { dealErrors } from './deal-errors';
@@ -70,6 +72,13 @@ export function DealStrip({
   const missing = profile.requires.filter(
     (r) => readDealField(store.activeScenario, r.field) == null,
   );
+  // A house-hack without a rent after move-out can't show the full rental (spec 012 edge case).
+  const rental = store.activeScenario.rental;
+  const ownerUnit = rental
+    ? normalizeUnits(rental).find((u) => u.ownerOccupied)
+    : undefined;
+  const needsMoveOutRent =
+    ownerUnit != null && ownerUnit.rentAfterMoveOut == null;
 
   // First run (spec 010 FR-020): open the sheet in setup mode for a scenario with no home price,
   // once saved scenarios have loaded, and again whenever such a scenario becomes active.
@@ -100,7 +109,11 @@ export function DealStrip({
               onRemoveScenario={store.removeScenario}
             />
           </div>
-          <div data-testid="deal-actions" className="flex items-center gap-2">
+          <div
+            data-testid="deal-actions"
+            className="flex flex-wrap items-center gap-2"
+          >
+            <OccupancyViewSwitch />
             {fixable.length > 0 ? (
               <Button
                 variant="danger"
@@ -171,6 +184,20 @@ export function DealStrip({
               {r.unlocks}
             </Chip>
           ))}
+          {needsMoveOutRent ? (
+            <Chip
+              tone="missing"
+              data-missing="rentAfterMoveOut"
+              onClick={(event) =>
+                dealSheet.open({
+                  focusField: 'rental.grossMonthlyRent',
+                  returnFocus: event.currentTarget,
+                })
+              }
+            >
+              + Add rent after move-out to see the full rental
+            </Chip>
+          ) : null}
         </div>
       </section>
       <DealSheet

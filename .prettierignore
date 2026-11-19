@@ -7,3 +7,4 @@
 **/.next
 /test-output
 package-lock.json
+libs/deal-analyzer/calculations/src/lib/__fixtures__/golden-baseline.json

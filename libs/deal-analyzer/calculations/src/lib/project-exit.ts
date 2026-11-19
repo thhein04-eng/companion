@@ -7,6 +7,7 @@ import {
 } from 'shared-calculations';
 import { operatingCashYears } from './cash-to-investor';
 import { irr } from './irr';
+import { moveOutYear } from './operating-year';
 import { projectWealth } from './project-wealth';
 import type { ExitProjection, ExitReturns, ProFormaYear } from './types';
 import {
@@ -57,17 +58,29 @@ export function projectExit(
   const assumptions = resolveExitAssumptions(rental);
   const errors = validateExit(rental);
   const hold = holdYears ?? assumptions.holdYears;
+  const moveOut = moveOutYear(rental);
 
   if (!(scenario.homePrice != null && scenario.homePrice > 0)) {
-    return { result: null, naReason: EXIT_NO_PRICE_REASON, errors };
+    return {
+      moveOutYear: moveOut,
+      result: null,
+      naReason: EXIT_NO_PRICE_REASON,
+      errors,
+    };
   }
   if (errors.length > 0) {
-    return { result: null, naReason: EXIT_INVALID_REASON, errors };
+    return {
+      moveOutYear: moveOut,
+      result: null,
+      naReason: EXIT_INVALID_REASON,
+      errors,
+    };
   }
 
   const wealth = projectWealth(scenario, schedule, { horizonYears: hold });
   if (!wealth.years) {
     return {
+      moveOutYear: moveOut,
       result: null,
       naReason: wealth.naReason,
       errors: [...errors, ...wealth.errors],
@@ -130,6 +143,7 @@ export function projectExit(
       );
 
   return {
+    moveOutYear: moveOut,
     result: {
       holdYears: hold,
       years,

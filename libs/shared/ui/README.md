@@ -27,6 +27,14 @@ Presentational components and the app shell used by both features.
   - New icons: `PencilIcon`, `CalendarIcon`.
 - `ComparisonGrid` (column-driven), `ComparisonColumn`, `LOAN_COMPARISON_COLUMNS`
 - Shell: `AppShell`, `SideNav`, `NavItem`, `useNavPreference` (`localStorage['companion:nav']`), plus icons
+- Spec 012:
+  - `RentRollEditor`: one "Monthly rent" field for a plain single unit, unit cards (name, rent,
+    beds, baths, vacancy, "I live here", rent after move-out, move-out years) otherwise, up to
+    4.
+  - `OccupancyViewSwitch`: "Living there / After move-out", shown only with an owner unit.
+  - The Rental panel's custom expenses get "Paid by" (Landlord / Tenants (RUBS)) and
+    "Recovered".
+  - `LineChart` (shared-charts) accepts `markers`.
 
 Import only from the package name (`'shared-ui'`), never from a deep path.
 

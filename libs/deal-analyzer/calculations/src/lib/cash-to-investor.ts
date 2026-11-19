@@ -40,10 +40,13 @@ export function operatingCashYears(
     if (inTerm) {
       ({ grossIncome, operatingExpenses, noi } = inTerm);
     } else {
-      const { gsiMonthly, opexMonthly } = operatingYear(scenario, y);
+      const { gsiMonthly, reimbursementMonthly, opexMonthly } = operatingYear(
+        scenario,
+        y,
+      );
       grossIncome = roundCents(gsiMonthly * 12);
       operatingExpenses = roundCents(opexMonthly * 12);
-      noi = roundCents((gsiMonthly - opexMonthly) * 12);
+      noi = roundCents((gsiMonthly + reimbursementMonthly - opexMonthly) * 12);
     }
     const debtService = inTerm?.debtService ?? 0;
     const extraPrincipal = roundCents(

@@ -25,6 +25,11 @@ export interface LineChartProps<K extends string> extends ChartBaseProps {
   yDomain?: [number, number] | 'zero-based' | 'auto';
   /** Override the automatic x ticks. */
   xTickValues?: number[];
+  /**
+   * Dashed vertical markers at x values inside the data range, each with a short label above
+   * the plot (e.g. spec 012's "Move out"). Markers outside the range are not drawn.
+   */
+  markers?: { x: number; label: string; testId?: string }[];
   /** Label each line at its last point. Default: true when there are ≤ 4 series. */
   directLabels?: boolean;
 }
@@ -135,6 +140,7 @@ function LinePlot<K extends string>({
   title,
   data,
   series,
+  markers = [],
   width,
   height,
   yDomain = 'zero-based',
@@ -147,7 +153,8 @@ function LinePlot<K extends string>({
   fty,
 }: LinePlotProps<K>) {
   const margin = {
-    top: 8,
+    // Room for marker labels above the plot.
+    top: markers.length > 0 ? 22 : 8,
     right: directLabels ? 96 : 12,
     bottom: 24,
     left: 56,
@@ -335,6 +342,36 @@ function LinePlot<K extends string>({
               stroke="var(--chart-axis)"
               strokeWidth={1}
             />
+            {markers
+              .filter(
+                (m) =>
+                  data.length > 0 &&
+                  m.x >= Number(data[0].x) &&
+                  m.x <= Number(data[data.length - 1].x),
+              )
+              .map((m) => (
+                <g key={`marker-${m.x}`} data-testid={m.testId}>
+                  <line
+                    x1={x(m.x)}
+                    x2={x(m.x)}
+                    y1={0}
+                    y2={innerH}
+                    stroke="var(--chart-axis)"
+                    strokeWidth={1}
+                    strokeDasharray="4 3"
+                  />
+                  <text
+                    x={x(m.x)}
+                    y={-6}
+                    textAnchor="middle"
+                    fontSize={11}
+                    fontWeight={600}
+                    fill="var(--chart-muted)"
+                  >
+                    {m.label}
+                  </text>
+                </g>
+              ))}
             {xTicks.map((t) => (
               <text
                 key={`x${t}`}

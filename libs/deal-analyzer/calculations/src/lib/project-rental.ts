@@ -5,24 +5,13 @@ import {
   type RentalAssumptions,
 } from 'shared-calculations';
 import { analyzeDeal } from './analyze-deal';
-import { rentalLineItems } from './rental-line-items';
+import { growthRates, operatingYear } from './operating-year';
 import type { RentalProjection, RentalYear } from './types';
 
 export const EQUITY_NA_REASON =
   'Enter a purchase price to see equity build-up.';
 
-/** The three growth rates as fractions, treating a missing (pre-feature) value as 0% (FR-013). */
-export function growthRates(rental: RentalAssumptions): {
-  rent: number;
-  expense: number;
-  appreciation: number;
-} {
-  return {
-    rent: (rental.rentGrowthPct ?? 0) / 100,
-    expense: (rental.expenseGrowthPct ?? 0) / 100,
-    appreciation: (rental.appreciationPct ?? 0) / 100,
-  };
-}
+export { growthRates } from './operating-year';
 
 /**
  * Year-by-year rental projection over the full loan term (US6, FR-011; research R11/R12).
@@ -53,18 +42,14 @@ export function projectRental(
       ? scenario.homePrice
       : null;
   const { monthlyPrincipalAndInterest, monthlyPmiAmount } = schedule.summary;
-  const baseGsiMonthly = rental.grossMonthlyRent + rental.otherMonthlyIncome;
 
   const rows: RentalYear[] = [];
   for (let year = 1; year <= years; year++) {
-    const gsiMonthly = baseGsiMonthly * (1 + rates.rent) ** (year - 1);
-    const lines = rentalLineItems(
+    const { gsiMonthly, reimbursementMonthly, opexMonthly } = operatingYear(
       scenario,
-      gsiMonthly,
-      (1 + rates.expense) ** (year - 1),
+      year,
     );
-    const opexMonthly = lines.reduce((sum, line) => sum + line.monthly, 0);
-    const noiMonthly = gsiMonthly - opexMonthly;
+    const noiMonthly = gsiMonthly + reimbursementMonthly - opexMonthly;
 
     const periods = schedule.periods.slice((year - 1) * 12, year * 12);
     const pmiPeriods = periods.filter((p) => p.pmiApplies).length;

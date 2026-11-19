@@ -5,6 +5,7 @@ import type {
   FinancingOptionId,
   LoanTerms,
   MonthlyAnnual,
+  OccupancyView,
   RatioResult,
 } from 'shared-calculations';
 
@@ -53,6 +54,24 @@ export interface DealAnalysis {
   pmiDropPeriod: number | null;
   /** Coverage of the scenario's own loan (spec 006 US1). */
   dscr: DscrResult;
+  /** The income view analyzed, or null without an owner-occupied unit (spec 012). */
+  view: OccupancyView | null;
+  /** Rent, other income and RUBS reimbursements in this view (spec 012 FR-019). */
+  income: {
+    rent: MonthlyAnnual;
+    other: MonthlyAnnual;
+    reimbursements: MonthlyAnnual;
+  };
+  /** One row per unit when the rent roll has 2 or more units (spec 012 FR-010); else []. */
+  unitBreakdown: {
+    id: string;
+    name: string;
+    rent: number;
+    vacancy: number;
+    ratePct: number;
+  }[];
+  /** −cash flow in the "Living there" view of a house-hacked deal; else null (FR-014). */
+  netHousingCost: MonthlyAnnual | null;
 }
 
 /** One projected year of the wealth simulator (spec 008 data-model §B). Money is cents-rounded. */
@@ -94,6 +113,8 @@ export interface WealthYear {
 
 /** The derived (never stored) wealth projection of a rental scenario (spec 008). */
 export interface WealthProjection {
+  /** The owner's move-out year for the chart/table marker, or null (spec 012 FR-016). */
+  moveOutYear: number | null;
   /** Year 0…N, or null with naReason (no price, or an invalid horizon/forced input). */
   years: WealthYear[] | null;
   naReason: string | null;
@@ -278,6 +299,8 @@ export interface ExitResult {
 }
 
 export interface ExitProjection {
+  /** The owner's move-out year for the pro forma marker, or null (spec 012 FR-016). */
+  moveOutYear: number | null;
   /** Null with naReason when no price, or exit/horizon inputs invalid. */
   result: ExitResult | null;
   naReason: string | null;

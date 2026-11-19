@@ -88,6 +88,51 @@ describe('deserializeScenarios (FR-016)', () => {
     expect(state).toEqual({ scenarios, activeScenarioId: 'scenario-1' });
   });
 
+  it('round-trips a rent roll, house-hack plan and RUBS tags unchanged (spec 012)', () => {
+    const multi = scenario({
+      rental: {
+        ...rental,
+        grossMonthlyRent: 2_750,
+        units: [
+          {
+            id: 'a',
+            name: 'Unit A',
+            bedrooms: 2,
+            bathrooms: 1,
+            rent: 0,
+            vacancyPct: null,
+            ownerOccupied: true,
+            rentAfterMoveOut: 1_350,
+          },
+          {
+            id: 'b',
+            name: 'Basement',
+            bedrooms: 1,
+            bathrooms: 1.5,
+            rent: 1_400,
+            vacancyPct: 10,
+            ownerOccupied: false,
+            rentAfterMoveOut: null,
+          },
+        ],
+        moveOutYears: 2,
+        occupancyView: 'afterMoveOut',
+        customExpenses: [
+          {
+            id: 'w',
+            label: 'Water',
+            monthlyAmount: 180,
+            paidBy: 'rubs',
+            recoveryPct: 80,
+          },
+        ],
+      },
+    });
+    expect(
+      deserializeScenarios(serializeScenarios([multi], multi.id))?.scenarios,
+    ).toEqual([multi]);
+  });
+
   it('returns null for corrupt JSON and never throws', () => {
     expect(deserializeScenarios('{not json')).toBeNull();
     expect(deserializeScenarios(null)).toBeNull();

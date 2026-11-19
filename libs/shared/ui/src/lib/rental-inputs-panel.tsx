@@ -1,15 +1,31 @@
 'use client';
 
-import type { FieldError, RentalAssumptions } from 'shared-calculations';
+import {
+  updateCustomExpense,
+  type FieldError,
+  type RentalAssumptions,
+} from 'shared-calculations';
 import { currency } from './formatters';
 import { NumberField } from './number-field';
+import type { RentalPatch } from 'shared-data-access';
+import { RentRollEditor } from './rent-roll-editor';
+import { SegmentedControl } from './ds/segmented-control';
+
+const PAID_BY = [
+  { value: 'landlord', label: 'Landlord' },
+  { value: 'rubs', label: 'Tenants (RUBS)' },
+] as const;
 
 export interface RentalInputsPanelProps {
   rental: RentalAssumptions | null;
   /** `rental.*` errors only. */
   errors: FieldError[];
-  /** A partial patch edits the assumptions; `null` removes rental analysis. */
-  onChange: (patch: Partial<RentalAssumptions> | null) => void;
+  /**
+   * A partial patch edits the assumptions; `null` removes rental analysis. Rent-roll and "Paid by"
+   * edits pass an updater of the latest rental (spec 012), so quick successive edits never build
+   * on a stale copy.
+   */
+  onChange: (patch: RentalPatch) => void;
   /** Down payment + closing costs + rehab, when an analysis is available. */
   totalCashInvested?: number | null;
   /** Skip the growth group, e.g. when a page shows those inputs elsewhere (spec 008 `/wealth`). */
@@ -43,20 +59,18 @@ export function RentalInputsPanel({
   totalCashInvested,
   hideGrowth = false,
 }: RentalInputsPanelProps) {
+  // The rent roll (spec 012 US1): one "Monthly rent" field for a plain single unit, unit cards
+  // once there are two or more.
   const rentField = (
-    <div data-deal-field="rental.grossMonthlyRent">
-      <NumberField
-        label="Monthly rent"
-        variant="currency"
-        min={0}
-        value={rental?.grossMonthlyRent ?? null}
-        onValueChange={(value) => {
-          if (rental == null && value == null) return;
-          onChange({ grossMonthlyRent: value ?? 0 });
-        }}
-        error={errorFor(errors, 'grossMonthlyRent')}
-      />
-    </div>
+    <RentRollEditor
+      rental={rental}
+      errors={errors.filter(
+        (e) =>
+          e.field === 'rental.grossMonthlyRent' ||
+          e.field.startsWith('rental.units'),
+      )}
+      onChange={onChange}
+    />
   );
 
   if (rental == null) {
@@ -66,7 +80,9 @@ export function RentalInputsPanel({
           data-input-grid=""
           className="grid grid-cols-1 gap-[var(--space-grid)] sm:grid-cols-2"
         >
-          {rentField}
+          {/* Same wrapper as the full layout below, so the field keeps its identity (and focus)
+              when the first keystroke creates the rental. */}
+          <div className="sm:col-span-2">{rentField}</div>
         </div>
         <p className="m-0 text-small text-muted">
           Enter rent to analyze this as a rental.
@@ -115,7 +131,7 @@ export function RentalInputsPanel({
         data-input-grid=""
         className="grid grid-cols-1 gap-[var(--space-grid)] sm:grid-cols-2"
       >
-        {rentField}
+        <div className="sm:col-span-2">{rentField}</div>
         <NumberField
           label="Other monthly income"
           variant="currency"
@@ -161,65 +177,112 @@ export function RentalInputsPanel({
         {customExpenses.length > 0 ? (
           <div className="flex flex-col gap-2">
             {customExpenses.map((item, index) => (
-              <div key={item.id ?? index} className="flex items-end gap-2">
-                <div className="flex-1">
-                  <label
-                    htmlFor={`custom-expense-${index}`}
-                    className="mb-1.5 block text-label font-medium text-muted"
+              <div
+                key={item.id ?? index}
+                data-testid="custom-expense"
+                className="flex flex-col gap-2"
+              >
+                <div className="flex items-end gap-2">
+                  <div className="flex-1">
+                    <label
+                      htmlFor={`custom-expense-${index}`}
+                      className="mb-1.5 block text-label font-medium text-muted"
+                    >
+                      Expense name
+                    </label>
+                    <input
+                      id={`custom-expense-${index}`}
+                      type="text"
+                      value={item.label}
+                      onChange={(e) => {
+                        const updated = [...customExpenses];
+                        updated[index] = {
+                          ...updated[index],
+                          label: e.target.value,
+                        };
+                        handleCustomExpensesChange(updated);
+                      }}
+                      placeholder="e.g. Utilities, Water, Trash"
+                      className="h-[var(--control-h)] w-full rounded-sm border border-line bg-surface px-3 text-[15px] text-fg placeholder:text-muted focus:border-accent focus:outline-2 focus:outline-offset-1 focus:outline-accent"
+                    />
+                  </div>
+                  <div className="w-36">
+                    <NumberField
+                      label="Monthly amount"
+                      variant="currency"
+                      min={0}
+                      value={item.monthlyAmount}
+                      error={
+                        errors.find(
+                          (e) =>
+                            e.field ===
+                            `rental.customExpenses.${index}.monthlyAmount`,
+                        )?.message
+                      }
+                      onValueChange={(val) => {
+                        const updated = [...customExpenses];
+                        updated[index] = {
+                          ...updated[index],
+                          monthlyAmount: val ?? 0,
+                        };
+                        handleCustomExpensesChange(updated);
+                      }}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated = customExpenses.filter(
+                        (_, i) => i !== index,
+                      );
+                      handleCustomExpensesChange(updated);
+                    }}
+                    className="h-9 cursor-pointer rounded-xs px-2 text-[13px] font-medium text-bad hover:bg-bad-soft"
                   >
-                    Expense name
-                  </label>
-                  <input
-                    id={`custom-expense-${index}`}
-                    type="text"
-                    value={item.label}
-                    onChange={(e) => {
-                      const updated = [...customExpenses];
-                      updated[index] = {
-                        ...updated[index],
-                        label: e.target.value,
-                      };
-                      handleCustomExpensesChange(updated);
-                    }}
-                    placeholder="e.g. Utilities, Water, Trash"
-                    className="h-[var(--control-h)] w-full rounded-sm border border-line bg-surface px-3 text-[15px] text-fg placeholder:text-muted focus:border-accent focus:outline-2 focus:outline-offset-1 focus:outline-accent"
-                  />
+                    Remove
+                  </button>
                 </div>
-                <div className="w-36">
-                  <NumberField
-                    label="Monthly amount"
-                    variant="currency"
-                    min={0}
-                    value={item.monthlyAmount}
-                    error={
-                      errors.find(
-                        (e) =>
-                          e.field ===
-                          `rental.customExpenses.${index}.monthlyAmount`,
-                      )?.message
+                {/* Who pays (spec 012 US4): RUBS bills a share back to the tenants as income. */}
+                <div className="flex flex-wrap items-end gap-3">
+                  <SegmentedControl
+                    label="Paid by"
+                    showLabel
+                    value={item.paidBy ?? 'landlord'}
+                    options={PAID_BY}
+                    onValueChange={(paidBy) =>
+                      onChange((r) =>
+                        r ? updateCustomExpense(r, index, { paidBy }) : r,
+                      )
                     }
-                    onValueChange={(val) => {
-                      const updated = [...customExpenses];
-                      updated[index] = {
-                        ...updated[index],
-                        monthlyAmount: val ?? 0,
-                      };
-                      handleCustomExpensesChange(updated);
-                    }}
                   />
+                  {item.paidBy === 'rubs' ? (
+                    <div className="w-36">
+                      <NumberField
+                        label="Recovered"
+                        suffix="%"
+                        min={0}
+                        step={5}
+                        value={item.recoveryPct ?? 100}
+                        onValueChange={(recoveryPct) =>
+                          onChange((r) =>
+                            r
+                              ? updateCustomExpense(r, index, {
+                                  recoveryPct: recoveryPct ?? 100,
+                                })
+                              : r,
+                          )
+                        }
+                        error={
+                          errors.find(
+                            (e) =>
+                              e.field ===
+                              `rental.customExpenses.${index}.recoveryPct`,
+                          )?.message
+                        }
+                      />
+                    </div>
+                  ) : null}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const updated = customExpenses.filter(
-                      (_, i) => i !== index,
-                    );
-                    handleCustomExpensesChange(updated);
-                  }}
-                  className="h-9 cursor-pointer rounded-xs px-2 text-[13px] font-medium text-bad hover:bg-bad-soft"
-                >
-                  Remove
-                </button>
               </div>
             ))}
           </div>

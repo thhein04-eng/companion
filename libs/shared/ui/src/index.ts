@@ -12,4 +12,6 @@ export * from './lib/side-nav';
 export * from './lib/app-shell';
 export * from './lib/ds';
 export * from './lib/rental-inputs-panel';
+export * from './lib/rent-roll-editor';
+export * from './lib/occupancy-view-switch';
 export * from './lib/deal';

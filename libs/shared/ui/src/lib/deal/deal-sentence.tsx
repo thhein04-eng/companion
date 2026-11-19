@@ -4,6 +4,8 @@ import { useState, type KeyboardEvent } from 'react';
 import {
   DEAL_FIELD_LABELS,
   formatDealField,
+  hasOwnerUnit,
+  normalizeUnits,
   readDealField,
   type DealFieldKey,
   type DownPayment,
@@ -86,6 +88,8 @@ export function DealSentence() {
   const { editDeal } = useDealEdits();
   const dp = s.downPayment as DownPayment | null;
   const rent = s.rental?.grossMonthlyRent ?? null;
+  const rollUnits = s.rental ? normalizeUnits(s.rental).length : 0;
+  const ownerUnit = s.rental ? hasOwnerUnit(s.rental) : false;
   const derived = isPrincipalDerived(s);
   const fmt = (k: DealFieldKey) => {
     const v = readDealField(s, k);
@@ -163,16 +167,30 @@ export function DealSentence() {
         }
       />
       , renting it for{' '}
-      <Token
-        field="rental.grossMonthlyRent"
-        display={
-          rent == null ? null : formatDealField('rental.grossMonthlyRent', rent)
-        }
-        placeholder="add rent"
-        initial={rent}
-        commit={(n) => editDeal('rental.grossMonthlyRent', n, 'sentence')}
-      />
-      {rent == null ? '.' : '/mo.'}
+      {rollUnits >= 2 || ownerUnit ? (
+        // A rent roll is edited in its own section of the sheet (spec 012 FR-005).
+        <>
+          <span className="num font-semibold text-fg">
+            {fmt('rental.grossMonthlyRent')}
+          </span>
+          /mo across {rollUnits} {rollUnits === 1 ? 'unit' : 'units'}.
+        </>
+      ) : (
+        <>
+          <Token
+            field="rental.grossMonthlyRent"
+            display={
+              rent == null
+                ? null
+                : formatDealField('rental.grossMonthlyRent', rent)
+            }
+            placeholder="add rent"
+            initial={rent}
+            commit={(n) => editDeal('rental.grossMonthlyRent', n, 'sentence')}
+          />
+          {rent == null ? '.' : '/mo.'}
+        </>
+      )}
     </p>
   );
 }

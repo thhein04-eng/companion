@@ -25,6 +25,7 @@ import {
   InputsMessage,
   MetricBadge,
   MetricBadgeGroup,
+  OccupancyViewSwitch,
   PageHeader,
   Section,
   SectionHeader,
@@ -142,6 +143,7 @@ export function DealAnalyzerView() {
         />
         {analysis ? (
           <>
+            <OccupancyViewSwitch showLabel />
             <IncomeExpenseCard analysis={analysis} />
             <DealMetrics analysis={analysis} />
           </>

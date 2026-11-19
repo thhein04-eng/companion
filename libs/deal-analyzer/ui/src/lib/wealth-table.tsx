@@ -99,6 +99,14 @@ export function WealthTable({
                   className="whitespace-nowrap px-3 py-2 text-left font-medium text-fg"
                 >
                   {y.year === 0 ? 'Purchase' : y.year}
+                  {y.year === projection.moveOutYear ? (
+                    <span
+                      data-testid="move-out-marker"
+                      className="ml-2 rounded-full bg-sunk px-2 py-0.5 text-[11.5px] font-semibold text-fg"
+                    >
+                      Move out
+                    </span>
+                  ) : null}
                 </th>
                 {COLUMNS.map((c) => {
                   const value = c.get(y);
