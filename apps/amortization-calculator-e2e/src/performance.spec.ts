@@ -178,3 +178,28 @@ test('updates the exit IRR within 1 second of a growth change', async ({
   await expect(irr).not.toContainText('15.66%', { timeout: 1000 });
   expect(Date.now() - start).toBeLessThan(1000);
 });
+
+// Spec 013 SC-003: the sale profit reflects an exit change within 1 second.
+test('updates the sale profit within 1 second of an exit change', async ({
+  page,
+}) => {
+  await page.goto('/sale');
+  await fillNumberField(page, 'Home price', '400000');
+  await fillNumberField(page, 'Down payment', '25');
+  await fillNumberField(page, 'Annual interest rate', '7');
+  await fillNumberField(page, 'Annual property tax', '4800');
+  await fillNumberField(page, "Annual homeowner's insurance", '1800');
+  await fillNumberField(page, 'Monthly rent', '3800');
+  await fillNumberField(page, 'Rent growth', '3');
+  await fillNumberField(page, 'Expense growth', '2.5');
+  await fillNumberField(page, 'Appreciation', '3.5');
+  await page.keyboard.press('Tab');
+  const profit = page.getByTestId('sale-profit').locator('td');
+  await expect(profit).toHaveText('$151,420.55');
+
+  const start = Date.now();
+  await fillNumberField(page, 'Sell after', '8');
+  await page.keyboard.press('Tab');
+  await expect(profit).not.toHaveText('$151,420.55', { timeout: 1000 });
+  expect(Date.now() - start).toBeLessThan(1000);
+});

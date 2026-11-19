@@ -20,6 +20,11 @@ export function applyScenarioPatch(
       : patch.rental;
   }
 
+  // Sale assumptions (spec 013) merge the same way; an explicit `sale: null` clears them.
+  if ('sale' in patch && patch.sale != null) {
+    next.sale = scenario.sale ? { ...scenario.sale, ...patch.sale } : patch.sale;
+  }
+
   // Rule 1 (and rule 4's precedence): an explicit `principal` in the patch
   // always wins, even if the same patch also touches homePrice/downPayment.
   if ('principal' in patch) {

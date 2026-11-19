@@ -21,14 +21,18 @@ import {
   type LoanScenario,
   type RentalAssumptions,
   type RentalDealField,
+  type SaleAssumptions,
 } from 'shared-calculations';
 import { useScenarios } from './scenarios-provider';
 
 export type DealEditSource =
   'chip' | 'sheet' | 'sentence' | 'payment-bar' | 'scrub' | 'setup';
 
-/** `'rental'` names a rental-panel change that touched no single-number field (e.g. custom expenses). */
-export type ChangeField = DealFieldKey | 'rental';
+/**
+ * `'rental'` names a rental-panel change that touched no single-number field (e.g. custom
+ * expenses); `'sale'` names any Sale Profit & Exit Analyzer input change (spec 013).
+ */
+export type ChangeField = DealFieldKey | 'rental' | 'sale';
 
 /** The last shared-input change (spec 010 data-model §B). In memory only. */
 export interface ChangeRecord {
@@ -57,6 +61,8 @@ export interface DealEdits {
     patch: Partial<RentalAssumptions> | null,
     source: DealEditSource,
   ): void;
+  /** Sale Profit & Exit Analyzer writes (spec 013 R10), merged into `scenario.sale`. */
+  editSale(patch: Partial<SaleAssumptions>, source: DealEditSource): void;
   /** Ends a scrub gesture, so the next scrub starts a new record. */
   endGesture(): void;
   lastChange: ChangeRecord | null;
@@ -84,7 +90,7 @@ const same = (a: unknown, b: unknown) =>
   JSON.stringify(a) === JSON.stringify(b);
 
 function displayOf(field: ChangeField, scenario: LoanScenario): string {
-  if (field === 'rental') return '';
+  if (field === 'rental' || field === 'sale') return '';
   return formatDealField(field, readDealField(scenario, field));
 }
 
@@ -92,6 +98,7 @@ function rawOf(field: ChangeField, scenario: LoanScenario): unknown {
   if (field === 'rental' || field.startsWith('rental.')) {
     return scenario.rental ?? null;
   }
+  if (field === 'sale') return scenario.sale ?? null;
   return readDealField(scenario, field);
 }
 
@@ -166,7 +173,11 @@ export function DealEditsProvider({ children }: { children: ReactNode }) {
             scenarioId: current.id,
             field,
             label:
-              field === 'rental' ? 'Rental inputs' : DEAL_FIELD_LABELS[field],
+              field === 'rental'
+                ? 'Rental inputs'
+                : field === 'sale'
+                  ? 'Sale inputs'
+                  : DEAL_FIELD_LABELS[field],
             oldValue: rawOf(field, current),
             newValue: rawOf(field, after),
             oldDisplay: displayOf(field, current),
@@ -222,6 +233,11 @@ export function DealEditsProvider({ children }: { children: ReactNode }) {
     [record],
   );
 
+  const editSale = useCallback<DealEdits['editSale']>(
+    (patch, source) => record('sale', { sale: patch }, source),
+    [record],
+  );
+
   const endGesture = useCallback(() => {
     gestureOpen.current = false;
   }, []);
@@ -236,6 +252,15 @@ export function DealEditsProvider({ children }: { children: ReactNode }) {
     } else if (rec.field === 'rental' || rec.field.startsWith('rental.')) {
       updateActiveScenario({
         rental: rec.oldValue as RentalAssumptions | null,
+      });
+    } else if (rec.field === 'sale') {
+      // `sale` merges shallowly, so blank every current key before laying the old value over it.
+      const old = rec.oldValue as SaleAssumptions | null;
+      const blank = Object.fromEntries(
+        Object.keys(current.sale ?? {}).map((k) => [k, undefined]),
+      );
+      updateActiveScenario({
+        sale: old == null && !current.sale ? null : { ...blank, ...old },
       });
     } else {
       updateActiveScenario({
@@ -257,13 +282,23 @@ export function DealEditsProvider({ children }: { children: ReactNode }) {
     () => ({
       editDeal,
       editRental,
+      editSale,
       endGesture,
       lastChange,
       changeSeq,
       undo,
       dismiss,
     }),
-    [editDeal, editRental, endGesture, lastChange, changeSeq, undo, dismiss],
+    [
+      editDeal,
+      editRental,
+      editSale,
+      endGesture,
+      lastChange,
+      changeSeq,
+      undo,
+      dismiss,
+    ],
   );
 
   return (

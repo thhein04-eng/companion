@@ -149,6 +149,7 @@ test.describe('Missing inputs and errors (spec 010 US3)', () => {
       '/financing',
       '/wealth',
       '/pro-forma',
+      '/sale',
     ]) {
       await page.goto(path);
       await expect(page.locator('main').getByText(/\babove\b/)).toHaveCount(0);

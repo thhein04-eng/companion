@@ -19,4 +19,12 @@ export {
 export * from './lib/irr';
 export * from './lib/validate-exit';
 export * from './lib/project-exit';
+export * from './lib/validate-sale';
+export {
+  analyzeSale,
+  saleVerdict,
+  SALE_INVALID_REASON,
+  SALE_NO_PRICE_REASON,
+  SALE_TAX_INVALID_REASON,
+} from './lib/analyze-sale';
 export * from './lib/rules';

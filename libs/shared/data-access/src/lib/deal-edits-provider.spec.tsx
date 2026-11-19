@@ -160,3 +160,78 @@ describe('DealEditsProvider (spec 010 R7, data-model §B)', () => {
     expect(result.current.edits.lastChange).toBeNull();
   });
 });
+
+describe('DealEditsProvider.editSale (spec 013 T007)', () => {
+  beforeEach(() => {
+    window.sessionStorage.clear();
+    vi.useFakeTimers();
+  });
+  afterEach(() => vi.useRealTimers());
+
+  it('merges the patch into scenario.sale and records a "Sale inputs" change', () => {
+    const { result } = renderHook(useBoth, { wrapper });
+    act(() => result.current.edits.editSale({ exitMonth: 90 }, 'sheet'));
+    act(() => result.current.edits.editSale({ exitUnit: 'months' }, 'sheet'));
+    expect(result.current.store.activeScenario.sale).toEqual({
+      exitMonth: 90,
+      exitUnit: 'months',
+    });
+    expect(result.current.edits.lastChange).toMatchObject({
+      field: 'sale',
+      label: 'Sale inputs',
+      oldValue: null,
+      newValue: { exitMonth: 90, exitUnit: 'months' },
+      oldDisplay: '',
+      newDisplay: '',
+      source: 'sheet',
+    });
+  });
+
+  it('coalesces sale edits within 800ms into one record', () => {
+    const { result } = renderHook(useBoth, { wrapper });
+    act(() => result.current.edits.editSale({ exitMonth: 60 }, 'sheet'));
+    const seq = result.current.edits.changeSeq;
+    act(() => vi.advanceTimersByTime(300));
+    act(() => result.current.edits.editSale({ exitMonth: 72 }, 'sheet'));
+    expect(result.current.edits.lastChange).toMatchObject({
+      oldValue: null,
+      newValue: { exitMonth: 72 },
+    });
+    expect(result.current.edits.changeSeq).toBe(seq + 1);
+  });
+
+  it('undo restores the previous sale (absent)', () => {
+    const { result } = renderHook(useBoth, { wrapper });
+    act(() => result.current.edits.editSale({ exitMonth: 90 }, 'sheet'));
+    act(() => result.current.edits.undo());
+    expect(result.current.store.activeScenario.sale ?? null).toBeNull();
+    expect(result.current.edits.lastChange).toBeNull();
+  });
+
+  it('undo falls back to restoring only sale when the scenario changed elsewhere', () => {
+    const { result } = renderHook(useBoth, { wrapper });
+    act(() => result.current.edits.editSale({ exitMonth: 60 }, 'sheet'));
+    act(() => vi.advanceTimersByTime(1000));
+    act(() =>
+      result.current.edits.editSale(
+        { exitUnit: 'months', tax: { enabled: true } },
+        'sheet',
+      ),
+    );
+    act(() => result.current.store.updateActiveScenario({ monthlyHoa: 99 }));
+    act(() => result.current.edits.undo());
+    const sale = result.current.store.activeScenario.sale;
+    expect(sale?.exitMonth).toBe(60);
+    expect(sale?.exitUnit).toBeUndefined();
+    expect(sale?.tax).toBeUndefined();
+    expect(result.current.store.activeScenario.monthlyHoa).toBe(99);
+  });
+
+  it('ignores a no-op sale edit', () => {
+    const { result } = renderHook(useBoth, { wrapper });
+    act(() => result.current.edits.editSale({ exitMonth: 60 }, 'sheet'));
+    const seq = result.current.edits.changeSeq;
+    act(() => result.current.edits.editSale({ exitMonth: 60 }, 'sheet'));
+    expect(result.current.edits.changeSeq).toBe(seq);
+  });
+});

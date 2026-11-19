@@ -29,7 +29,12 @@ export interface MissingRequirement {
 
 export interface PageProfile {
   pageId:
-    'amortization' | 'deal-analyzer' | 'financing' | 'wealth' | 'pro-forma';
+    | 'amortization'
+    | 'deal-analyzer'
+    | 'financing'
+    | 'wealth'
+    | 'pro-forma'
+    | 'sale';
   /** Shown first, in this order, in accent style. */
   pinned: DealChipKey[];
   /** Shown last, de-emphasized, still editable. */
@@ -100,6 +105,14 @@ export const PRO_FORMA_PROFILE: PageProfile = {
     { field: 'homePrice', unlocks: 'sale price' },
     { field: 'rental.grossMonthlyRent', unlocks: 'IRR' },
   ],
+};
+
+/** Sale Profit & Exit Analyzer (spec 013). Rent is optional: a non-rental sale still works. */
+export const SALE_PROFILE: PageProfile = {
+  pageId: 'sale',
+  pinned: ['homePrice', 'downPayment', 'annualInterestRatePct'],
+  muted: [],
+  requires: [{ field: 'homePrice', unlocks: 'sale price' }],
 };
 
 /**

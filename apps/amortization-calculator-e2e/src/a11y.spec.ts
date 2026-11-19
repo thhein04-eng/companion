@@ -15,6 +15,7 @@ const ROUTES = [
   '/financing',
   '/wealth',
   '/pro-forma',
+  '/sale',
 ];
 
 async function reference(page: Page) {

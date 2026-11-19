@@ -132,3 +132,48 @@ describe('applyScenarioPatch — rental assumptions (Deal Analyzer)', () => {
     expect(result.principalIsOverridden).toBe(true);
   });
 });
+
+describe('applyScenarioPatch — sale (spec 013 T003)', () => {
+  const withSale = baseScenario({
+    sale: {
+      exitMonth: 84,
+      exitUnit: 'years',
+      tax: { enabled: true, capitalGainsRatePct: 20 },
+    },
+  });
+
+  it('merges a sale patch one level deep, keeping the other fields', () => {
+    const result = applyScenarioPatch(withSale, { sale: { exitMonth: 90 } });
+    expect(result.sale).toEqual({
+      exitMonth: 90,
+      exitUnit: 'years',
+      tax: { enabled: true, capitalGainsRatePct: 20 },
+    });
+  });
+
+  it('sets sale when the scenario has none', () => {
+    const result = applyScenarioPatch(baseScenario(), {
+      sale: { exitMonth: 12 },
+    });
+    expect(result.sale).toEqual({ exitMonth: 12 });
+  });
+
+  it('an explicit sale: null clears it', () => {
+    expect(applyScenarioPatch(withSale, { sale: null }).sale).toBeNull();
+  });
+
+  it('a patch without sale leaves it untouched', () => {
+    const result = applyScenarioPatch(withSale, { name: 'Renamed' });
+    expect(result.sale).toBe(withSale.sale);
+  });
+
+  it('keeps the principal rules unchanged alongside a sale patch', () => {
+    const result = applyScenarioPatch(withSale, {
+      sale: { exitMonth: 60 },
+      principal: 250_000,
+    });
+    expect(result.principal).toBe(250_000);
+    expect(result.principalIsOverridden).toBe(true);
+    expect(result.sale?.exitMonth).toBe(60);
+  });
+});

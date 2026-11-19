@@ -29,6 +29,11 @@ Import only from the package name (`'deal-analyzer-ui'`), never from a deep path
 - Hold & exit pro forma (spec 009):
   - `ProFormaView`, `ExitAssumptionsPanel`, `ExitSummary`, `HoldComparisonTable`, `ProFormaTable`
   - `useExitEditor()`: hold, selling costs, shared growth and shared tax inputs
+- Sale profit & exit (spec 013):
+  - `SaleView`, `SaleAssumptionsPanel`, `SaleSummary`, `BreakEvenCard`, `SaleTaxPanel`
+  - `useSaleEditor()`: routes each input to the shared rental field (with a rental) or to
+    `scenario.sale` (via `editSale`)
+  - `saleHeading`, `signedMoney`, `TAX_DISCLAIMER`
 - `MetricCard` (spec 011): one anatomy for Cap rate and the rules of thumb. `SegmentedOptions` is
   now an alias of shared-ui's `SegmentedControl`.
 - Every view renders the spec 010 `DealStrip` from `shared-ui` instead of inline Loan,

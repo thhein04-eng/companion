@@ -129,6 +129,16 @@ export function KeyIcon(props: IconProps) {
   );
 }
 
+/** A price tag (spec 013 "Sale Profit" nav entry). */
+export function TagIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M3 12V4h8l10 10-8 8L3 12z" />
+      <circle cx="7.5" cy="7.5" r="1.5" />
+    </Icon>
+  );
+}
+
 export function PencilIcon(props: IconProps) {
   return (
     <Icon {...props}>

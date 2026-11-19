@@ -283,3 +283,89 @@ export interface ExitProjection {
   naReason: string | null;
   errors: FieldError[];
 }
+
+/** Sale assumptions after defaults, sharing and clamping (spec 013 data-model §B). */
+export interface ResolvedSaleAssumptions {
+  /** `scenario.rental != null`. */
+  mode: 'rental' | 'non-rental';
+  /** Clamped to 1…termMonths. */
+  exitMonth: number;
+  /** The stored value when clamping changed it, else null. */
+  clampedFrom: number | null;
+  exitUnit: 'years' | 'months';
+  /** `rental.appreciationPct` (rental) or `sale.appreciationPct` (non-rental). */
+  appreciationPct: number;
+  /** `rental.exit.sellingCostsPct` (rental) or `sale.sellingCostsPct` (non-rental). */
+  sellingCostsPct: number;
+  tax: {
+    enabled: boolean;
+    capitalGainsRatePct: number;
+    recaptureRatePct: number;
+    /** `rental.wealth.landValuePct`; null when non-rental. */
+    landValuePct: number | null;
+  };
+}
+
+/** The minimum sale price for $0 profit (spec 013 US2, research R7). */
+export interface SaleBreakEven {
+  /** ≥ 0, cents. */
+  salePrice: number;
+  /** The raw solution was < 0: any sale price is profitable. */
+  anyPrice: boolean;
+  /** Projected sale price − break-even price. */
+  cushion: number;
+  /** Break-even ÷ purchase price, unrounded. */
+  pctOfPurchase: number;
+}
+
+/** Illustrative tax on the sale (spec 013 US3, research R8). */
+export interface SaleTaxEstimate {
+  /** Building share of price + rehab; null when non-rental. */
+  depreciableBasis: number | null;
+  /** 0 when non-rental. */
+  depreciationTaken: number;
+  adjustedBasis: number;
+  /** May be negative (a loss). */
+  taxableGain: number;
+  recapturedGain: number;
+  recaptureTax: number;
+  capitalGain: number;
+  capitalGainsTax: number;
+  totalTax: number;
+  afterTaxNetProfit: number;
+  /** exitMonth ≤ 12. */
+  shortTermWarning: boolean;
+}
+
+/** The sale at one exit month and whether it is a real profit (spec 013 data-model §C). */
+export interface SaleResult {
+  mode: 'rental' | 'non-rental';
+  exitMonth: number;
+  clampedFrom: number | null;
+  salePrice: number;
+  sellingCosts: number;
+  remainingBalance: number;
+  /** salePrice − sellingCosts − remainingBalance */
+  netSaleProceeds: number;
+  /** 0 when non-rental. */
+  cumulativeCashFlow: number;
+  totalCashInvested: number;
+  /** netSaleProceeds + cumulativeCashFlow − totalCashInvested */
+  totalNetProfit: number;
+  /** totalNetProfit ÷ totalCashInvested, unrounded. */
+  returnOnCash: RatioResult;
+  verdict: 'profit' | 'loss' | 'break-even';
+  breakEven: SaleBreakEven;
+  /** `rental.wealth.forcedAppreciation > 0` (Hold & Exit's sale price differs). */
+  forcedAppreciationNote: boolean;
+  /** Null when the estimate is off, or on with invalid tax inputs. */
+  tax: SaleTaxEstimate | null;
+  taxNaReason: string | null;
+}
+
+export interface SaleAnalysis {
+  /** Null with naReason when there is no price, or the sale inputs are invalid. */
+  result: SaleResult | null;
+  naReason: string | null;
+  errors: FieldError[];
+}

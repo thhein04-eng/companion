@@ -1,10 +1,19 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useDealEditsOptional } from 'shared-data-access';
+import { useDealEditsOptional, type ChangeRecord } from 'shared-data-access';
 import { dismissToast, showToast } from '../ds/toast';
 
 const TOAST_ID = 'deal-change';
+
+/** The toast title. Rental-panel and sale edits have no single value to show (spec 013 T008). */
+export function dealChangeTitle(
+  change: Pick<ChangeRecord, 'field' | 'label' | 'oldDisplay' | 'newDisplay'>,
+): string {
+  if (change.field === 'rental') return 'Rental inputs changed';
+  if (change.field === 'sale') return 'Sale inputs changed';
+  return `${change.label} changed ${change.oldDisplay} → ${change.newDisplay}`;
+}
 
 /**
  * "Rent changed $3,200 → $3,500 · Undo" after every shared-input change (spec 010 FR-030/031).
@@ -23,13 +32,9 @@ export function DealChangeToast() {
       dismissToast(TOAST_ID);
       return;
     }
-    const title =
-      change.field === 'rental'
-        ? 'Rental inputs changed'
-        : `${change.label} changed ${change.oldDisplay} → ${change.newDisplay}`;
     showToast({
       id: TOAST_ID,
-      title,
+      title: dealChangeTitle(change),
       actionLabel: 'Undo',
       onAction: () => undo?.(),
       duration: 6000,
