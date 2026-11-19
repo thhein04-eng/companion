@@ -56,7 +56,7 @@ export function DateField({
         onValueChange={(next) => {
           if (typeof next === 'string' || next === null) onValueChange(next);
         }}
-        className="num flex items-center rounded-sm border border-line bg-surface pl-3 pr-1 text-[15px] text-fg focus-within:border-accent focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-accent has-[[data-invalid]]:border-bad has-[[data-invalid]]:bg-bad-soft"
+        className="num flex h-[var(--control-h)] items-center rounded-sm border border-line bg-surface pl-3 pr-1 text-[15px] text-fg focus-within:border-accent focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-accent has-[[data-invalid]]:border-bad has-[[data-invalid]]:bg-bad-soft"
       >
         <DateInput
           value={value}

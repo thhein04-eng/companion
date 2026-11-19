@@ -165,7 +165,7 @@ export function NumberField({
             <NumberInputScrubAreaCursor className="pointer-events-none" />
           </NumberInputScrubArea>
         ) : null}
-        <NumberInputGroup className="num flex items-center gap-1 rounded-sm border border-line bg-surface px-1 text-fg transition-colors focus-within:border-accent focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-accent data-[invalid]:border-bad data-[invalid]:bg-bad-soft">
+        <NumberInputGroup className="num flex h-[var(--control-h)] items-center gap-1 rounded-sm border border-line bg-surface px-1 text-fg transition-colors focus-within:border-accent focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-accent data-[invalid]:border-bad data-[invalid]:bg-bad-soft">
           {scrubbable && visuallyHiddenLabel ? (
             // The visible label sits outside this field (unit toggles), so a drag handle stands in.
             <NumberInputScrubArea

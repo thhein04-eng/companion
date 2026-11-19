@@ -40,7 +40,7 @@ export function SegmentedControl<T extends string>({
       onValueChange={(next) => {
         if (next != null) onValueChange(next as T);
       }}
-      className="inline-flex w-fit rounded-md border border-line bg-sunk p-0.5"
+      className="inline-flex h-[var(--control-h)] w-fit items-stretch rounded-md border border-line bg-sunk p-0.5"
     >
       {/* The checked item paints its own ink background (no separately positioned indicator), so
           its text never shows on the track before layout — spec 010 FR-035 contrast. */}
@@ -48,7 +48,7 @@ export function SegmentedControl<T extends string>({
         <SegmentedControlItem
           key={option.value}
           value={option.value}
-          className="cursor-pointer rounded-sm px-3 py-1.5 text-[14px] text-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent transition-colors data-[checked]:bg-ink data-[checked]:font-medium data-[checked]:text-ink-fg motion-reduce:transition-none"
+          className="flex cursor-pointer items-center rounded-sm px-3 text-[14px] text-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent transition-colors data-[checked]:bg-ink data-[checked]:font-medium data-[checked]:text-ink-fg motion-reduce:transition-none"
         >
           {option.label}
         </SegmentedControlItem>
