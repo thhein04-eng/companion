@@ -73,13 +73,6 @@ export function WealthView() {
 
   return (
     <>
-      <PageHeader
-        eyebrow="Analysis"
-        title="Wealth Projection"
-        lede="Project equity, cash flow and net worth over time."
-        note="Simplified model, not tax advice."
-      />
-
       <DealStrip
         profile={WEALTH_PROFILE}
         headline={{
@@ -91,6 +84,12 @@ export function WealthView() {
         }}
         errors={errors}
         payment={payment}
+      />
+      <PageHeader
+        eyebrow="Analysis"
+        title="Wealth Projection"
+        lede="Project equity, cash flow and net worth over time."
+        note="Simplified model, not tax advice."
       />
 
       {rental ? (

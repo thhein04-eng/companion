@@ -83,12 +83,6 @@ export function AmortizationCalculatorView() {
 
   return (
     <>
-      <PageHeader
-        eyebrow="Analysis"
-        title="Amortization Calculator"
-        lede="Model a mortgage payment, its full schedule, real-estate costs, and early-payoff savings."
-      />
-
       <DealStrip
         profile={AMORTIZATION_PROFILE}
         headline={{
@@ -100,6 +94,11 @@ export function AmortizationCalculatorView() {
         }}
         errors={errors}
         payment={payment}
+      />
+      <PageHeader
+        eyebrow="Analysis"
+        title="Amortization Calculator"
+        lede="Model a mortgage payment, its full schedule, real-estate costs, and early-payoff savings."
       />
 
       {activeScenario.homePrice != null ? (

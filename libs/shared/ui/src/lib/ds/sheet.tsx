@@ -71,7 +71,12 @@ export function Sheet({
             className="mx-auto mt-2 h-1.5 w-10 rounded-full bg-line"
           />
         ) : null}
-        <div className="flex items-start justify-between gap-3 border-b border-line px-[var(--space-card)] py-4">
+        {/* Action rows never start a swipe-to-dismiss drag (ui-sdk `data-drawer-no-drag`): a press
+            on Done or Skip is always a button press, never the start of a drag. */}
+        <div
+          data-drawer-no-drag=""
+          className="flex items-start justify-between gap-3 border-b border-line px-[var(--space-card)] py-4"
+        >
           <div className="flex min-w-0 flex-col gap-1">
             <DrawerTitle className="m-0 font-display text-h3 font-semibold text-fg">
               {title}
@@ -92,7 +97,10 @@ export function Sheet({
           {children}
         </div>
         {footer ? (
-          <div className="flex items-center justify-end gap-2 border-t border-line px-[var(--space-card)] py-3.5">
+          <div
+            data-drawer-no-drag=""
+            className="flex items-center justify-end gap-2 border-t border-line px-[var(--space-card)] py-3.5"
+          >
             {footer}
           </div>
         ) : null}

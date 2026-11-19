@@ -46,10 +46,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <DealEditsProvider>
               <DealSheetProvider>
                 <AppShell navItems={NAV_ITEMS}>
-                  <main
-                    id="main-content"
-                    className="page-gutter mx-auto flex w-full max-w-[1040px] flex-col gap-[var(--space-page)] py-10"
-                  >
+                  <main id="main-content" className="page-grid w-full pt-10 pb-10">
                     {children}
                   </main>
                 </AppShell>

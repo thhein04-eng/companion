@@ -13,3 +13,4 @@ export * from './toast';
 export * from './segmented-toggle';
 export * from './theme-switcher';
 export * from './ripple';
+export * from './segmented-control';

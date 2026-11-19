@@ -86,7 +86,16 @@ export async function openDealSheet(page: Page) {
 export async function closeDealSheet(page: Page) {
   const sheet = dealSheet(page);
   if (!(await sheet.isVisible())) return;
-  await sheet.getByRole('button', { name: 'Done', exact: true }).click();
+  const done = sheet.getByRole('button', { name: 'Done', exact: true });
+  await done.click();
+  // Playwright WebKit under parallel load occasionally retargets this press to another element
+  // (seen 2026-11-18: pointerdown hit the sheet's date input while the pointer was on Done, so
+  // no click fired). Our code holds no pointer capture; see specs/011 tasks.md notes. Retry once.
+  const closed = await sheet.waitFor({ state: 'hidden', timeout: 2000 }).then(
+    () => true,
+    () => false,
+  );
+  if (!closed) await done.click();
   await sheet.waitFor({ state: 'hidden' });
 }
 

@@ -96,12 +96,6 @@ export function FinancingView() {
 
   return (
     <>
-      <PageHeader
-        eyebrow="Analysis"
-        title="DSCR & Financing"
-        lede="Check debt service coverage against a lender minimum and compare how conventional, ARM and DSCR loans change your cash flow."
-      />
-
       <DealStrip
         profile={FINANCING_PROFILE}
         headline={{
@@ -119,6 +113,11 @@ export function FinancingView() {
         errors={errors}
         payment={payment}
         sheet={{ totalCashInvested: analysis?.totalCashInvested ?? null }}
+      />
+      <PageHeader
+        eyebrow="Analysis"
+        title="DSCR & Financing"
+        lede="Check debt service coverage against a lender minimum and compare how conventional, ARM and DSCR loans change your cash flow."
       />
 
       {!analysis ? (

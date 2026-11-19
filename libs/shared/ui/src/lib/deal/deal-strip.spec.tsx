@@ -74,38 +74,37 @@ const chipKeys = () =>
   );
 
 describe('DealStrip (spec 010 US1)', () => {
-  it('orders Financing chips: pinned rate, term, rent, then the rest, then Total last', () => {
+  it('lays the values out in a fixed order, emphasizing what Financing uses', () => {
     renderStrip(FINANCING_PROFILE);
     expect(chipKeys()).toEqual([
-      'annualInterestRatePct',
-      'termMonths',
-      'rental.grossMonthlyRent',
       'homePrice',
       'downPayment',
       'principal',
+      'annualInterestRatePct',
+      'termMonths',
+      'rental.grossMonthlyRent',
       'total',
     ]);
     const tone = (k: string) =>
       document.querySelector(`[data-chip="${k}"]`)?.getAttribute('data-tone');
     expect(tone('annualInterestRatePct')).toBe('pin');
     expect(tone('termMonths')).toBe('pin');
-    expect(tone('rental.grossMonthlyRent')).toBe('pin');
     expect(tone('total')).toBe('total');
+    expect(tone('homePrice')).toBe('missing');
   });
 
-  it('puts a pinned Total first on Amortization and mutes Rent', () => {
+  it('keeps the same order on Amortization and mutes Rent', () => {
     renderStrip(AMORTIZATION_PROFILE);
-    expect(chipKeys().slice(0, 4)).toEqual([
+    expect(chipKeys().slice(0, 3)).toEqual([
+      'homePrice',
+      'downPayment',
       'principal',
-      'annualInterestRatePct',
-      'termMonths',
-      'total',
     ]);
     expect(
       document
-        .querySelector('[data-chip="rental.grossMonthlyRent"]')
+        .querySelector('[data-chip="principal"]')
         ?.getAttribute('data-tone'),
-    ).toBe('muted');
+    ).toBe('pin');
   });
 
   it('shows the error state with visible text on a chip whose field is invalid', () => {

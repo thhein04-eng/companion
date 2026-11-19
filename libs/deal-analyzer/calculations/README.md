@@ -25,6 +25,7 @@ Pure rental-analysis functions for the Rental Deal Analyzer.
   - `DEFAULT_EXIT`, `HOLD_PRESETS`, `EXAMPLE_GROWTH`, `EXIT_NO_PRICE_REASON`, `EXIT_INVALID_REASON`
   - Types: `ProFormaYear`, `ExitReturns`, `ExitResult`, `ExitProjection`
   - `projectWealth(scenario, schedule, { horizonYears })`: the override replaces the stored horizon
+- `onePercentRatio(rule)` (spec 011): rent ÷ price for the 1% Rule card's headline.
 - Moved to `shared-calculations` in spec 010 (still re-exported here): `validateRental`,
   `DEFAULT_RENTAL_ASSUMPTIONS`.
 

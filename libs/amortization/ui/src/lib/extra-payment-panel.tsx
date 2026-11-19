@@ -1,31 +1,50 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import type { ExtraPaymentRule } from 'shared-calculations';
-import { currency, DateField, NumberField } from 'shared-ui';
-import { Tabs, TabsList, TabsTab } from '@ui-sdk/react/tabs';
-import { Button } from '@ui-sdk/react/button';
+import {
+  Button,
+  Card,
+  currency,
+  DateField,
+  formatIsoDate,
+  NumberField,
+  SegmentedControl,
+} from 'shared-ui';
 
 export interface ExtraPaymentPanelProps {
   extraPayments: ExtraPaymentRule[];
   onChange: (next: ExtraPaymentRule[]) => void;
 }
 
+type Kind = 'recurring' | 'oneTime';
+
+const KINDS = [
+  { value: 'recurring', label: 'Recurring' },
+  { value: 'oneTime', label: 'One-time' },
+] as const;
+
+const timing = (rule: ExtraPaymentRule) =>
+  rule.kind === 'recurring'
+    ? `Monthly from payment ${rule.startPeriod}`
+    : `On ${formatIsoDate(rule.date)}`;
+
 /**
- * Add, list, and remove recurring or one-time extra principal payments
- * (FR-007), each applied to `computeSchedule()`'s extra-payment handling.
+ * Add, list and remove recurring or one-time extra principal payments (spec 001 FR-007),
+ * as a labeled, aligned form and a tidy list (spec 011 US2, FR-004–FR-009).
  */
 export function ExtraPaymentPanel({
   extraPayments,
   onChange,
 }: ExtraPaymentPanelProps) {
-  const [kind, setKind] = useState<'recurring' | 'oneTime'>('recurring');
+  const [kind, setKind] = useState<Kind>('recurring');
   const [amount, setAmount] = useState<number | null>(100);
   const [date, setDate] = useState<string | null>(
     new Date().toISOString().slice(0, 10),
   );
 
-  const addRule = () => {
+  const addRule = (event?: FormEvent) => {
+    event?.preventDefault();
     if (amount == null || amount <= 0) return;
     const rule: ExtraPaymentRule =
       kind === 'recurring'
@@ -44,58 +63,21 @@ export function ExtraPaymentPanel({
   };
 
   return (
-    <div className="flex flex-col gap-3">
-      {extraPayments.length > 0 ? (
-        <ul className="flex flex-col gap-1">
-          {extraPayments.map((rule) => (
-            <li
-              key={rule.id}
-              className="flex items-center justify-between rounded-lg border border-line bg-surface px-3.5 py-2 text-[14px]"
-            >
-              <span>
-                {rule.kind === 'recurring'
-                  ? `${currency.format(rule.amount)} / month from payment #${rule.startPeriod}`
-                  : `${currency.format(rule.amount)} one-time on ${rule.date}`}
-              </span>
-              <button
-                type="button"
-                aria-label="Remove extra payment"
-                onClick={() => removeRule(rule.id)}
-                className="text-muted hover:text-bad"
-              >
-                ×
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-
-      <div className="flex flex-wrap items-end gap-3 rounded-xl border border-dashed border-line p-[18px]">
-        <Tabs
-          value={kind}
-          onValueChange={(next) =>
-            next && setKind(next as 'recurring' | 'oneTime')
-          }
-        >
-          <TabsList
-            aria-label="Extra payment type"
-            className="flex gap-1 text-xs"
-          >
-            <TabsTab
-              value="recurring"
-              className="cursor-pointer rounded-sm border border-transparent px-2 py-1 text-muted hover:bg-sunk data-selected:border-ink data-selected:bg-ink data-selected:text-ink-fg"
-            >
-              Recurring
-            </TabsTab>
-            <TabsTab
-              value="oneTime"
-              className="cursor-pointer rounded-sm border border-transparent px-2 py-1 text-muted hover:bg-sunk data-selected:border-ink data-selected:bg-ink data-selected:text-ink-fg"
-            >
-              One-time
-            </TabsTab>
-          </TabsList>
-        </Tabs>
-        <div className="w-32">
+    <div className="flex flex-col gap-[var(--space-grid)]">
+      <Card
+        as="form"
+        padding="md"
+        onSubmit={addRule}
+        aria-label="Add an extra payment"
+      >
+        <div className="grid grid-cols-1 gap-[var(--space-grid)] sm:grid-cols-[auto_minmax(12rem,1fr)_minmax(12rem,1fr)_auto] sm:items-end">
+          <SegmentedControl
+            label="Type"
+            showLabel
+            value={kind}
+            options={KINDS}
+            onValueChange={setKind}
+          />
           <NumberField
             label="Amount"
             variant="currency"
@@ -103,19 +85,63 @@ export function ExtraPaymentPanel({
             value={amount}
             onValueChange={setAmount}
           />
-        </div>
-        {kind === 'oneTime' ? (
-          <div className="w-44">
+          {kind === 'oneTime' ? (
             <DateField label="Date" value={date} onValueChange={setDate} />
-          </div>
-        ) : null}
-        <Button
-          onClick={addRule}
-          className="cursor-pointer rounded-md border border-ink bg-ink px-3 py-2 text-[14px] font-medium text-ink-fg hover:opacity-90"
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              <span className="text-label font-medium text-muted">When</span>
+              <span className="flex min-h-[42px] items-center rounded-sm bg-sunk px-3 text-[14px] text-fg">
+                Every month, starting with payment 1
+              </span>
+            </div>
+          )}
+          <Button type="submit" variant="primary" className="h-[42px] px-5">
+            Add
+          </Button>
+        </div>
+      </Card>
+
+      {extraPayments.length > 0 ? (
+        <ul
+          aria-label="Extra payments"
+          className="m-0 flex list-none flex-col p-0"
         >
-          Add
-        </Button>
-      </div>
+          {extraPayments.map((rule) => {
+            const money = currency.format(rule.amount);
+            return (
+              <li
+                key={rule.id}
+                data-testid="extra-payment-row"
+                className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-line py-2.5 last:border-b-0"
+              >
+                <span className="rounded-full bg-sunk px-2.5 py-0.5 text-[12px] font-semibold text-fg">
+                  {rule.kind === 'recurring' ? 'Monthly' : 'One-time'}
+                </span>
+                <span className="num text-[15px] font-semibold text-fg">
+                  {money}
+                </span>
+                <span className="text-small text-muted">{timing(rule)}</span>
+                <span className="flex-1" />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  aria-label={`Remove extra payment of ${money}`}
+                  onClick={() => removeRule(rule.id)}
+                >
+                  Remove
+                </Button>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <p
+          data-testid="extra-payments-empty"
+          className="m-0 text-small text-muted"
+        >
+          Add a recurring or one-time payment to pay the loan down faster.
+        </p>
+      )}
     </div>
   );
 }

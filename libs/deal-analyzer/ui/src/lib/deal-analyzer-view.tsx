@@ -92,12 +92,6 @@ export function DealAnalyzerView() {
 
   return (
     <>
-      <PageHeader
-        eyebrow="Analysis"
-        title="Rental Deal Analyzer"
-        lede="Analyze a rental's cash flow, returns, and rules of thumb."
-      />
-
       <DealStrip
         profile={DEAL_ANALYZER_PROFILE}
         headline={{
@@ -114,6 +108,11 @@ export function DealAnalyzerView() {
         errors={errors}
         payment={payment}
         sheet={{ totalCashInvested: analysis?.totalCashInvested ?? null }}
+      />
+      <PageHeader
+        eyebrow="Analysis"
+        title="Rental Deal Analyzer"
+        lede="Analyze a rental's cash flow, returns, and rules of thumb."
       />
 
       {activeScenario.homePrice != null || analysis ? (

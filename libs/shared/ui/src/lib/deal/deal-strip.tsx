@@ -1,26 +1,26 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import {
   DEAL_FIELD_LABELS,
   readDealField,
   type FieldError,
 } from 'shared-calculations';
 import { useScenarios, useSetupMode } from 'shared-data-access';
-import { Chip } from '../ds/chip';
-import { dealErrors } from './deal-errors';
 import { Button } from '../ds/button';
-import type { ChipTone } from '../ds/chip';
+import { Chip, type ChipTone } from '../ds/chip';
+import { Eyebrow } from '../ds/typography';
+import { PencilIcon } from '../icons';
 import { ScenarioTabs } from '../scenario-tabs';
 import { ChipPopover } from './chip-popover';
+import { dealErrors } from './deal-errors';
 import { DealSheet, type DealSheetProps } from './deal-sheet';
 import { useDealSheet } from './deal-sheet-context';
-import {
-  chipOrder,
-  type DealChipKey,
-  type DealPayment,
-  type Headline,
-  type PageProfile,
+import type {
+  DealChipKey,
+  DealPayment,
+  Headline,
+  PageProfile,
 } from './page-profiles';
 
 export interface DealStripProps {
@@ -33,6 +33,16 @@ export interface DealStripProps {
   sheet?: Omit<DealSheetProps, 'headline' | 'payment' | 'errors'>;
 }
 
+/** The value grid's fixed order (spec 011 FR-003a): the same on every page. */
+export const DEAL_GRID_ORDER: DealChipKey[] = [
+  'homePrice',
+  'downPayment',
+  'principal',
+  'annualInterestRatePct',
+  'termMonths',
+  'rental.grossMonthlyRent',
+];
+
 function toneFor(profile: PageProfile, chip: DealChipKey): ChipTone {
   if (chip === 'total') return 'total';
   if (profile.pinned.includes(chip)) return 'pin';
@@ -41,8 +51,10 @@ function toneFor(profile: PageProfile, chip: DealChipKey): ChipTone {
 }
 
 /**
- * The sticky Deal Strip (spec 010 US1): scenario tabs, a chip per shared input ordered by the
- * page's profile, and Edit deal, which opens the sheet. Replaces the per-page input sections.
+ * The shared deal card (spec 011 US1; first built as spec 010's Deal Strip): scenario tabs and
+ * Edit deal in its header, then the deal's values as a labeled grid in a fixed order, the monthly
+ * payment, and hints for missing inputs. Each value opens its own editor. It sits above every
+ * page's header and stays at the top while scrolling.
  */
 export function DealStrip({
   profile,
@@ -53,17 +65,14 @@ export function DealStrip({
 }: DealStripProps) {
   const store = useScenarios();
   const dealSheet = useDealSheet();
-  const stripRef = useRef<HTMLElement>(null);
-  const chipsRef = useRef<HTMLDivElement>(null);
-  const [nowrap, setNowrap] = useState(false);
   const setup = useSetupMode();
   const fixable = dealErrors(errors);
   const missing = profile.requires.filter(
     (r) => readDealField(store.activeScenario, r.field) == null,
   );
 
-  // First run (FR-020): open the sheet in setup mode for a scenario with no home price, once
-  // saved scenarios have loaded, and again whenever such a scenario becomes active.
+  // First run (spec 010 FR-020): open the sheet in setup mode for a scenario with no home price,
+  // once saved scenarios have loaded, and again whenever such a scenario becomes active.
   const { open: openSheet, state: sheetState } = dealSheet;
   useEffect(() => {
     if (setup.ready && setup.needsSetup && !sheetState.open) {
@@ -72,80 +81,62 @@ export function DealStrip({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setup.ready, setup.needsSetup, store.activeScenarioId]);
 
-  // Cap the strip at a third of the viewport: past that, chips scroll sideways in one line.
-  useLayoutEffect(() => {
-    const measure = () => {
-      const strip = stripRef.current;
-      const row = chipsRef.current;
-      if (!strip || !row) return;
-      const top = strip.offsetHeight - row.offsetHeight;
-      const widths = Array.from(row.children).reduce(
-        (sum, el) => sum + (el as HTMLElement).offsetWidth + 6,
-        0,
-      );
-      const rows = Math.max(
-        1,
-        Math.ceil(widths / Math.max(1, row.clientWidth)),
-      );
-      const wrappedHeight = rows * 30 + (rows - 1) * 6;
-      setNowrap(top + wrappedHeight > window.innerHeight * 0.33);
-    };
-    measure();
-    window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
-  }, [profile]);
-
   return (
     <>
       <section
-        ref={stripRef}
         aria-label="Deal"
         data-testid="deal-strip"
-        className="sticky top-14 z-20 flex max-h-[33vh] flex-col gap-2.5 rounded-lg border border-line bg-surface p-3 lg:top-0"
+        className="sticky top-16 z-20 max-h-[33vh] overflow-y-auto rounded-xl border border-line bg-surface lg:top-2"
       >
-        <div className="flex flex-wrap items-center gap-2">
-          <ScenarioTabs
-            scenarios={store.scenarios}
-            activeScenarioId={store.activeScenarioId}
-            onActiveScenarioIdChange={store.setActiveScenarioId}
-            onAddScenario={store.addScenario}
-            onRemoveScenario={store.removeScenario}
-          />
-          <span className="flex-1" />
-          {fixable.length > 0 ? (
+        {/* DOM order = visual order at every width: tabs → actions → values (FR-003). */}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-line px-[18px] py-3">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <Eyebrow className="hidden shrink-0 sm:inline">Your deal</Eyebrow>
+            <ScenarioTabs
+              scenarios={store.scenarios}
+              activeScenarioId={store.activeScenarioId}
+              onActiveScenarioIdChange={store.setActiveScenarioId}
+              onAddScenario={store.addScenario}
+              onRemoveScenario={store.removeScenario}
+            />
+          </div>
+          <div data-testid="deal-actions" className="flex items-center gap-2">
+            {fixable.length > 0 ? (
+              <Button
+                variant="danger"
+                size="sm"
+                data-testid="deal-error-count"
+                onClick={(event) =>
+                  dealSheet.open({
+                    focusField: fixable[0].key,
+                    returnFocus: event.currentTarget as HTMLElement,
+                  })
+                }
+              >
+                {fixable.length}{' '}
+                {fixable.length === 1 ? 'input needs' : 'inputs need'} fixing
+              </Button>
+            ) : null}
             <Button
-              variant="danger"
-              size="sm"
-              data-testid="deal-error-count"
+              variant="primary"
+              size="md"
+              data-testid="edit-deal"
               onClick={(event) =>
                 dealSheet.open({
-                  focusField: fixable[0].key,
                   returnFocus: event.currentTarget as HTMLElement,
                 })
               }
             >
-              {fixable.length}{' '}
-              {fixable.length === 1 ? 'input needs' : 'inputs need'} fixing
+              <PencilIcon className="size-4" />
+              Edit deal
             </Button>
-          ) : null}
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={(event) =>
-              dealSheet.open({
-                returnFocus: event.currentTarget as HTMLElement,
-              })
-            }
-          >
-            Edit deal
-          </Button>
+          </div>
         </div>
         <div
-          ref={chipsRef}
           data-testid="deal-chips"
-          className={`flex gap-1.5 ${nowrap ? 'flex-nowrap overflow-x-auto pb-1' : 'flex-wrap'}`}
+          className="grid grid-cols-3 gap-x-1 gap-y-0.5 px-2 pt-2 lg:grid-cols-6"
         >
-          {chipOrder(profile).map((chip) => (
+          {DEAL_GRID_ORDER.map((chip) => (
             <ChipPopover
               key={chip}
               chip={chip}
@@ -155,6 +146,15 @@ export function DealStrip({
               errors={errors}
             />
           ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-2 pb-2.5 pt-1">
+          <ChipPopover
+            chip="total"
+            tone="total"
+            headline={headline}
+            payment={payment}
+            errors={errors}
+          />
           {missing.map((r) => (
             <Chip
               key={`missing-${r.field}`}

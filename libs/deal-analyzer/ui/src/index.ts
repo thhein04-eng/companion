@@ -27,3 +27,4 @@ export * from './lib/hold-comparison-table';
 export * from './lib/exit-assumptions-panel';
 export * from './lib/pro-forma-table';
 export * from './lib/pro-forma-view';
+export * from './lib/metric-card';

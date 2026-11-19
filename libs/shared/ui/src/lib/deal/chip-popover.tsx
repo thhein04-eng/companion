@@ -13,7 +13,8 @@ import {
   useScenarios,
 } from 'shared-data-access';
 import { Button } from '../ds/button';
-import { Chip, type ChipTone } from '../ds/chip';
+import type { ChipTone } from '../ds/chip';
+import { DealValue } from './deal-value';
 import { Popover } from '../ds/popover';
 import { DownPaymentField } from '../cost-breakdown-panel';
 import { currency } from '../formatters';
@@ -222,17 +223,14 @@ export function ChipPopover({
         setOpen(next);
       }}
       trigger={
-        <Chip
+        <DealValue
           tone={effectiveTone}
           label={label}
-          value={value}
+          value={isTotal ? value : raw == null ? null : value}
           data-chip={chip}
+          aria-label={`${isTotal ? 'Monthly payment' : label} ${raw == null && !isTotal ? 'Add' : value}${error ? ' invalid' : ''}`}
           aria-invalid={error ? true : undefined}
-        >
-          {error ? (
-            <span className="text-[12px] font-semibold">· invalid</span>
-          ) : null}
-        </Chip>
+        />
       }
     >
       {editor}

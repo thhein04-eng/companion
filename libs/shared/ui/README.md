@@ -19,6 +19,12 @@ Presentational components and the app shell used by both features.
   `SectionHeader`, `Section`, `Sheet`, `Popover`, `SegmentedToggle`, `ToastRegion` / `showToast`,
   `Ripple`, `ThemeSwitcher`, `ThemePreferences`, `colorScheme`, table classes
 - Styles: `shared-ui/styles/tokens.css` (import once in the app's global CSS)
+- Spec 011:
+  - The `DealStrip` renders as the app-level deal bar (`col-full`, above each page's header, in
+    the `page-grid` main).
+  - `SegmentedControl` (ds) is the shared segmented control.
+  - `DateField` adds a calendar popup (ui-sdk `DatePicker`) beside its segmented input.
+  - New icons: `PencilIcon`, `CalendarIcon`.
 - `ComparisonGrid` (column-driven), `ComparisonColumn`, `LOAN_COMPARISON_COLUMNS`
 - Shell: `AppShell`, `SideNav`, `NavItem`, `useNavPreference` (`localStorage['companion:nav']`), plus icons
 

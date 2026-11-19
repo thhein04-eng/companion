@@ -230,3 +230,26 @@
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
+
+/*
+ * Full-bleed page grid (spec 011 R1): every row sits in the 1040px content column, and a row
+ * marked `col-full` (the app-level deal bar) spans the whole content area right of the nav.
+ */
+@utility page-grid {
+  display: grid;
+  grid-template-columns:
+    [full-start] minmax(max(16px, env(safe-area-inset-left, 0px)), 1fr)
+    [content-start] min(1040px, calc(100% - 32px))
+    [content-end] minmax(max(16px, env(safe-area-inset-right, 0px)), 1fr)
+    [full-end];
+  row-gap: var(--space-page);
+  align-content: start;
+  & > * {
+    grid-column: content;
+    min-width: 0;
+  }
+}
+
+@utility col-full {
+  grid-column: full !important;
+}

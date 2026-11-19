@@ -84,6 +84,12 @@ popovers and toasts.
 **Semantic color rule**: positive / negative / caution use `good` / `bad` / `warn`, never `accent`.
 The accent is for links, pinned chips, focus and the primary series.
 
+> **Superseded in part by spec 011 (2026-11-18)**: The Deal Strip is now an app-level deal bar
+> above every page header (full width, `bg-sunk`, divider, sticky), not a `.strip` card under the
+> title. "Edit deal" is a full-size primary button with a pencil icon. See
+> `specs/011-ui-polish/spec.md` US1 and `contracts/ui.md`. Spec 010's FR-034 visual check doesn't
+> apply to the strip's container.
+
 ## 5. Shell
 
 - **Side nav**: surface fill, 1px line on the right, item radius 7px. The active item uses

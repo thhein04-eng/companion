@@ -19,3 +19,4 @@ export {
 export * from './lib/irr';
 export * from './lib/validate-exit';
 export * from './lib/project-exit';
+export * from './lib/rules';

@@ -32,6 +32,12 @@ function useRentalEditor(): { updateActiveRental(patch: Partial<RentalAssumption
 `editDeal` is the only write path used by the deal UI. It calls `updateActiveScenario` (which
 still runs `applyScenarioPatch`, so derived principal rules are unchanged) or `updateActiveRental`.
 
+> **Superseded in part by spec 011 (2026-11-18)**: The Deal Strip is now an app-level deal bar
+> above every page header (full width, `bg-sunk`, divider, sticky), not a `.strip` card under the
+> title. "Edit deal" is a full-size primary button with a pencil icon. See
+> `specs/011-ui-polish/spec.md` US1 and `contracts/ui.md`. Spec 010's FR-034 visual check doesn't
+> apply to the strip's container.
+
 ## shared-ui/src/lib/deal
 
 ```ts

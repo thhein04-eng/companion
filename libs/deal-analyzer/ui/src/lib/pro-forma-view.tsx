@@ -85,13 +85,6 @@ export function ProFormaView() {
 
   return (
     <>
-      <PageHeader
-        eyebrow="Analysis"
-        title="Hold & Exit Pro Forma"
-        lede="Model a sale after holding the property: IRR, profit and equity multiple."
-        note="Simplified model, not tax advice."
-      />
-
       <DealStrip
         profile={PRO_FORMA_PROFILE}
         headline={{
@@ -103,6 +96,12 @@ export function ProFormaView() {
         }}
         errors={errors}
         payment={payment}
+      />
+      <PageHeader
+        eyebrow="Analysis"
+        title="Hold & Exit Pro Forma"
+        lede="Model a sale after holding the property: IRR, profit and equity multiple."
+        note="Simplified model, not tax advice."
       />
 
       {rental ? (

@@ -18,5 +18,9 @@ test('shows interest and time saved after adding a recurring extra payment', asy
   await expect(
     page.getByText(/saves .* in interest and .* payments versus the baseline/),
   ).toBeVisible();
-  await expect(page.getByText('$200.00 / month from payment #1')).toBeVisible();
+  // Spec 011: each payment is a list row with a type badge, the amount and its timing.
+  const row = page.getByTestId('extra-payment-row');
+  await expect(row).toContainText('Monthly');
+  await expect(row).toContainText('$200.00');
+  await expect(row).toContainText('Monthly from payment 1');
 });

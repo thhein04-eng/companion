@@ -249,12 +249,13 @@ test.describe('Scrub and relevance (spec 010 US5)', () => {
       ['homePrice', 'rental.grossMonthlyRent', 'annualInterestRatePct'],
     ],
   ] as const) {
-    test(`${path} pins its inputs first`, async ({ page }) => {
+    test(`${path} emphasizes the inputs it uses`, async ({ page }) => {
       await page.goto(path);
-      const keys = await strip(page)
-        .locator('[data-chip]')
-        .evaluateAll((els) => els.map((el) => el.getAttribute('data-chip')));
-      expect(keys.slice(0, first.length)).toEqual(first);
+      for (const key of first.filter((k) => k !== 'total')) {
+        await expect(
+          strip(page).locator(`[data-chip="${key}"]`),
+        ).toHaveAttribute('data-tone', 'pin');
+      }
     });
   }
 
