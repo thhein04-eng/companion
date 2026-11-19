@@ -41,6 +41,10 @@
   --space-card: 20px;
   --space-grid: 14px;
 
+  /* One height for every single-line control (number/date/text fields, segmented controls),
+     so controls that share a row line up top and bottom. */
+  --control-h: 42px;
+
   color-scheme: light;
 }
 

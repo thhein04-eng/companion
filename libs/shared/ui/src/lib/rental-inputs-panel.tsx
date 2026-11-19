@@ -182,7 +182,7 @@ export function RentalInputsPanel({
                       handleCustomExpensesChange(updated);
                     }}
                     placeholder="e.g. Utilities, Water, Trash"
-                    className="h-[38px] w-full rounded-sm border border-line bg-surface px-3 text-[15px] text-fg placeholder:text-muted focus:border-accent focus:outline-2 focus:outline-offset-1 focus:outline-accent"
+                    className="h-[var(--control-h)] w-full rounded-sm border border-line bg-surface px-3 text-[15px] text-fg placeholder:text-muted focus:border-accent focus:outline-2 focus:outline-offset-1 focus:outline-accent"
                   />
                 </div>
                 <div className="w-36">
