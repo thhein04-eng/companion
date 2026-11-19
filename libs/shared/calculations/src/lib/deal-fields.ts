@@ -118,8 +118,9 @@ const money = (n: number) =>
     minimumFractionDigits: Number.isInteger(n) ? 0 : 2,
     maximumFractionDigits: Number.isInteger(n) ? 0 : 2,
   }).format(n);
+/** Shows a percent at full precision (up to 6 decimals, like the input fields), never cut to 3. */
 const pct = (n: number) =>
-  `${new Intl.NumberFormat('en-US', { maximumFractionDigits: 3 }).format(n)}%`;
+  `${new Intl.NumberFormat('en-US', { maximumFractionDigits: 6 }).format(n)}%`;
 
 /** Short display text for a chip, sentence token or toast ("$450,000", "6.5%", "30 yr"). */
 export function formatDealField(key: DealFieldKey, value: unknown): string {
