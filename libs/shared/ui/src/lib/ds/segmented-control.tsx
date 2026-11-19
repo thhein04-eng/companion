@@ -40,7 +40,7 @@ export function SegmentedControl<T extends string>({
       onValueChange={(next) => {
         if (next != null) onValueChange(next as T);
       }}
-      className="inline-flex self-start rounded-md border border-line bg-sunk p-0.5"
+      className="inline-flex w-fit rounded-md border border-line bg-sunk p-0.5"
     >
       {/* The checked item paints its own ink background (no separately positioned indicator), so
           its text never shows on the track before layout — spec 010 FR-035 contrast. */}

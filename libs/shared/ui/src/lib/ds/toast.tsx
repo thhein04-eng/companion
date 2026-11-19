@@ -53,7 +53,10 @@ export function ToastRegion() {
       align="center"
       maxVisible={3}
       aria-label="Notifications"
-      className="pointer-events-none fixed inset-x-0 bottom-[calc(16px+env(safe-area-inset-bottom,0px))] z-[60] flex flex-col items-center gap-2 px-4"
+      // `inset-x-0` spans the viewport and flex centers the toast, so drop the SDK's
+      // `align="center"` positioning (`left: 50%; translate: -50%`): its translate alone, with
+      // our `left: 0`, pushed half the toast off the left edge.
+      className="pointer-events-none fixed inset-x-0 [translate:none] bottom-[calc(16px+env(safe-area-inset-bottom,0px))] z-[60] flex flex-col items-center gap-2 px-4"
     >
       {(t) => (
         <Toast
