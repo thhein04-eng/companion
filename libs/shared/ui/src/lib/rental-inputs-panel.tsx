@@ -85,7 +85,7 @@ export function RentalInputsPanel({
     label: string,
     {
       min = 0,
-      step = 0.5,
+      step = 0.1,
       description,
     }: { min?: number | null; step?: number; description?: string } = {},
   ) => (

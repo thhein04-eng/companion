@@ -152,7 +152,7 @@ export function LoanFields({
             label="Annual interest rate"
             suffix="%"
             min={0}
-            step={0.125}
+            step={0.01}
             value={scenario.annualInterestRatePct}
             onValueChange={(value) =>
               onChange({ annualInterestRatePct: value ?? 0 })

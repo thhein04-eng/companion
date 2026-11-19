@@ -1,7 +1,11 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import type { FieldError, LoanScenario } from 'shared-calculations';
+import {
+  DOWN_PAYMENT_STEPS,
+  type FieldError,
+  type LoanScenario,
+} from 'shared-calculations';
 import { NumberField } from './number-field';
 import { SegmentedToggle } from './ds/segmented-toggle';
 import { currency } from './formatters';
@@ -77,7 +81,10 @@ export function DownPaymentField({
           scrub
             ? {
                 field: 'downPayment',
-                step: mode === 'amount' ? 1000 : 1,
+                step:
+                  mode === 'amount'
+                    ? DOWN_PAYMENT_STEPS.amount
+                    : DOWN_PAYMENT_STEPS.percent,
                 toValue: (n) =>
                   mode === 'amount' ? { amount: n } : { percent: n },
               }
@@ -186,7 +193,7 @@ export function MonthlyCostFields({
             label="PMI rate"
             suffix="%"
             min={0}
-            step={0.05}
+            step={0.01}
             value={scenario.pmiAnnualRatePct}
             onValueChange={(value) => onChange({ pmiAnnualRatePct: value })}
             description="Applies only while the loan balance is above 80% of the home price."

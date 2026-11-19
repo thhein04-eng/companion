@@ -186,7 +186,7 @@ export function ChipPopover({
             label="Annual interest rate"
             suffix="%"
             min={0}
-            step={0.125}
+            step={0.01}
             value={scenario.annualInterestRatePct}
             onValueChange={(v) =>
               editDeal('annualInterestRatePct', v ?? 0, 'chip')
