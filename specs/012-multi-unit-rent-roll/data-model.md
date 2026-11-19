@@ -50,7 +50,9 @@ Then:
 - `rentMonthly = Σ effectiveRent`
 - `otherMonthly = rental.otherMonthlyIncome`
 - `pctBaseMonthly = rentMonthly + otherMonthly` (management, maintenance, CapEx)
-- `vacancyMonthly = Σ effectiveRent × rate/100 + otherMonthly × v/100`
+- `vacancyMonthly = Σ effectiveRent × rate/100 + otherMonthly × v/100`, computed by grouping
+  units by rate so units at the overall rate use `(Σ rent + other) × v/100` in one multiplication
+  (exact rounding parity with the old single rent)
 - `reimbursementMonthly = Σ_rubs expense.amount × recoveryPct/100 × Σ_paying (1/N) × (1 − rate/100)`
 - `units[]`: per-unit `{ id, name, effectiveRent, rate, vacancyMonthly }` for the breakdown (FR-010)
 
@@ -68,7 +70,7 @@ rent-side fields × `(1+rentGrowth)^(Y−1)`, `reimbursementMonthly` × `(1+expe
 - NOI = `pctBaseMonthly + reimbursementMonthly − (fixed lines + vacancyMonthly + % lines)`.
 - `netHousingCost` (living view with an owner unit only) = `−monthlyCashFlow`; when ≤ 0 the UI
   reads "You live for free and net $X/mo" with X = cash flow.
-- Deal card Rent label: total in the current view + " · N units" when N ≥ 2.
+- Deal card Rent label: `formatRentWithUnits(rental, view)`: the rent in `view` + " · N units" when N ≥ 2.
 
 ## F. Validation (`validateRental`, keys per research R7)
 

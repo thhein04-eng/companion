@@ -107,7 +107,7 @@ is $2,750/mo and the results match the same deal with both units rented.
 ### User Story 4 - Tag utilities as landlord-paid or tenant-reimbursed (RUBS) (Priority: P3)
 
 An investor who bills tenants back for utilities with a ratio utility billing system (RUBS) tags a
-custom expense (e.g., "Water/Sewer $180/mo") as "Tenant-reimbursed (RUBS)". The expense stays in
+custom expense (e.g., "Water/Sewer $180/mo") as paid by "Tenants (RUBS)". The expense stays in
 operating expenses, and the share the tenants pay back appears as income, so net operating income
 reflects the true cost to the landlord.
 
@@ -121,7 +121,7 @@ income line reads $180, and NOI rises by $180 compared with landlord-paid.
 **Acceptance Scenarios**:
 
 1. **Given** a custom expense, **When** it's created or loaded from an older session, **Then** it
-   is "Landlord-paid", and results are unchanged from today.
+   is paid by "Landlord", and results are unchanged from today.
 2. **Given** an expense tagged RUBS with a recovery rate (default 100%), **When** results compute,
    **Then** reimbursement = amount × recovery rate × the share of units that are rented
    (split equally per unit), reduced by each rented unit's vacancy, and it shows as its own income
@@ -171,7 +171,9 @@ income line reads $180, and NOI rises by $180 compared with landlord-paid.
 - **FR-004**: Investors MUST be able to add a unit (up to 4), remove a unit (down to 1) and edit
   every unit field in the Edit deal sheet. Removing a unit MUST be undoable (spec 010 undo).
 - **FR-005**: The deal card's "Rent" value MUST show the total rent, plus "· N units" when there
-  are 2 or more units. Selecting it opens the rent roll editor.
+  are 2 or more units. With one unit and no owner-occupied unit, selecting it opens the
+  single-rent popover, which edits Unit A's rent. With 2 or more units or an owner-occupied unit,
+  it opens the Edit deal sheet at the rent roll.
 - **FR-006**: The rent roll MUST be saved with the scenario for the browser session, like other
   deal inputs (Constitution III).
 - **FR-007**: The rent roll MUST be validated: a negative rent, more than 4 units or an empty name
@@ -212,8 +214,10 @@ income line reads $180, and NOI rises by $180 compared with landlord-paid.
 
 **Utility split / RUBS (US4)**
 
-- **FR-017**: Each custom expense MUST have a "Paid by" setting: **Landlord-paid** (default; today's
-  behavior) or **Tenant-reimbursed (RUBS)** with a recovery rate (0–100%, default 100%).
+- **FR-017**: Each custom expense MUST have a "Paid by" setting with two options, shown as
+  **Landlord** (landlord-paid; the default and today's behavior) and **Tenants (RUBS)**
+  (tenant-reimbursed through ratio utility billing). The RUBS option also has a "Recovered" rate
+  (0–100%, default 100%).
 - **FR-018**: For each RUBS expense, the monthly reimbursement MUST equal amount × recovery rate ×
   Σ over rent-paying units of (1 ÷ number of units) × (1 − that unit's vacancy rate). The owner's
   unit while living there and $0-rent units pay no share.
@@ -244,7 +248,7 @@ income line reads $180, and NOI rises by $180 compared with landlord-paid.
 - **House-hacking plan**: Present when a unit is owner-occupied: the move-out time (years) and the
   current view (Living there or After move-out).
 - **Custom expense** (existing, extended): label and monthly amount, plus "Paid by"
-  (Landlord-paid or Tenant-reimbursed (RUBS)) and, for RUBS, a recovery rate.
+  (Landlord or Tenants (RUBS)) and, for RUBS, a recovery rate.
 - **Utility reimbursement** (derived): the monthly income recovered from tenants for RUBS
   expenses.
 
@@ -278,8 +282,10 @@ income line reads $180, and NOI rises by $180 compared with landlord-paid.
   footage is out of scope, but the recovery rate lets investors approximate a smaller share.
 - **Tenant-paid utilities** (billed directly to tenants) need no tag: the investor leaves them out
   of expenses, as today.
-- **Net housing cost** includes the mortgage payment (principal and interest, plus escrowed tax,
-  insurance, PMI and HOA from the deal) and operating expenses, and doesn't net out principal
-  paydown or appreciation (the Wealth Projection covers those).
+- **Net housing cost** = principal and interest + PMI + all operating expenses (property tax,
+  insurance, HOA, the percentage reserves and custom expenses) − the rent, other income and
+  reimbursements collected, in the "Living there" view. That equals the negative of the monthly
+  cash flow, so nothing is counted twice. Principal paydown and appreciation aren't netted out;
+  the Wealth Projection covers them.
 - **Other income** (laundry, parking) stays property-level and isn't split per unit.
 - **Data storage** stays in the browser session, like all deal inputs (Constitution III).
