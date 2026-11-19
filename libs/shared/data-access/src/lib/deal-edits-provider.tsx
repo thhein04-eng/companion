@@ -142,11 +142,13 @@ export function DealEditsProvider({ children }: { children: ReactNode }) {
 
       const now = Date.now();
       const prev = recordRef.current;
-      // A scrub merges only within its own gesture; other edits merge within 800ms.
+      // A scrub merges only within its own gesture; other edits from the same control merge within 800ms.
       const coalesce =
         prev != null &&
         prev.scenarioId === current.id &&
         prev.field === field &&
+        // A change from another control (sheet vs. card popover) is a new change, not a merge.
+        prev.source === source &&
         (source === 'scrub'
           ? prev.source === 'scrub' && gestureOpen.current
           : now - prev.at < COALESCE_MS);

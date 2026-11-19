@@ -90,7 +90,11 @@ describe('DealStrip (spec 010 US1)', () => {
     expect(tone('annualInterestRatePct')).toBe('pin');
     expect(tone('termMonths')).toBe('pin');
     expect(tone('total')).toBe('total');
-    expect(tone('homePrice')).toBe('missing');
+    expect(
+      document
+        .querySelector('[data-chip="homePrice"]')
+        ?.hasAttribute('data-empty'),
+    ).toBe(true);
   });
 
   it('keeps the same order on Amortization and mutes Rent', () => {

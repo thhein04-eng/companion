@@ -37,7 +37,8 @@ export const DealValue = forwardRef<HTMLButtonElement, DealValueProps>(
       <button
         ref={ref}
         type={type}
-        data-tone={value == null && tone !== 'err' ? 'missing' : tone}
+        data-tone={tone}
+        data-empty={value == null ? '' : undefined}
         className={`group flex min-w-0 cursor-pointer rounded-md text-left transition-colors hover:bg-sunk focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent ${
           isTotal
             ? 'items-baseline gap-3 px-2.5 py-2'
