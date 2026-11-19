@@ -103,7 +103,7 @@ export function ExitAssumptionsPanel({
           <NumberField
             label="Selling costs"
             suffix="%"
-            step={0.5}
+            step={0.1}
             value={exit.sellingCostsPct}
             onValueChange={(v) => {
               if (v != null) onExitChange({ sellingCostsPct: v });
@@ -165,7 +165,7 @@ export function ExitAssumptionsPanel({
           <NumberField
             label="Land value share"
             suffix="%"
-            step={1}
+            step={0.1}
             value={wealth.landValuePct}
             onValueChange={(v) => {
               if (v != null) onTaxChange({ landValuePct: v });
@@ -176,7 +176,7 @@ export function ExitAssumptionsPanel({
           <NumberField
             label="Marginal tax rate"
             suffix="%"
-            step={1}
+            step={0.1}
             value={wealth.marginalTaxRatePct}
             onValueChange={(v) => {
               if (v != null) onTaxChange({ marginalTaxRatePct: v });

@@ -15,6 +15,8 @@ import {
   NumberInputScrubArea,
   NumberInputScrubAreaCursor,
 } from '@ui-sdk/react/number-input';
+import { parseNumber } from '@ui-sdk/core/number';
+import { useRef } from 'react';
 import { DEAL_FIELD_STEPS, type DealFieldKey } from 'shared-calculations';
 import { useDealEditsOptional } from 'shared-data-access';
 
@@ -53,6 +55,13 @@ export interface NumberFieldProps {
   scrub?: NumberFieldScrub;
 }
 
+/** Plain numbers (rates, percents) show up to this many decimals, so 6.4375% isn't cut to 6.438%. */
+const PLAIN_FORMAT: Intl.NumberFormatOptions = { maximumFractionDigits: 6 };
+const CURRENCY_FORMAT: Intl.NumberFormatOptions = {
+  style: 'currency',
+  currency: 'USD',
+};
+
 const stepperClass =
   'cursor-pointer rounded-xs px-2 py-1 text-muted hover:bg-sunk hover:text-fg data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50';
 
@@ -82,6 +91,20 @@ export function NumberField({
     : undefined;
   const effectiveStep = step ?? scrubStep;
   const scrubbable = scrub != null && edits != null;
+  const inputRef = useRef<HTMLInputElement>(null);
+  const format = variant === 'currency' ? CURRENCY_FORMAT : PLAIN_FORMAT;
+
+  /**
+   * The SDK snaps a committed number onto the step grid (6.37 → 6.375 with a 0.125 step,
+   * $347,500 → $348,000 with a $1,000 step). The step is only for the steppers, arrow keys and
+   * scrub, so a typed value is kept exactly as typed, clamped to `min`/`max` like the SDK does.
+   */
+  const typedValue = (snapped: number): number => {
+    const text = inputRef.current?.value ?? '';
+    const parsed = parseNumber(text, undefined, format);
+    if (parsed == null) return snapped;
+    return Math.min(max ?? Infinity, Math.max(min ?? -Infinity, parsed));
+  };
 
   const fieldLabel = (
     <FieldLabel
@@ -104,7 +127,11 @@ export function NumberField({
       {scrubbable && !visuallyHiddenLabel ? null : fieldLabel}
       <NumberInput
         value={value}
-        onValueChange={(next, details) => {
+        onValueChange={(snappedNext, details) => {
+          const next =
+            details?.reason === 'input-commit' && snappedNext != null
+              ? typedValue(snappedNext)
+              : snappedNext;
           if (scrubbable && details?.reason === 'scrub' && next != null) {
             const stored = scrub.toValue
               ? scrub.toValue(next)
@@ -125,11 +152,7 @@ export function NumberField({
         largeStep={
           scrubbable && effectiveStep != null ? effectiveStep * 10 : undefined
         }
-        format={
-          variant === 'currency'
-            ? { style: 'currency', currency: 'USD' }
-            : undefined
-        }
+        format={format}
       >
         {scrubbable && !visuallyHiddenLabel ? (
           <NumberInputScrubArea
@@ -161,7 +184,10 @@ export function NumberField({
           >
             −
           </NumberInputDecrement>
-          <NumberInputControl className="num min-w-0 flex-1 bg-transparent px-1 py-2 text-[15px] outline-none" />
+          <NumberInputControl
+            ref={inputRef}
+            className="num min-w-0 flex-1 bg-transparent px-1 py-2 text-[15px] outline-none"
+          />
           {suffix ? (
             <span className="pr-1 text-[14px] text-muted">{suffix}</span>
           ) : null}

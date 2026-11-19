@@ -140,7 +140,7 @@ export function WealthAssumptionsPanel({
           <NumberField
             label="Land value share"
             suffix="%"
-            step={1}
+            step={0.1}
             description="Land doesn't depreciate"
             value={resolved.landValuePct}
             onValueChange={wealthNumber('landValuePct')}
@@ -149,7 +149,7 @@ export function WealthAssumptionsPanel({
           <NumberField
             label="Marginal tax rate"
             suffix="%"
-            step={1}
+            step={0.1}
             value={resolved.marginalTaxRatePct}
             onValueChange={wealthNumber('marginalTaxRatePct')}
             error={errorFor('wealth.marginalTaxRatePct')}

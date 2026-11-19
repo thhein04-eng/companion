@@ -218,7 +218,7 @@ test.describe('Scrub and relevance (spec 010 US5)', () => {
     await expect(popover.getByTestId('headline-delta')).toHaveText(/^[+−]/);
   });
 
-  test('arrow keys step by 0.125 and Shift by 1.25', async ({ page }) => {
+  test('arrow keys step by 0.01 and Shift by 0.1', async ({ page }) => {
     await page.goto('/financing');
     await strip(page).getByRole('button', { name: /^Rate/ }).click();
     const input = page
@@ -226,9 +226,20 @@ test.describe('Scrub and relevance (spec 010 US5)', () => {
       .getByRole('textbox', { name: 'Annual interest rate', exact: true });
     await input.focus();
     for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowUp');
-    await expect(input).toHaveValue('7');
+    await expect(input).toHaveValue('6.54');
     await page.keyboard.press('Shift+ArrowUp');
-    await expect(input).toHaveValue('8.25');
+    await expect(input).toHaveValue('6.64');
+  });
+
+  test('a typed rate keeps its exact value', async ({ page }) => {
+    await page.goto('/financing');
+    await strip(page).getByRole('button', { name: /^Rate/ }).click();
+    const input = page
+      .getByRole('dialog', { name: /Edit Rate/ })
+      .getByRole('textbox', { name: 'Annual interest rate', exact: true });
+    await input.fill('6.37');
+    await input.press('Enter');
+    await expect(input).toHaveValue('6.37');
   });
 
   for (const [path, first] of [

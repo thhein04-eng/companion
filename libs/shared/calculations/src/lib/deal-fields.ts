@@ -48,20 +48,24 @@ export const DEAL_FIELD_LABELS: Record<DealFieldKey, string> = {
 };
 
 /**
- * Scrub / arrow-key step per field (data-model §A). Term steps a year (12 months). A down
- * payment steps 1 point as a percent and $1,000 as an amount; `stepValue` picks.
+ * Scrub / arrow-key step per field (data-model §A), kept fine so a value can be dialed in
+ * precisely; Shift steps ×10. Term steps a year (12 months). A down payment steps 0.1 point as
+ * a percent and $100 as an amount; `stepValue` picks.
  */
 export const DEAL_FIELD_STEPS: Partial<Record<DealFieldKey, number>> = {
-  homePrice: 1_000,
-  principal: 1_000,
-  annualInterestRatePct: 0.125,
+  homePrice: 100,
+  principal: 100,
+  annualInterestRatePct: 0.01,
   termMonths: 12,
-  annualPropertyTax: 100,
-  annualInsurance: 100,
-  pmiAnnualRatePct: 0.05,
-  monthlyHoa: 10,
-  'rental.grossMonthlyRent': 25,
+  annualPropertyTax: 10,
+  annualInsurance: 10,
+  pmiAnnualRatePct: 0.01,
+  monthlyHoa: 1,
+  'rental.grossMonthlyRent': 1,
 };
+
+/** A down payment's step as a percent (points) and as an amount (dollars). */
+export const DOWN_PAYMENT_STEPS = { percent: 0.1, amount: 100 } as const;
 
 const rentalKey = (key: DealFieldKey): RentalDealField | null =>
   key.startsWith('rental.') ? (key.slice(7) as RentalDealField) : null;
@@ -114,8 +118,9 @@ const money = (n: number) =>
     minimumFractionDigits: Number.isInteger(n) ? 0 : 2,
     maximumFractionDigits: Number.isInteger(n) ? 0 : 2,
   }).format(n);
+/** Shows a percent at full precision (up to 6 decimals, like the input fields), never cut to 3. */
 const pct = (n: number) =>
-  `${new Intl.NumberFormat('en-US', { maximumFractionDigits: 3 }).format(n)}%`;
+  `${new Intl.NumberFormat('en-US', { maximumFractionDigits: 6 }).format(n)}%`;
 
 /** Short display text for a chip, sentence token or toast ("$450,000", "6.5%", "30 yr"). */
 export function formatDealField(key: DealFieldKey, value: unknown): string {
