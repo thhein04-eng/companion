@@ -53,16 +53,16 @@ export const NAV_ITEMS: NavItem[] = [
     icon: <TagIcon />,
   },
   {
-    id: 'refinance',
-    label: 'Refinance',
-    href: '/refinance',
-    icon: <RefreshIcon />,
-  },
-  {
     id: 'sensitivity',
     label: 'Sensitivity',
     href: '/sensitivity',
     icon: <GridIcon />,
+  },
+  {
+    id: 'refinance',
+    label: 'Refinance',
+    href: '/refinance',
+    icon: <RefreshIcon />,
   },
   {
     id: 'glossary',
