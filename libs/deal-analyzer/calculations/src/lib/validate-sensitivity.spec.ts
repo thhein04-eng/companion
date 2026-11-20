@@ -14,7 +14,7 @@ const rental = (
   sensitivity,
 });
 
-describe('resolveTarget (spec 015 data-model §A)', () => {
+describe('resolveTarget (spec 017 data-model §A)', () => {
   it('has the defaults 8% and $300/mo, and is not set without a saved target', () => {
     expect(DEFAULT_SENSITIVITY).toEqual({
       cashOnCashPct: 8,
@@ -71,7 +71,7 @@ describe('resolveTarget (spec 015 data-model §A)', () => {
   });
 });
 
-describe('validateSensitivityTarget (spec 015 data-model §F)', () => {
+describe('validateSensitivityTarget (spec 017 data-model §F)', () => {
   const cashOnCash = (value: number) =>
     validateSensitivityTarget({ measure: 'cashOnCash', value });
   const cashFlow = (value: number) =>

@@ -66,7 +66,7 @@ function setup(over: Partial<MaxOfferCardProps> = {}) {
   return props;
 }
 
-describe('MaxOfferCard (spec 015 contracts/ui.md)', () => {
+describe('MaxOfferCard (spec 017 contracts/ui.md)', () => {
   it('shows the offer, how far it is from your price, and both figures', () => {
     setup();
     expect(screen.getByTestId('max-offer-price').textContent).toBe('$231,500');

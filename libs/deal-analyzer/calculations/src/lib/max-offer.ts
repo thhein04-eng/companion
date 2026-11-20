@@ -45,7 +45,7 @@ const figures = (r: VariantResult): OfferFigures => ({
 });
 
 /**
- * The Max Allowable Offer (spec 015 FR-011–FR-014): the highest whole-dollar purchase price at
+ * The Max Allowable Offer (spec 017 FR-011–FR-014): the highest whole-dollar purchase price at
  * which the deal still meets the target, with the rate, down payment, rent and costs as entered.
  *
  * Cash flow never rises with the price (the loan only grows; tax, insurance and HOA are fixed

@@ -56,7 +56,7 @@ const saved = () =>
   deserializeScenarios(window.sessionStorage.getItem(KEY) ?? '')?.scenarios[0]
     .rental?.sensitivity;
 
-describe('useSensitivityEditor (spec 015 R7)', () => {
+describe('useSensitivityEditor (spec 017 R7)', () => {
   beforeEach(() => window.sessionStorage.clear());
   afterEach(() => window.sessionStorage.clear());
 

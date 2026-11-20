@@ -149,7 +149,7 @@ export function BookIcon(props: IconProps) {
   );
 }
 
-/** A 3 × 3 grid (spec 015 "Sensitivity" nav entry). */
+/** A 3 × 3 grid (spec 017 "Sensitivity" nav entry). */
 export function GridIcon(props: IconProps) {
   return (
     <Icon {...props}>

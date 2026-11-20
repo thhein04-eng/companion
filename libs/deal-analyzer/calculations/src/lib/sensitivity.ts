@@ -12,7 +12,7 @@ import {
 import { analyzeDeal } from './analyze-deal';
 import type { SensitivityTarget } from './validate-sensitivity';
 
-/** What a grid cell or a solver probe changes about the deal (spec 015 data-model §C). */
+/** What a grid cell or a solver probe changes about the deal (spec 017 data-model §C). */
 export interface VariantChange {
   /** Replaces the annual interest rate, in percent. */
   ratePct?: number;
@@ -31,7 +31,7 @@ function downAt(price: number, down: DownPayment | null): number {
 }
 
 /**
- * A copy of `scenario` with only the named changes (spec 015 research R1, R3). Everything else
+ * A copy of `scenario` with only the named changes (spec 017 research R1, R3). Everything else
  * stays as entered; with no change the result equals `scenario`, so the grid's center cell is
  * exactly the Deal Analyzer's figure.
  *
@@ -96,7 +96,7 @@ export function scenarioVariant(
   return next;
 }
 
-/** One evaluated deal: both measures, or why they are missing (spec 015 data-model §D). */
+/** One evaluated deal: both measures, or why they are missing (spec 017 data-model §D). */
 export interface VariantResult {
   /** `analyzeDeal(...).cashFlow.monthly`, or null when the variant isn't a valid deal. */
   cashFlowMonthly: number | null;
@@ -133,7 +133,7 @@ export function evaluateVariant(variant: LoanScenario): VariantResult {
 /**
  * Does an evaluated deal meet the target on the target's own measure? `null` when that measure is
  * n/a for the deal. Cash flow compares the displayed monthly figure; Cash-on-Cash compares the
- * exact ratio, with a tiny tolerance for floating-point error (spec 015 FR-012).
+ * exact ratio, with a tiny tolerance for floating-point error (spec 017 FR-012).
  */
 export function meetsTarget(
   result: VariantResult,
@@ -152,7 +152,7 @@ export function meetsTarget(
 const round4 = (n: number) => Math.round(n * 10_000) / 10_000;
 
 /**
- * The grid's five interest-rate rows (spec 015 research R5): the deal's rate plus whole steps,
+ * The grid's five interest-rate rows (spec 017 research R5): the deal's rate plus whole steps,
  * with the deal in the middle, or higher up when that would go below 0%. `currentIndex` is the
  * deal's row.
  */
@@ -212,7 +212,7 @@ const changeLabel = (pct: number) =>
   pct === 0 ? '0%' : `${pct > 0 ? '+' : '−'}${Math.abs(pct)}%`;
 
 /**
- * The 5 × 5 sensitivity grid (spec 015 data-model §D): the deal recalculated for each interest
+ * The 5 × 5 sensitivity grid (spec 017 data-model §D): the deal recalculated for each interest
  * rate (rows) and price or rent change (columns), both measures per cell. Preconditions as
  * `analyzeDeal`: a valid scenario with a valid rental and a down payment. The center cell is the
  * unchanged deal and equals the Deal Analyzer's figures.

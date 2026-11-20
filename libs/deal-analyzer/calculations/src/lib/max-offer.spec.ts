@@ -12,7 +12,7 @@ import { evaluateVariant, meetsTarget, scenarioVariant } from './sensitivity';
 import type { SensitivityTarget } from './validate-sensitivity';
 
 /**
- * Spec 015 Max Allowable Offer (Constitution I; FR-012, SC-002): the offer meets the target and
+ * Spec 017 Max Allowable Offer (Constitution I; FR-012, SC-002): the offer meets the target and
  * $1 more does not, checked against the Deal Analyzer itself.
  */
 const vectorA = (over: Partial<LoanScenario> = {}) =>
@@ -58,7 +58,7 @@ const unit = (over: Partial<RentUnit> & { id: string }): RentUnit => ({
   ...over,
 });
 
-describe('maxAllowableOffer (spec 015 data-model §E)', () => {
+describe('maxAllowableOffer (spec 017 data-model §E)', () => {
   it('finds the highest price for a $300/mo cash-flow target on the reference deal', () => {
     const s = vectorA();
     const r = maxAllowableOffer(s, cashFlow(300));

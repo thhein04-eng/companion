@@ -126,7 +126,7 @@ test.describe('Accessibility (spec 010 SC-005, SC-006)', () => {
 });
 
 /**
- * The Sensitivity page (spec 015 SC-005). One scan per test: in Playwright's Firefox, touching the
+ * The Sensitivity page (spec 017 SC-005). One scan per test: in Playwright's Firefox, touching the
  * page after an axe scan crashes it (the same limit noted for the Escape key above).
  */
 async function sensitivityPage(page: Page, theme: 'light' | 'dark') {
@@ -165,7 +165,7 @@ async function typeTarget(page: Page, value: string) {
   await page.keyboard.press('Tab');
 }
 
-test.describe('Sensitivity page accessibility (spec 015 SC-005)', () => {
+test.describe('Sensitivity page accessibility (spec 017 SC-005)', () => {
   test.beforeEach(async ({ page }) => {
     await skipSetupFor(page);
   });

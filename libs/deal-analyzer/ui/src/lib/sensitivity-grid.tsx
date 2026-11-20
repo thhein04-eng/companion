@@ -62,7 +62,7 @@ function cellLabel(
 }
 
 /**
- * The sensitivity grid (spec 015 US1, contracts/ui.md): interest-rate rows by price-or-rent-change
+ * The sensitivity grid (spec 017 US1, contracts/ui.md): interest-rate rows by price-or-rent-change
  * columns, one measure per cell. Cells are tinted on a diverging scale around 0 (research R6), and
  * never by color alone: a minus sign marks a negative, "▼" a cell below the target, and a ring plus
  * the words "current deal" the unchanged deal. The grid is read cell by cell with the arrow keys.

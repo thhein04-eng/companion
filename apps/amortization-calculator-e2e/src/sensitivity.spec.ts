@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { closeDealSheet, fillNumberField, skipSetupFor } from './helpers';
 
 /**
- * Spec 015: the Sensitivity page. Uses spec 002's reference vector A ($250,000, 25% down, 7%,
+ * Spec 017: the Sensitivity page. Uses spec 002's reference vector A ($250,000, 25% down, 7%,
  * $3,000 tax, $1,200 insurance, $2,400 rent): cash flow $250.56/mo, Cash-on-Cash 4.81%.
  */
 async function enterReferenceDeal(page: Page, rent = '2400') {
@@ -43,7 +43,7 @@ const cashFlowOf = async (page: Page) => {
 const num = (text: string | null) =>
   Number((text ?? '').replace('−', '-').replace(/[^0-9.-]/g, ''));
 
-test.describe('Sensitivity grid (spec 015 US1)', () => {
+test.describe('Sensitivity grid (spec 017 US1)', () => {
   test.beforeEach(async ({ page }) => {
     await skipSetupFor(page);
   });
@@ -275,7 +275,7 @@ async function setTarget(
   await page.keyboard.press('Tab');
 }
 
-test.describe('Max Allowable Offer (spec 015 US2)', () => {
+test.describe('Max Allowable Offer (spec 017 US2)', () => {
   test.beforeEach(async ({ page }) => {
     await skipSetupFor(page);
   });
@@ -401,7 +401,7 @@ test.describe('Max Allowable Offer (spec 015 US2)', () => {
   });
 });
 
-test.describe('The Sensitivity page in the app (spec 015 US3)', () => {
+test.describe('The Sensitivity page in the app (spec 017 US3)', () => {
   test.beforeEach(async ({ page }) => {
     await skipSetupFor(page);
   });

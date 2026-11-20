@@ -1,8 +1,8 @@
 # Implementation Plan: Sensitivity Matrix and Max Allowable Offer
 
-**Branch**: `015-sensitivity-goal-seek` | **Date**: 2026-11-19 | **Spec**: [spec.md](./spec.md)
+**Branch**: `017-sensitivity-goal-seek` | **Date**: 2026-11-19 | **Spec**: [spec.md](./spec.md)
 
-**Input**: Feature specification from `/specs/015-sensitivity-goal-seek/spec.md`
+**Input**: Feature specification from `/specs/017-sensitivity-goal-seek/spec.md`
 
 ## Summary
 
@@ -72,7 +72,7 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 ### Documentation (this feature)
 
 ```text
-specs/015-sensitivity-goal-seek/
+specs/017-sensitivity-goal-seek/
 ├── plan.md              # This file
 ├── research.md          # Phase 0 decisions R1–R8
 ├── data-model.md        # Phase 1 entities, formulas, validation

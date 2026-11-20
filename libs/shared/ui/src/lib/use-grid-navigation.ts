@@ -11,7 +11,7 @@ export interface GridCellProps {
 }
 
 /**
- * Cell-by-cell keyboard reading for a read-only data grid (WAI-ARIA grid pattern; spec 015
+ * Cell-by-cell keyboard reading for a read-only data grid (WAI-ARIA grid pattern; spec 017
  * research R9). `@ui-sdk` has no grid primitive, so this small hook keeps one cell in the tab
  * order (a roving tabindex) and moves focus with:
  *

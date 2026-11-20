@@ -1,6 +1,6 @@
 # Feature Specification: Sensitivity Matrix and Max Allowable Offer
 
-**Feature Branch**: `015-sensitivity-goal-seek`
+**Feature Branch**: `017-sensitivity-goal-seek`
 
 **Created**: 2026-11-19
 
@@ -268,6 +268,4 @@ with no rent entered it says "Add rent to see the sensitivity".
   other deal inputs (Constitution III), and is not shared across scenarios.
 - **Out of scope**: solving for rent, rate or down payment (only the price is back-solved);
   more than two measures; three-way grids; exporting the grid; comparing multiple deals in one grid.
-- **Numbering**: this feature is spec 015 because another in-progress feature uses 014. Both add a
-  page and a navigation entry, so merging them will need a small manual merge of the navigation
-  list and shared page profiles.
+- **Numbering**: this feature is spec 017. It was first drafted as 015, then renumbered because other features took 014 (refinance), 015 (the glossary page) and 016 (Burmese translation) while it was in progress.

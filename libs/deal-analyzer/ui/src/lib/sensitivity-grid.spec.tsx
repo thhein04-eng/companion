@@ -75,7 +75,7 @@ const cellAt = (row: number, col: number) =>
       c.getAttribute('data-col') === String(col),
   ) as HTMLElement;
 
-describe('SensitivityGrid (spec 015 contracts/ui.md)', () => {
+describe('SensitivityGrid (spec 017 contracts/ui.md)', () => {
   it('is a real grid with row and column headers and 25 cells', () => {
     renderGrid(vectorA());
     expect(screen.getByRole('grid')).toBeTruthy();

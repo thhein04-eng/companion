@@ -47,7 +47,7 @@ Pure rental-analysis functions for the Rental Deal Analyzer.
     return `moveOutYear`.
   - NOI everywhere = income + reimbursements − expenses.
   - `golden-baseline.spec.ts` pins every pre-spec-012 result.
-- Spec 015 (Sensitivity page), all pure and built on `analyzeDeal`:
+- Spec 017 (Sensitivity page), all pure and built on `analyzeDeal`:
   - `scenarioVariant(scenario, { ratePct, price, priceChangePct, rentChangePct })`: a copy with only
     those changes. The loan moves by the part of a price change the down payment doesn't cover, so a
     percentage or fixed-dollar down payment and a directly entered loan all stay right, and with no

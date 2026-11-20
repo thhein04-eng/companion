@@ -58,7 +58,7 @@ export interface SaleTaxAssumptions {
 }
 
 /**
- * The target for the Sensitivity page's Max Allowable Offer (spec 015 data-model §A). A target is
+ * The target for the Sensitivity page's Max Allowable Offer (spec 017 data-model §A). A target is
  * "set" once any field is saved. Each measure keeps its own value.
  */
 export interface SensitivityAssumptions {
@@ -143,7 +143,7 @@ export interface RentalAssumptions {
   wealth?: WealthAssumptions | null;
   /** Hold & exit assumptions (spec 009). Optional; missing = defaults. */
   exit?: ExitAssumptions | null;
-  /** Sensitivity page target (spec 015). Optional; missing = no target set, defaults shown. */
+  /** Sensitivity page target (spec 017). Optional; missing = no target set, defaults shown. */
   sensitivity?: SensitivityAssumptions | null;
 }
 

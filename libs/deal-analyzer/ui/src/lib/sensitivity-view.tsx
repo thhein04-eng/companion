@@ -48,7 +48,7 @@ const COLUMN_STEPS = [
 ] as const;
 
 /**
- * The Sensitivity Matrix & Max Allowable Offer page (spec 015), rendered at `/sensitivity` on the
+ * The Sensitivity Matrix & Max Allowable Offer page (spec 017), rendered at `/sensitivity` on the
  * shared deal card. It needs a rental with a price and a down payment; until it has them, it shows
  * what's missing instead of a grid. The grid's display choices (measure, column variable, steps)
  * are page state; the target is saved on the scenario (`useSensitivityEditor`).

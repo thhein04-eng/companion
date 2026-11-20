@@ -15,7 +15,7 @@ import {
 } from './sensitivity';
 
 /**
- * Spec 015 calculations (Constitution I), to the cent.
+ * Spec 017 calculations (Constitution I), to the cent.
  * Reference deal: $400,000 price, 25% down ($100,000), loan $300,000 at 7% / 30yr, tax $4,800,
  * insurance $1,800, rent $3,800.
  */
@@ -32,7 +32,7 @@ const unit = (over: Partial<RentUnit> & { id: string }): RentUnit => ({
   ...over,
 });
 
-describe('scenarioVariant (spec 015 data-model §C)', () => {
+describe('scenarioVariant (spec 017 data-model §C)', () => {
   it('with no change is the scenario itself, so the center cell equals the Deal Analyzer', () => {
     const s = referenceScenario();
     expect(scenarioVariant(s, {})).toEqual(s);
@@ -218,7 +218,7 @@ const vectorA = (over: Partial<LoanScenario> = {}) =>
     { grossMonthlyRent: 2_400 },
   );
 
-describe('buildSensitivityGrid (spec 015 data-model §D)', () => {
+describe('buildSensitivityGrid (spec 017 data-model §D)', () => {
   const grid = (
     s: LoanScenario,
     over: Partial<Parameters<typeof buildSensitivityGrid>[1]> = {},

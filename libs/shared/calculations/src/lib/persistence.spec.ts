@@ -133,7 +133,7 @@ describe('deserializeScenarios (FR-016)', () => {
     ).toEqual([multi]);
   });
 
-  it('round-trips the sensitivity target unchanged (spec 015)', () => {
+  it('round-trips the sensitivity target unchanged (spec 017)', () => {
     const withTarget = scenario({
       rental: {
         ...rental,

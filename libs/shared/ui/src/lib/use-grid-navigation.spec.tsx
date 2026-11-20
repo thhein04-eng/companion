@@ -43,7 +43,7 @@ const press = (
   fireEvent.keyDown(el, { key, ...opts });
 };
 
-describe('useGridNavigation (spec 015 research R9)', () => {
+describe('useGridNavigation (spec 017 research R9)', () => {
   it('puts exactly one cell in the tab order: the first data cell', () => {
     render(<Grid />);
     const stops = screen

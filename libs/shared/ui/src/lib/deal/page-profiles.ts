@@ -116,7 +116,7 @@ export const SALE_PROFILE: PageProfile = {
   requires: [{ field: 'homePrice', unlocks: 'sale price' }],
 };
 
-/** Sensitivity Matrix & Max Allowable Offer (spec 015). Needs price, down payment and rent. */
+/** Sensitivity Matrix & Max Allowable Offer (spec 017). Needs price, down payment and rent. */
 export const SENSITIVITY_PROFILE: PageProfile = {
   pageId: 'sensitivity',
   pinned: [

@@ -1,10 +1,10 @@
 ---
-description: 'Task list for spec 015: sensitivity matrix and Max Allowable Offer'
+description: 'Task list for spec 017: sensitivity matrix and Max Allowable Offer'
 ---
 
 # Tasks: Sensitivity Matrix and Max Allowable Offer
 
-**Input**: Design documents from `/specs/015-sensitivity-goal-seek/`
+**Input**: Design documents from `/specs/017-sensitivity-goal-seek/`
 
 **Prerequisites**: plan.md, spec.md, research.md (R1–R9), data-model.md (§A–§G), contracts/calculations.md, contracts/ui.md, quickstart.md
 
@@ -12,7 +12,7 @@ description: 'Task list for spec 015: sensitivity matrix and Max Allowable Offer
 
 **Gate for every task**: `npx nx run-many -t lint test typecheck` passes before a task is checked off. A UI task also needs the affected e2e specs to pass against a prod build on :3215 (`BASE_URL=http://127.0.0.1:3215`, never the :3000 dev server).
 
-**Worktree**: all work happens in `/Users/t_hein/Projects/companion/.claude/worktrees/014-sensitivity-goal-seek` (branch `015-sensitivity-goal-seek`). Don't touch the sibling worktree `014-refinance-brrrr`.
+**Worktree**: all work happens in `/Users/t_hein/Projects/companion/.claude/worktrees/014-sensitivity-goal-seek` (branch `017-sensitivity-goal-seek`). Don't touch the sibling worktree `014-refinance-brrrr`.
 
 **Format**: `[ID] [P?] [Story] Description`. `[P]` = different files, no dependency on an unfinished task.
 
@@ -135,7 +135,7 @@ description: 'Task list for spec 015: sensitivity matrix and Max Allowable Offer
 - [X] T025 [P] Update the READMEs: `libs/deal-analyzer/calculations/README.md` (`buildSensitivityGrid`, `maxAllowableOffer`, `scenarioVariant`, `resolveTarget`, the monotonicity note from research R4); `libs/deal-analyzer/ui/README.md` (`SensitivityView`, grid and card); `libs/shared/ui/README.md` (`useGridNavigation`, `GridIcon`, `SENSITIVITY_PROFILE`); `libs/shared/calculations/README.md` (`SensitivityAssumptions`).
 - [X] T026 Visual review at 1280px light and 390px dark (screenshots of the grid with both measures, both column variables, a below-target and a negative cell, the offer card in found, unreachable and already-meets states): all tokens and shared parts only, readable headers at 390px, the ring and "▼" clearly visible, the tint never lowers text legibility. Run `visual.spec.ts` and update only the snapshots that legitimately changed.
 - [X] T027 Full gate: `npx nx run-many -t lint test typecheck`, the build, and the full e2e twice on :3215. Record the counts in § Baseline notes; every existing test must pass unchanged (SC-007).
-- [X] T028 Run quickstart.md §1–§5 by hand and append a "Verified on {date}" block to `specs/015-sensitivity-goal-seek/quickstart.md`. Measure SC-003 (deal card to an 8% offer in under 30 seconds).
+- [X] T028 Run quickstart.md §1–§5 by hand and append a "Verified on {date}" block to `specs/017-sensitivity-goal-seek/quickstart.md`. Measure SC-003 (deal card to an 8% offer in under 30 seconds).
 
 ---
 
@@ -163,7 +163,7 @@ description: 'Task list for spec 015: sensitivity matrix and Max Allowable Offer
 
 ## Baseline notes
 
-- **T001** (2026-11-19, worktree `014-sensitivity-goal-seek`, branch `015-sensitivity-goal-seek`, from `main` at `4008d18`): `npm ci`, then lint, test and typecheck pass for 10 projects. **611 unit tests** (159 + 52 + 27 + 52 + 275 + 14 + 9 + 23).
+- **T001** (2026-11-19, worktree `014-sensitivity-goal-seek`, branch `017-sensitivity-goal-seek`, from `main` at `4008d18`): `npm ci`, then lint, test and typecheck pass for 10 projects. **611 unit tests** (159 + 52 + 27 + 52 + 275 + 14 + 9 + 23).
 - **T002**: build and full e2e on the prod build at :3215 (`BASE_URL=http://127.0.0.1:3215`, wrapper config without `webServer`): **604 passed, 8 skipped, 0 failed** (13.1 min).
 - Merge notes for the other in-progress feature (spec 014, `014-refinance-brrrr`): expect additive conflicts in `_nav.tsx`, `page-profiles.ts`, `icons.tsx` and the e2e route lists. This feature's additions sit in their own blocks.
 

@@ -46,7 +46,7 @@ function figure(f: OfferFigures, measure: SensitivityMeasure): string {
 }
 
 /**
- * The Max Allowable Offer (spec 015 US2, contracts/ui.md): the target controls and the result.
+ * The Max Allowable Offer (spec 017 US2, contracts/ui.md): the target controls and the result.
  * Until the investor has set a target, the card shows the defaults and says so.
  */
 export function MaxOfferCard({

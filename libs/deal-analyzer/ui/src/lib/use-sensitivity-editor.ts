@@ -10,7 +10,7 @@ import {
 import { useScenarios } from 'shared-data-access';
 
 /**
- * The Sensitivity page's Max Allowable Offer target (spec 015 research R7). It is saved on the
+ * The Sensitivity page's Max Allowable Offer target (spec 017 research R7). It is saved on the
  * scenario's rental (`rental.sensitivity`) and written straight to the store: it's a page setting,
  * not a deal input, so it makes no undo entry and no change toast (like the occupancy view of
  * spec 012). Each measure keeps its own value; the measure starts as the grid's until one is saved.

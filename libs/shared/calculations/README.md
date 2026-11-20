@@ -24,7 +24,7 @@ Framework-free loan math and the scenario model used by both features. Pure func
   - `formatRentWithUnits(rental, view?)`.
   - **Sync rule**: every rent-roll edit writes `grossMonthlyRent` = the after-move-out total, so
     single-number readers (the 1%/50% rules, older code) stay right.
-- Spec 015: `SensitivityAssumptions` (`rental.sensitivity`: the Max Allowable Offer target, saved
+- Spec 017: `SensitivityAssumptions` (`rental.sensitivity`: the Max Allowable Offer target, saved
   with the scenario: `targetMeasure`, `cashOnCashPct`, `cashFlowMonthly`).
 
 Import only from the package name (`'shared-calculations'`), never from a deep path.

@@ -36,7 +36,7 @@ Import only from the package name (`'deal-analyzer-ui'`), never from a deep path
   - `saleHeading`, `signedMoney`, `TAX_DISCLAIMER`
 - `MetricCard` (spec 011): one anatomy for Cap rate and the rules of thumb. `SegmentedOptions` is
   now an alias of shared-ui's `SegmentedControl`.
-- `SensitivityView` (spec 015, `/sensitivity`): the grid (`SensitivityGrid`: an ARIA grid with
+- `SensitivityView` (spec 017, `/sensitivity`): the grid (`SensitivityGrid`: an ARIA grid with
   tint plus text cues, read cell by cell with the arrow keys), its measure, column-variable and step
   controls, and `MaxOfferCard` (the target and the Max Allowable Offer with "Use this price").
   `useSensitivityEditor` saves the target on the scenario without an undo entry.

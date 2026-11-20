@@ -1,6 +1,6 @@
 import type { FieldError, RentalAssumptions } from 'shared-calculations';
 
-/** The two measures the grid shows and the Max Allowable Offer can target (spec 015). */
+/** The two measures the grid shows and the Max Allowable Offer can target (spec 017). */
 export type SensitivityMeasure = 'cashOnCash' | 'cashFlow';
 
 /** The target: Cash-on-Cash in percent, or cash flow in dollars per month. */
@@ -9,7 +9,7 @@ export interface SensitivityTarget {
   value: number;
 }
 
-/** What a new target starts at (spec 015 FR-010). */
+/** What a new target starts at (spec 017 FR-010). */
 export const DEFAULT_SENSITIVITY = {
   cashOnCashPct: 8,
   cashFlowMonthly: 300,

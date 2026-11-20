@@ -39,7 +39,7 @@ describe('DealEditsProvider (spec 010 R7, data-model §B)', () => {
     });
   });
 
-  it('records a page edit (spec 015 "Use this price") and undoes it', () => {
+  it('records a page edit (spec 017 "Use this price") and undoes it', () => {
     const { result } = renderHook(useBoth, { wrapper });
     act(() => result.current.edits.editDeal('homePrice', 450_000, 'sheet'));
     act(() => vi.advanceTimersByTime(1_000));

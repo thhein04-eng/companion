@@ -204,7 +204,7 @@ test('updates the sale profit within 1 second of an exit change', async ({
   expect(Date.now() - start).toBeLessThan(1000);
 });
 
-// Spec 015 SC-004: the grid and the offer follow a deal change within half a second.
+// Spec 017 SC-004: the grid and the offer follow a deal change within half a second.
 test('updates the sensitivity grid and the offer within 500 ms of a rate change', async ({
   page,
 }) => {

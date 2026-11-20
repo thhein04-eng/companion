@@ -1,4 +1,4 @@
-# Quickstart: validating spec 015
+# Quickstart: validating spec 017
 
 ## Prerequisites
 

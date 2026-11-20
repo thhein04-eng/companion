@@ -68,7 +68,7 @@ function renderWith(over: Partial<LoanScenario>) {
   );
 }
 
-describe('SensitivityView page shell (spec 015 US3, FR-018)', () => {
+describe('SensitivityView page shell (spec 017 US3, FR-018)', () => {
   it('shows the deal card above the page title', () => {
     renderWith({});
     const strip = screen.getByRole('region', { name: 'Deal' });
