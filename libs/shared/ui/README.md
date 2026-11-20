@@ -35,6 +35,8 @@ Presentational components and the app shell used by both features.
   - The Rental panel's custom expenses get "Paid by" (Landlord / Tenants (RUBS)) and
     "Recovered".
   - `LineChart` (shared-charts) accepts `markers`.
+- Spec 015: `useGridNavigation(rows, columns)` (roving tabindex and arrow keys for a read-only
+  grid; `@ui-sdk` has no grid primitive), `GridIcon`, and `SENSITIVITY_PROFILE` for the deal card.
 
 Import only from the package name (`'shared-ui'`), never from a deep path.
 

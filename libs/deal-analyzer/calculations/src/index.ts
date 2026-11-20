@@ -28,3 +28,6 @@ export {
   SALE_TAX_INVALID_REASON,
 } from './lib/analyze-sale';
 export * from './lib/rules';
+export * from './lib/validate-sensitivity';
+export * from './lib/sensitivity';
+export * from './lib/max-offer';

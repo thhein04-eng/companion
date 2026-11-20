@@ -34,7 +34,8 @@ export interface PageProfile {
     | 'financing'
     | 'wealth'
     | 'pro-forma'
-    | 'sale';
+    | 'sale'
+    | 'sensitivity';
   /** Shown first, in this order, in accent style. */
   pinned: DealChipKey[];
   /** Shown last, de-emphasized, still editable. */
@@ -113,6 +114,23 @@ export const SALE_PROFILE: PageProfile = {
   pinned: ['homePrice', 'downPayment', 'annualInterestRatePct'],
   muted: [],
   requires: [{ field: 'homePrice', unlocks: 'sale price' }],
+};
+
+/** Sensitivity Matrix & Max Allowable Offer (spec 015). Needs price, down payment and rent. */
+export const SENSITIVITY_PROFILE: PageProfile = {
+  pageId: 'sensitivity',
+  pinned: [
+    'annualInterestRatePct',
+    'homePrice',
+    'downPayment',
+    'rental.grossMonthlyRent',
+  ],
+  muted: [],
+  requires: [
+    { field: 'homePrice', unlocks: 'the grid' },
+    { field: 'downPayment', unlocks: 'the grid' },
+    { field: 'rental.grossMonthlyRent', unlocks: 'the grid' },
+  ],
 };
 
 /**

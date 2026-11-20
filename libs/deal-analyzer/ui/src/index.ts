@@ -28,6 +28,8 @@ export * from './lib/exit-assumptions-panel';
 export * from './lib/pro-forma-table';
 export * from './lib/pro-forma-view';
 export * from './lib/sale-view';
+export * from './lib/sensitivity-view';
+export * from './lib/use-sensitivity-editor';
 export * from './lib/sale-assumptions-panel';
 export * from './lib/sale-summary';
 export * from './lib/break-even-card';
