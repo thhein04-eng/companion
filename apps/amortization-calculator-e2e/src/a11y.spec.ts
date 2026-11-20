@@ -16,6 +16,7 @@ const ROUTES = [
   '/wealth',
   '/pro-forma',
   '/sale',
+  '/sensitivity',
   '/glossary',
 ];
 
@@ -122,4 +123,105 @@ test.describe('Accessibility (spec 010 SC-005, SC-006)', () => {
         .getByRole('radio', { name: 'After move-out' }),
     ).toBeChecked();
   });
+});
+
+/**
+ * The Sensitivity page (spec 015 SC-005). One scan per test: in Playwright's Firefox, touching the
+ * page after an axe scan crashes it (the same limit noted for the Escape key above).
+ */
+async function sensitivityPage(page: Page, theme: 'light' | 'dark') {
+  // Scan the final colors, not a frame of the 150 ms fade a segmented control plays when it is
+  // clicked (the app honors reduced motion).
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/sensitivity');
+  await setTheme(page, theme);
+  // A thin rent, so the grid has negative cells as well as cells below a target.
+  await fillNumberField(page, 'Home price', '250000');
+  await fillNumberField(page, 'Down payment', '25');
+  await fillNumberField(page, 'Annual interest rate', '7');
+  await fillNumberField(page, 'Annual property tax', '3000');
+  await fillNumberField(page, "Annual homeowner's insurance", '1200');
+  await fillNumberField(page, 'Monthly rent', '1500');
+  await page.keyboard.press('Tab');
+  await closeDealSheet(page);
+}
+
+/**
+ * A scan that leaves out the target's text input. In Playwright's Firefox, scanning a page whose
+ * text input has just been typed into crashes the page (also seen with the expense-name input,
+ * spec 012); the untouched field is still scanned by the first test below in every browser.
+ */
+const scanWithoutTypedTarget = (page: Page) =>
+  new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa'])
+    .exclude('[data-testid="target-value"] input')
+    .analyze();
+
+async function typeTarget(page: Page, value: string) {
+  const target = page.getByRole('textbox', { name: 'At least', exact: true });
+  await target.click();
+  await page.keyboard.press('ControlOrMeta+A');
+  await target.pressSequentially(value);
+  await page.keyboard.press('Tab');
+}
+
+test.describe('Sensitivity page accessibility (spec 015 SC-005)', () => {
+  test.beforeEach(async ({ page }) => {
+    await skipSetupFor(page);
+  });
+
+  for (const theme of ['light', 'dark'] as const) {
+    test(`the grid with negative cells and the default offer have no violations in ${theme}`, async ({
+      page,
+    }) => {
+      await sensitivityPage(page, theme);
+      await expect(
+        page
+          .locator('[data-testid="sensitivity-cell"][data-state="negative"]')
+          .first(),
+      ).toBeVisible();
+      expect((await scan(page)).violations).toEqual([]);
+    });
+
+    test(`a set target with ▼ cells and a found offer have no violations in ${theme}`, async ({
+      page,
+    }) => {
+      await sensitivityPage(page, theme);
+      await typeTarget(page, '100');
+      await expect(page.getByTestId('max-offer-price')).toBeVisible();
+      await expect(
+        page
+          .locator(
+            '[data-testid="sensitivity-cell"][data-state="below-target"]',
+          )
+          .first(),
+      ).toBeVisible();
+      expect((await scanWithoutTypedTarget(page)).violations).toEqual([]);
+    });
+
+    test(`Cash-on-Cash by rent with a tagged offer column has no violations in ${theme}`, async ({
+      page,
+    }) => {
+      await sensitivityPage(page, theme);
+      await page
+        .getByTestId('sensitivity-measure')
+        .getByRole('radio', { name: 'Cash-on-Cash' })
+        .click();
+      await page
+        .getByTestId('sensitivity-vary')
+        .getByRole('radio', { name: 'Rent' })
+        .click();
+      await expect(page.getByTestId('sensitivity-cell')).toHaveCount(25);
+      expect((await scan(page)).violations).toEqual([]);
+    });
+
+    test(`an unreachable target has no violations in ${theme}`, async ({
+      page,
+    }) => {
+      await sensitivityPage(page, theme);
+      await typeTarget(page, '5000');
+      await expect(page.getByTestId('max-offer-unreachable')).toBeVisible();
+      expect((await scanWithoutTypedTarget(page)).violations).toEqual([]);
+    });
+  }
 });

@@ -16,6 +16,7 @@ type NumericRentalField = Exclude<
   | 'units'
   | 'moveOutYears'
   | 'occupancyView'
+  | 'sensitivity'
 >;
 
 const MAX_UNITS = 4;

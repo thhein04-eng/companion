@@ -8,6 +8,7 @@ const ROUTES = [
   '/wealth',
   '/pro-forma',
   '/sale',
+  '/sensitivity',
 ];
 
 const bar = (page: Page) => page.getByTestId('deal-strip');

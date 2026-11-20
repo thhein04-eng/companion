@@ -203,3 +203,32 @@ test('updates the sale profit within 1 second of an exit change', async ({
   await expect(profit).not.toHaveText('$151,420.55', { timeout: 1000 });
   expect(Date.now() - start).toBeLessThan(1000);
 });
+
+// Spec 015 SC-004: the grid and the offer follow a deal change within half a second.
+test('updates the sensitivity grid and the offer within 500 ms of a rate change', async ({
+  page,
+}) => {
+  await page.goto('/sensitivity');
+  await fillNumberField(page, 'Home price', '250000');
+  await fillNumberField(page, 'Down payment', '25');
+  await fillNumberField(page, 'Annual interest rate', '7');
+  await fillNumberField(page, 'Annual property tax', '3000');
+  await fillNumberField(page, "Annual homeowner's insurance", '1200');
+  await fillNumberField(page, 'Monthly rent', '2400');
+  await page.keyboard.press('Tab');
+  const center = page.locator(
+    '[data-testid="sensitivity-cell"][data-row="2"][data-col="2"]',
+  );
+  const offer = page.getByTestId('max-offer-price');
+  await expect(center).toHaveText(/\$251$/);
+  const before = await offer.textContent();
+
+  // Type the new rate first; the clock starts when it is committed, so the typing round trips
+  // aren't counted, only the grid and the offer recalculating.
+  await fillNumberField(page, 'Annual interest rate', '8');
+  const start = Date.now();
+  await page.keyboard.press('Tab');
+  await expect(offer).not.toHaveText(before ?? '', { timeout: 500 });
+  await expect(center).not.toHaveText(/\$251$/, { timeout: 500 });
+  expect(Date.now() - start).toBeLessThan(500);
+});

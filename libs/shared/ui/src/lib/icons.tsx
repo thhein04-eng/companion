@@ -149,6 +149,16 @@ export function BookIcon(props: IconProps) {
   );
 }
 
+/** A 3 × 3 grid (spec 015 "Sensitivity" nav entry). */
+export function GridIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
+    </Icon>
+  );
+}
+
 export function PencilIcon(props: IconProps) {
   return (
     <Icon {...props}>

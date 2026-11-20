@@ -133,6 +133,23 @@ describe('deserializeScenarios (FR-016)', () => {
     ).toEqual([multi]);
   });
 
+  it('round-trips the sensitivity target unchanged (spec 015)', () => {
+    const withTarget = scenario({
+      rental: {
+        ...rental,
+        sensitivity: {
+          targetMeasure: 'cashFlow',
+          cashOnCashPct: 9.5,
+          cashFlowMonthly: 425,
+        },
+      },
+    });
+    expect(
+      deserializeScenarios(serializeScenarios([withTarget], withTarget.id))
+        ?.scenarios,
+    ).toEqual([withTarget]);
+  });
+
   it('returns null for corrupt JSON and never throws', () => {
     expect(deserializeScenarios('{not json')).toBeNull();
     expect(deserializeScenarios(null)).toBeNull();

@@ -3,6 +3,7 @@ import {
   BookIcon,
   BuildingIcon,
   CalculatorIcon,
+  GridIcon,
   KeyIcon,
   TagIcon,
   TrendingUpIcon,
@@ -49,6 +50,12 @@ export const NAV_ITEMS: NavItem[] = [
     label: 'Sale Profit',
     href: '/sale',
     icon: <TagIcon />,
+  },
+  {
+    id: 'sensitivity',
+    label: 'Sensitivity',
+    href: '/sensitivity',
+    icon: <GridIcon />,
   },
   {
     id: 'glossary',
