@@ -235,3 +235,84 @@ describe('DealEditsProvider.editSale (spec 013 T007)', () => {
     expect(result.current.edits.changeSeq).toBe(seq);
   });
 });
+
+describe('DealEditsProvider.editRefinance (spec 014 T007)', () => {
+  beforeEach(() => {
+    window.sessionStorage.clear();
+    vi.useFakeTimers();
+  });
+  afterEach(() => vi.useRealTimers());
+
+  it('merges the patch into scenario.refinance and records a "Refinance inputs" change', () => {
+    const { result } = renderHook(useBoth, { wrapper });
+    act(() =>
+      result.current.edits.editRefinance({ arvDollars: 320_000 }, 'sheet'),
+    );
+    act(() => result.current.edits.editRefinance({ ltvPct: 70 }, 'sheet'));
+    expect(result.current.store.activeScenario.refinance).toEqual({
+      arvDollars: 320_000,
+      ltvPct: 70,
+    });
+    expect(result.current.edits.lastChange).toMatchObject({
+      field: 'refinance',
+      label: 'Refinance inputs',
+      oldValue: null,
+      newValue: { arvDollars: 320_000, ltvPct: 70 },
+      oldDisplay: '',
+      newDisplay: '',
+      source: 'sheet',
+    });
+  });
+
+  it('coalesces refinance edits within 800ms into one record', () => {
+    const { result } = renderHook(useBoth, { wrapper });
+    act(() => result.current.edits.editRefinance({ newRatePct: 6 }, 'sheet'));
+    const seq = result.current.edits.changeSeq;
+    act(() => vi.advanceTimersByTime(300));
+    act(() => result.current.edits.editRefinance({ newRatePct: 5.5 }, 'sheet'));
+    expect(result.current.edits.lastChange).toMatchObject({
+      oldValue: null,
+      newValue: { newRatePct: 5.5 },
+    });
+    expect(result.current.edits.changeSeq).toBe(seq + 1);
+  });
+
+  it('undo restores the previous refinance (absent)', () => {
+    const { result } = renderHook(useBoth, { wrapper });
+    act(() =>
+      result.current.edits.editRefinance({ arvDollars: 320_000 }, 'sheet'),
+    );
+    act(() => result.current.edits.undo());
+    expect(result.current.store.activeScenario.refinance ?? null).toBeNull();
+    expect(result.current.edits.lastChange).toBeNull();
+  });
+
+  it('undo falls back to restoring only refinance, blanking keys added since', () => {
+    const { result } = renderHook(useBoth, { wrapper });
+    act(() =>
+      result.current.edits.editRefinance({ refinanceMonth: 12 }, 'sheet'),
+    );
+    act(() => vi.advanceTimersByTime(1000));
+    act(() =>
+      result.current.edits.editRefinance(
+        { mode: 'rate-drop', newRatePct: 5.5 },
+        'sheet',
+      ),
+    );
+    act(() => result.current.store.updateActiveScenario({ monthlyHoa: 99 }));
+    act(() => result.current.edits.undo());
+    const refinance = result.current.store.activeScenario.refinance;
+    expect(refinance?.refinanceMonth).toBe(12);
+    expect(refinance?.mode).toBeUndefined();
+    expect(refinance?.newRatePct).toBeUndefined();
+    expect(result.current.store.activeScenario.monthlyHoa).toBe(99);
+  });
+
+  it('ignores a no-op refinance edit', () => {
+    const { result } = renderHook(useBoth, { wrapper });
+    act(() => result.current.edits.editRefinance({ ltvPct: 75 }, 'sheet'));
+    const seq = result.current.edits.changeSeq;
+    act(() => result.current.edits.editRefinance({ ltvPct: 75 }, 'sheet'));
+    expect(result.current.edits.changeSeq).toBe(seq);
+  });
+});

@@ -29,6 +29,32 @@ export interface LoanScenario {
   rental?: RentalAssumptions | null;
   /** Sale Profit & Exit Analyzer inputs (spec 013). Optional; missing = defaults. */
   sale?: SaleAssumptions | null;
+  /** Refinance & BRRRR Modeling inputs (spec 014). Optional; missing = defaults. */
+  refinance?: RefinanceAssumptions | null;
+}
+
+/**
+ * Refinance & BRRRR Modeling assumptions (spec 014 data-model §A). Every field optional;
+ * missing = default or "not entered yet". Scenario-level (not under `rental`) so a non-rental
+ * can use Rate-drop mode.
+ */
+export interface RefinanceAssumptions {
+  /** Default `'cash-out'`. */
+  mode?: 'cash-out' | 'rate-drop';
+  /** > 0. Not entered: Cash-out shows a prompt; Rate-drop ignores it. */
+  arvDollars?: number;
+  /** 1 ≤ x ≤ 95. Default 75. */
+  ltvPct?: number;
+  /** 0 ≤ x ≤ 100. Not entered: both modes show a prompt. */
+  newRatePct?: number;
+  /** Integer, 1 ≤ x ≤ 480. Default: Cash-out 360, Rate-drop months remaining on the current loan. */
+  newTermMonths?: number;
+  /** Default `'years'`. Display only. */
+  termUnit?: 'years' | 'months';
+  /** ≥ 0. The refinance closing costs, not the purchase costs in `rental.closingCosts`. Default 0. */
+  closingCostsDollars?: number;
+  /** Integer ≥ 1. Default 12. A value above the loan term is clamped to the term, not an error. */
+  refinanceMonth?: number;
 }
 
 /**
@@ -229,7 +255,8 @@ export interface FieldError {
     | `rental.wealth.${keyof WealthAssumptions}`
     | `rental.exit.${keyof ExitAssumptions}`
     | `sale.${'exitMonth' | 'appreciationPct' | 'sellingCostsPct'}`
-    | `sale.tax.${'capitalGainsRatePct' | 'recaptureRatePct'}`;
+    | `sale.tax.${'capitalGainsRatePct' | 'recaptureRatePct'}`
+    | `refinance.${'arvDollars' | 'ltvPct' | 'newRatePct' | 'newTermMonths' | 'closingCostsDollars' | 'refinanceMonth'}`;
   message: string;
 }
 

@@ -36,6 +36,20 @@ Pure rental-analysis functions for the Rental Deal Analyzer.
   - `downPaymentDollars(scenario)` is now exported (non-rental cash invested).
   - Internal: `annualCashToInvestor` / `operatingCashYears` (`cash-to-investor.ts`) are shared by
     `projectExit` and `analyzeSale`, so whole-year exits agree to the cent.
+- Refinance & BRRRR modeling (spec 014):
+  - `analyzeCashOut(scenario, schedule)`: the new loan, payoff, net proceeds and new P&I, then
+    cash left in the deal, capital recycled and cash-on-cash before and after. Works without a
+    rental (down payment only, no cash-on-cash).
+  - `analyzeRateDrop(scenario, schedule)`: keep vs. refinance the remaining balance: monthly P&I
+    savings, the exact breakeven month (integer-cent arithmetic) and net savings over the
+    remaining term. Never needs a rental.
+  - `validateRefinance`, `resolveRefinanceAssumptions`, `DEFAULT_REFINANCE`
+  - Reasons: `CASH_OUT_NO_ARV_REASON`, `REFINANCE_NO_RATE_REASON`, `REFINANCE_INVALID_REASON`,
+    `RATE_DROP_PAID_OFF_REASON`, `NO_RENTAL_COC_REASON`, `ALL_CASH_RECOVERED_REASON`
+  - Types: `ResolvedRefinanceAssumptions`, `CashOutProceeds`, `CashOutCapital`, `CashOutResult`,
+    `CashOutAnalysis`, `RateDropBreakeven`, `RateDropResult`, `RateDropAnalysis`
+  - Internal: `refinance-math.ts` (`newPayment`, `breakeven`, `balanceOwed`) is shared by both
+    analyzers and is not exported. Monthly P&I is the cents-rounded payment, as in the schedule.
 - `onePercentRatio(rule)` (spec 011): rent ÷ price for the 1% Rule card's headline.
 - Spec 012:
   - `analyzeDeal(scenario, schedule, { view? })` uses the rent roll in that view (default: the

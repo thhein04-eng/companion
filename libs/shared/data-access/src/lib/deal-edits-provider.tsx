@@ -21,6 +21,7 @@ import {
   type LoanScenario,
   type RentalAssumptions,
   type RentalDealField,
+  type RefinanceAssumptions,
   type SaleAssumptions,
 } from 'shared-calculations';
 import { useScenarios } from './scenarios-provider';
@@ -30,9 +31,10 @@ export type DealEditSource =
 
 /**
  * `'rental'` names a rental-panel change that touched no single-number field (e.g. custom
- * expenses); `'sale'` names any Sale Profit & Exit Analyzer input change (spec 013).
+ * expenses); `'sale'` names any Sale Profit & Exit Analyzer input change (spec 013); `'refinance'`
+ * names any Refinance & BRRRR Modeling input change (spec 014).
  */
-export type ChangeField = DealFieldKey | 'rental' | 'sale';
+export type ChangeField = DealFieldKey | 'rental' | 'sale' | 'refinance';
 
 /** A rental edit: a patch, `null` to remove rental analysis, or an updater of the latest rental. */
 export type RentalPatch =
@@ -70,6 +72,11 @@ export interface DealEdits {
   editRental(patch: RentalPatch, source: DealEditSource): void;
   /** Sale Profit & Exit Analyzer writes (spec 013 R10), merged into `scenario.sale`. */
   editSale(patch: Partial<SaleAssumptions>, source: DealEditSource): void;
+  /** Refinance & BRRRR Modeling writes (spec 014 R1), merged into `scenario.refinance`. */
+  editRefinance(
+    patch: Partial<RefinanceAssumptions>,
+    source: DealEditSource,
+  ): void;
   /** Ends a scrub gesture, so the next scrub starts a new record. */
   endGesture(): void;
   lastChange: ChangeRecord | null;
@@ -97,7 +104,8 @@ const same = (a: unknown, b: unknown) =>
   JSON.stringify(a) === JSON.stringify(b);
 
 function displayOf(field: ChangeField, scenario: LoanScenario): string {
-  if (field === 'rental' || field === 'sale') return '';
+  if (field === 'rental' || field === 'sale' || field === 'refinance')
+    return '';
   return formatDealField(field, readDealField(scenario, field));
 }
 
@@ -106,6 +114,7 @@ function rawOf(field: ChangeField, scenario: LoanScenario): unknown {
     return scenario.rental ?? null;
   }
   if (field === 'sale') return scenario.sale ?? null;
+  if (field === 'refinance') return scenario.refinance ?? null;
   return readDealField(scenario, field);
 }
 
@@ -184,7 +193,9 @@ export function DealEditsProvider({ children }: { children: ReactNode }) {
                 ? 'Rental inputs'
                 : field === 'sale'
                   ? 'Sale inputs'
-                  : DEAL_FIELD_LABELS[field],
+                  : field === 'refinance'
+                    ? 'Refinance inputs'
+                    : DEAL_FIELD_LABELS[field],
             oldValue: rawOf(field, current),
             newValue: rawOf(field, after),
             oldDisplay: displayOf(field, current),
@@ -247,6 +258,11 @@ export function DealEditsProvider({ children }: { children: ReactNode }) {
     [record],
   );
 
+  const editRefinance = useCallback<DealEdits['editRefinance']>(
+    (patch, source) => record('refinance', { refinance: patch }, source),
+    [record],
+  );
+
   const endGesture = useCallback(() => {
     gestureOpen.current = false;
   }, []);
@@ -271,6 +287,16 @@ export function DealEditsProvider({ children }: { children: ReactNode }) {
       updateActiveScenario({
         sale: old == null && !current.sale ? null : { ...blank, ...old },
       });
+    } else if (rec.field === 'refinance') {
+      // `refinance` merges shallowly too: blank every current key before restoring the old value.
+      const old = rec.oldValue as RefinanceAssumptions | null;
+      const blank = Object.fromEntries(
+        Object.keys(current.refinance ?? {}).map((k) => [k, undefined]),
+      );
+      updateActiveScenario({
+        refinance:
+          old == null && !current.refinance ? null : { ...blank, ...old },
+      });
     } else {
       updateActiveScenario({
         [rec.field]: rec.oldValue,
@@ -292,6 +318,7 @@ export function DealEditsProvider({ children }: { children: ReactNode }) {
       editDeal,
       editRental,
       editSale,
+      editRefinance,
       endGesture,
       lastChange,
       changeSeq,
@@ -302,6 +329,7 @@ export function DealEditsProvider({ children }: { children: ReactNode }) {
       editDeal,
       editRental,
       editSale,
+      editRefinance,
       endGesture,
       lastChange,
       changeSeq,

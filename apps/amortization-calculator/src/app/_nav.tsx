@@ -3,6 +3,7 @@ import {
   BuildingIcon,
   CalculatorIcon,
   KeyIcon,
+  RefreshIcon,
   TagIcon,
   TrendingUpIcon,
   type NavItem,
@@ -48,5 +49,11 @@ export const NAV_ITEMS: NavItem[] = [
     label: 'Sale Profit',
     href: '/sale',
     icon: <TagIcon />,
+  },
+  {
+    id: 'refinance',
+    label: 'Refinance',
+    href: '/refinance',
+    icon: <RefreshIcon />,
   },
 ];

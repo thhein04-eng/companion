@@ -177,3 +177,53 @@ describe('applyScenarioPatch — sale (spec 013 T003)', () => {
     expect(result.sale?.exitMonth).toBe(60);
   });
 });
+
+describe('applyScenarioPatch — refinance (spec 014 T003)', () => {
+  const withRefinance = baseScenario({
+    refinance: { mode: 'cash-out', arvDollars: 320_000, refinanceMonth: 12 },
+  });
+
+  it('merges a refinance patch one level deep, keeping the other fields', () => {
+    const result = applyScenarioPatch(withRefinance, {
+      refinance: { refinanceMonth: 18 },
+    });
+    expect(result.refinance).toEqual({
+      mode: 'cash-out',
+      arvDollars: 320_000,
+      refinanceMonth: 18,
+    });
+  });
+
+  it('sets refinance when the scenario has none', () => {
+    const result = applyScenarioPatch(baseScenario(), {
+      refinance: { ltvPct: 70 },
+    });
+    expect(result.refinance).toEqual({ ltvPct: 70 });
+  });
+
+  it('an explicit refinance: null clears it', () => {
+    expect(
+      applyScenarioPatch(withRefinance, { refinance: null }).refinance,
+    ).toBeNull();
+  });
+
+  it('a patch without refinance leaves it untouched', () => {
+    const result = applyScenarioPatch(withRefinance, { name: 'Renamed' });
+    expect(result.refinance).toBe(withRefinance.refinance);
+  });
+
+  it('keeps the rental, sale and principal rules unchanged alongside a refinance patch', () => {
+    const base = baseScenario({
+      refinance: { newRatePct: 6 },
+      sale: { exitMonth: 84 },
+    });
+    const result = applyScenarioPatch(base, {
+      refinance: { newRatePct: 5.5 },
+      principal: 250_000,
+    });
+    expect(result.principal).toBe(250_000);
+    expect(result.principalIsOverridden).toBe(true);
+    expect(result.sale).toBe(base.sale);
+    expect(result.refinance).toEqual({ newRatePct: 5.5 });
+  });
+});

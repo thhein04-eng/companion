@@ -2,16 +2,17 @@
 
 ## Routes
 
-| Path             | Behavior                                  | `<title>`                             | `<h1>`                    |
-| ---------------- | ----------------------------------------- | ------------------------------------- | ------------------------- |
-| `/`              | Server redirect (307) to `/amortization`  | —                                     | —                         |
-| `/amortization`  | `AmortizationCalculatorView`              | `Amortization Calculator · Companion` | "Amortization Calculator" |
-| `/deal-analyzer` | `DealAnalyzerView`                        | `Rental Deal Analyzer · Companion`    | "Rental Deal Analyzer"    |
-| `/financing`     | `FinancingView` (added by spec 006)       | `DSCR & Financing · Companion`        | "DSCR & Financing"        |
-| `/wealth`        | `WealthView` (added by spec 008)          | `Wealth Projection · Companion`       | "Wealth Projection"       |
-| `/pro-forma`     | `ProFormaView` (added by spec 009)        | `Hold & Exit Pro Forma · Companion`   | "Hold & Exit Pro Forma"   |
+| Path             | Behavior                                  | `<title>`                                 | `<h1>`                        |
+| ---------------- | ----------------------------------------- | ----------------------------------------- | ----------------------------- |
+| `/`              | Server redirect (307) to `/amortization`  | —                                         | —                             |
+| `/amortization`  | `AmortizationCalculatorView`              | `Amortization Calculator · Companion`     | "Amortization Calculator"     |
+| `/deal-analyzer` | `DealAnalyzerView`                        | `Rental Deal Analyzer · Companion`        | "Rental Deal Analyzer"        |
+| `/financing`     | `FinancingView` (added by spec 006)       | `DSCR & Financing · Companion`            | "DSCR & Financing"            |
+| `/wealth`        | `WealthView` (added by spec 008)          | `Wealth Projection · Companion`           | "Wealth Projection"           |
+| `/pro-forma`     | `ProFormaView` (added by spec 009)        | `Hold & Exit Pro Forma · Companion`       | "Hold & Exit Pro Forma"       |
 | `/sale`          | `SaleView` (added by spec 013)            | `Sale Profit & Exit Analyzer · Companion` | "Sale Profit & Exit Analyzer" |
-| any other path   | `not-found.tsx` rendered inside the shell | `Not found · Companion`               | "Page not found"          |
+| `/refinance`     | `RefinanceView` (added by spec 014)       | `Refinance & BRRRR Modeling · Companion`  | "Refinance & BRRRR Modeling"  |
+| any other path   | `not-found.tsx` rendered inside the shell | `Not found · Companion`                   | "Page not found"              |
 
 ### Page section contract
 
@@ -71,4 +72,3 @@ These are the e2e test hooks. The structure is shown in its ≥ 1024px form.
 > **Spec 010**: Every page renders the sticky **Deal Strip** (scenario tabs, summary chips and
 > Edit deal) right under its header, instead of inline Loan, Real-estate costs and Rental
 > sections. The nav also holds the System / Light / Dark theme switcher.
-

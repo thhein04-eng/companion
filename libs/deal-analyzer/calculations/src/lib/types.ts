@@ -392,3 +392,106 @@ export interface SaleAnalysis {
   naReason: string | null;
   errors: FieldError[];
 }
+
+/** Refinance & BRRRR Modeling (spec 014): the stored inputs over the defaults, clamped. */
+export interface ResolvedRefinanceAssumptions {
+  mode: 'cash-out' | 'rate-drop';
+  /** `null` = not entered. */
+  arv: number | null;
+  ltvPct: number;
+  /** `null` = not entered. */
+  newRatePct: number | null;
+  /** The month refinanced, clamped to `1…termMonths`. */
+  refinanceMonth: number;
+  /** The stored month when it was above the term (drives the note), else `null`. */
+  clampedFrom: number | null;
+  /** `termMonths − refinanceMonth`; 0 at the final month. */
+  remainingMonths: number;
+  newTermMonths: number;
+  termUnit: 'years' | 'months';
+  /** Refinance closing costs. */
+  closingCosts: number;
+}
+
+/** The cash-out proceeds (spec 014 US1). All money is cents-rounded. */
+export interface CashOutProceeds {
+  /** `roundCents(arv × ltvPct / 100)` */
+  newLoan: number;
+  /** The current loan's remaining balance at the refinance month. */
+  payoff: number;
+  closingCosts: number;
+  /** `newLoan − payoff − closingCosts`. Negative = a cash-in refinance. */
+  netProceeds: number;
+  isCashIn: boolean;
+  /** Cents-rounded monthly P&I of the current and new loans. */
+  currentPi: number;
+  newPi: number;
+  /** `newPi − currentPi` */
+  piChange: number;
+}
+
+/** The BRRRR scorecard (spec 014 US2): the cash left in the deal and the returns on it. */
+export interface CashOutCapital {
+  /** From `analyzeDeal` with a rental; the down payment alone without one. */
+  totalCashInvested: number;
+  /** `totalCashInvested − netProceeds` */
+  cashLeft: number;
+  /** `netProceeds / totalCashInvested`; N/A when nothing was invested. Negative for a cash-in refinance. */
+  capitalRecycledPct: RatioResult;
+  /** `cashLeft ≤ 0` */
+  allCashRecovered: boolean;
+  /** `−cashLeft` when all cash is recovered, else 0. */
+  cashSurplus: number;
+  /** Annual net operating income from `analyzeDeal`. `null` without a rental. */
+  noiAnnual: number | null;
+  cashFlowBefore: number | null;
+  cashOnCashBefore: RatioResult;
+  /** `noiAnnual − 12 × newPi` (no PMI on the new loan, no growth). `null` without a rental. */
+  cashFlowAfter: number | null;
+  /** `cashFlowAfter / cashLeft`; N/A without a rental or when all the cash is recovered. */
+  cashOnCashAfter: RatioResult;
+}
+
+export type CashOutResult = CashOutProceeds & CashOutCapital;
+
+export interface CashOutAnalysis {
+  result: CashOutResult | null;
+  naReason: string | null;
+  errors: FieldError[];
+}
+
+/** How the rate-drop savings pay back the closing costs (spec 014 data-model §D). */
+export type RateDropBreakeven =
+  | { kind: 'immediate' }
+  | {
+      kind: 'month';
+      months: number;
+      years: number;
+      remainderMonths: number;
+      /** `refinanceMonth + months` */
+      loanMonth: number;
+    }
+  | { kind: 'none'; reason: string }
+  | { kind: 'beyond-term' };
+
+export interface RateDropResult {
+  /** The new loan's principal: the remaining balance at the refinance month. */
+  balanceRefinanced: number;
+  currentPi: number;
+  newPi: number;
+  /** `currentPi − newPi`; negative when the payment goes up. */
+  monthlySavings: number;
+  breakeven: RateDropBreakeven;
+  /** Net savings over the remaining term (research R10). */
+  netSavings: number;
+  horizonMonths: number;
+  newTermMonths: number;
+  /** The new term is longer than the months remaining. */
+  termExtended: boolean;
+}
+
+export interface RateDropAnalysis {
+  result: RateDropResult | null;
+  naReason: string | null;
+  errors: FieldError[];
+}

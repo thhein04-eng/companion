@@ -16,6 +16,7 @@ const ROUTES = [
   '/wealth',
   '/pro-forma',
   '/sale',
+  '/refinance',
 ];
 
 async function reference(page: Page) {
@@ -40,6 +41,9 @@ test.describe('Accessibility (spec 010 SC-005, SC-006)', () => {
       await page.goto('/deal-analyzer');
       await setTheme(page, theme);
       await reference(page);
+      // One test scans every page in turn, so each new page lengthens it; under a loaded
+      // full-suite run Firefox needs more than the default 30 s (spec 014 added a page).
+      test.slow();
       for (const route of ROUTES) {
         await page.goto(route);
         const { violations } = await scan(page);

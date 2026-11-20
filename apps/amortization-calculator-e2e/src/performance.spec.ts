@@ -203,3 +203,27 @@ test('updates the sale profit within 1 second of an exit change', async ({
   await expect(profit).not.toHaveText('$151,420.55', { timeout: 1000 });
   expect(Date.now() - start).toBeLessThan(1000);
 });
+
+// Spec 014 SC-004: the refinance proceeds reflect an input change within 1 second.
+test('updates the refinance proceeds within 1 second of an LTV change', async ({
+  page,
+}) => {
+  await page.goto('/refinance');
+  await fillNumberField(page, 'Home price', '200000');
+  await fillNumberField(page, 'Down payment', '20');
+  await fillNumberField(page, 'Annual interest rate', '7');
+  await fillNumberField(page, 'After-repair value (ARV)', '320000');
+  await fillNumberField(page, 'New interest rate', '6.5');
+  await fillNumberField(page, 'Refinance closing costs', '5000');
+  await page.keyboard.press('Tab');
+  const proceeds = page.getByTestId('refi-net-proceeds').locator('td');
+  await expect(proceeds).toHaveText('$76,625.30');
+
+  const start = Date.now();
+  await fillNumberField(page, 'Refinance LTV', '70');
+  await page.keyboard.press('Tab');
+  await expect(proceeds).not.toHaveText('$76,625.30', { timeout: 1000 });
+  expect(Date.now() - start).toBeLessThan(1000);
+  // $320,000 × 70% − $158,374.70 payoff − $5,000 costs
+  await expect(proceeds).toHaveText('$60,625.30');
+});

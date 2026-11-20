@@ -12,6 +12,7 @@ export function dealChangeTitle(
 ): string {
   if (change.field === 'rental') return 'Rental inputs changed';
   if (change.field === 'sale') return 'Sale inputs changed';
+  if (change.field === 'refinance') return 'Refinance inputs changed';
   return `${change.label} changed ${change.oldDisplay} → ${change.newDisplay}`;
 }
 

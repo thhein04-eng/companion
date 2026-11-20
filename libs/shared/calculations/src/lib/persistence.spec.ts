@@ -138,3 +138,55 @@ describe('deserializeScenarios (FR-016)', () => {
     expect(deserializeScenarios(null)).toBeNull();
   });
 });
+
+describe('refinance inputs in a stored session (spec 014 FR-014)', () => {
+  it('round-trips each scenario with its own refinance inputs', () => {
+    const scenarios = [
+      scenario({
+        id: 'a',
+        refinance: {
+          mode: 'cash-out',
+          arvDollars: 320_000,
+          ltvPct: 75,
+          newRatePct: 6.5,
+          newTermMonths: 360,
+          termUnit: 'years',
+          closingCostsDollars: 5_000,
+          refinanceMonth: 12,
+        },
+      }),
+      scenario({
+        id: 'b',
+        refinance: { mode: 'rate-drop', newRatePct: 5.5, refinanceMonth: 60 },
+      }),
+    ];
+    const state = deserializeScenarios(serializeScenarios(scenarios, 'b'));
+    // `rental` is normalised to null on load (FR-016); the refinance inputs must be untouched.
+    expect(state?.scenarios.map((s) => s.refinance)).toEqual(
+      scenarios.map((s) => s.refinance),
+    );
+    expect(state?.scenarios[0].refinance?.arvDollars).toBe(320_000);
+    expect(state?.scenarios[1].refinance?.mode).toBe('rate-drop');
+  });
+
+  it('loads a session saved before this feature, with no refinance key, unchanged', () => {
+    const legacy = scenario();
+    expect('refinance' in legacy).toBe(false);
+    const raw = JSON.stringify({
+      scenarios: [legacy],
+      activeScenarioId: 'scenario-1',
+    });
+    const state = deserializeScenarios(raw);
+    expect(state?.scenarios).toHaveLength(1);
+    expect(state?.scenarios[0].refinance).toBeUndefined();
+    expect('refinance' in (state?.scenarios[0] ?? {})).toBe(false);
+  });
+
+  it('keeps an explicit refinance: null', () => {
+    const raw = serializeScenarios(
+      [scenario({ refinance: null })],
+      'scenario-1',
+    );
+    expect(deserializeScenarios(raw)?.scenarios[0].refinance).toBeNull();
+  });
+});

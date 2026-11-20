@@ -139,6 +139,16 @@ export function TagIcon(props: IconProps) {
   );
 }
 
+/** Two circular arrows (spec 014 "Refinance" nav entry). */
+export function RefreshIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M20 11a8 8 0 0 0-14.9-3M4 13a8 8 0 0 0 14.9 3" />
+      <path d="M5 4v4h4M19 20v-4h-4" />
+    </Icon>
+  );
+}
+
 export function PencilIcon(props: IconProps) {
   return (
     <Icon {...props}>

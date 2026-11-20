@@ -34,6 +34,12 @@ Import only from the package name (`'deal-analyzer-ui'`), never from a deep path
   - `useSaleEditor()`: routes each input to the shared rental field (with a rental) or to
     `scenario.sale` (via `editSale`)
   - `saleHeading`, `signedMoney`, `TAX_DISCLAIMER`
+- Refinance & BRRRR modeling (spec 014):
+  - `RefinanceView`, `RefinanceInputsPanel`, `CashOutSummary`, `RateDropSummary`
+  - `useRefinanceEditor()`: refinance inputs write `scenario.refinance` (via `editRefinance`); rehab
+    and purchase closing costs write the shared rental fields (via `editDeal`)
+  - `cashOutRows`, `rateDropRows`, `breakevenText`, `breakevenHeadline`, `yearsMonthsLabel`,
+    `signedPercent`, `piChangeNote`
 - `MetricCard` (spec 011): one anatomy for Cap rate and the rules of thumb. `SegmentedOptions` is
   now an alias of shared-ui's `SegmentedControl`.
 - Every view renders the spec 010 `DealStrip` from `shared-ui` instead of inline Loan,

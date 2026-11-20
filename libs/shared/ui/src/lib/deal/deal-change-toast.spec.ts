@@ -34,4 +34,15 @@ describe('dealChangeTitle (spec 010 FR-030, spec 013 T008)', () => {
       }),
     ).toBe('Sale inputs changed');
   });
+
+  it('names refinance changes without an empty arrow', () => {
+    expect(
+      dealChangeTitle({
+        field: 'refinance',
+        label: 'Refinance inputs',
+        oldDisplay: '',
+        newDisplay: '',
+      }),
+    ).toBe('Refinance inputs changed');
+  });
 });

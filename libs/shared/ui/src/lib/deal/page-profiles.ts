@@ -34,7 +34,8 @@ export interface PageProfile {
     | 'financing'
     | 'wealth'
     | 'pro-forma'
-    | 'sale';
+    | 'sale'
+    | 'refinance';
   /** Shown first, in this order, in accent style. */
   pinned: DealChipKey[];
   /** Shown last, de-emphasized, still editable. */
@@ -113,6 +114,17 @@ export const SALE_PROFILE: PageProfile = {
   pinned: ['homePrice', 'downPayment', 'annualInterestRatePct'],
   muted: [],
   requires: [{ field: 'homePrice', unlocks: 'sale price' }],
+};
+
+/**
+ * Refinance & BRRRR Modeling (spec 014). Rent is optional: it unlocks cash-on-cash. The prompt is
+ * static, so it also shows in Rate-drop mode, where cash-on-cash is not displayed; that is accepted.
+ */
+export const REFINANCE_PROFILE: PageProfile = {
+  pageId: 'refinance',
+  pinned: ['homePrice', 'downPayment', 'annualInterestRatePct'],
+  muted: [],
+  requires: [{ field: 'rental.grossMonthlyRent', unlocks: 'cash-on-cash' }],
 };
 
 /**

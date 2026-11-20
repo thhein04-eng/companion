@@ -28,6 +28,7 @@ const ROUTES = [
   '/wealth',
   '/pro-forma',
   '/sale',
+  '/refinance',
 ];
 
 test.describe('Visual fidelity (spec 010 US2)', () => {

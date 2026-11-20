@@ -25,6 +25,13 @@ export function applyScenarioPatch(
     next.sale = scenario.sale ? { ...scenario.sale, ...patch.sale } : patch.sale;
   }
 
+  // Refinance assumptions (spec 014) merge the same way; an explicit `refinance: null` clears them.
+  if ('refinance' in patch && patch.refinance != null) {
+    next.refinance = scenario.refinance
+      ? { ...scenario.refinance, ...patch.refinance }
+      : patch.refinance;
+  }
+
   // Rule 1 (and rule 4's precedence): an explicit `principal` in the patch
   // always wins, even if the same patch also touches homePrice/downPayment.
   if ('principal' in patch) {
