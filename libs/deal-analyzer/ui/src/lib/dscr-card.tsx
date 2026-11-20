@@ -3,6 +3,7 @@
 import { Popover, PopoverContent, PopoverTrigger } from '@ui-sdk/react/popover';
 import { DSCR_PRESETS, type DscrResult } from 'deal-analyzer-calculations';
 import { NumberField, Ripple, currency } from 'shared-ui';
+import { GlossaryLink } from './glossary-link';
 import { formatDscr, formatDscrMinimum } from './format-dscr';
 import { StatusPill, type RuleStatus } from './rule-indicator';
 import { SegmentedOptions } from './segmented-options';
@@ -74,6 +75,7 @@ export function DscrCard({
               Debt Service Coverage Ratio = annual net operating income ÷ annual
               principal &amp; interest. DSCR lenders typically require
               1.15–1.25×.
+              <GlossaryLink id="dscr" />
             </PopoverContent>
           </Popover>
         </div>

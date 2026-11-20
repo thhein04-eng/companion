@@ -149,6 +149,26 @@ export function RefreshIcon(props: IconProps) {
   );
 }
 
+/** An open book (spec 015 "Glossary" nav entry). */
+export function BookIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5z" />
+      <path d="M4 19a2 2 0 0 1 2-2h13" />
+    </Icon>
+  );
+}
+
+/** A 3 × 3 grid (spec 017 "Sensitivity" nav entry). */
+export function GridIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
+    </Icon>
+  );
+}
+
 export function PencilIcon(props: IconProps) {
   return (
     <Icon {...props}>

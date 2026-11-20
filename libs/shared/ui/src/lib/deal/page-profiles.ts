@@ -35,6 +35,7 @@ export interface PageProfile {
     | 'wealth'
     | 'pro-forma'
     | 'sale'
+    | 'sensitivity'
     | 'refinance';
   /** Shown first, in this order, in accent style. */
   pinned: DealChipKey[];
@@ -114,6 +115,23 @@ export const SALE_PROFILE: PageProfile = {
   pinned: ['homePrice', 'downPayment', 'annualInterestRatePct'],
   muted: [],
   requires: [{ field: 'homePrice', unlocks: 'sale price' }],
+};
+
+/** Sensitivity Matrix & Max Allowable Offer (spec 017). Needs price, down payment and rent. */
+export const SENSITIVITY_PROFILE: PageProfile = {
+  pageId: 'sensitivity',
+  pinned: [
+    'annualInterestRatePct',
+    'homePrice',
+    'downPayment',
+    'rental.grossMonthlyRent',
+  ],
+  muted: [],
+  requires: [
+    { field: 'homePrice', unlocks: 'the grid' },
+    { field: 'downPayment', unlocks: 'the grid' },
+    { field: 'rental.grossMonthlyRent', unlocks: 'the grid' },
+  ],
 };
 
 /**

@@ -41,3 +41,6 @@ export {
   analyzeRateDrop,
   RATE_DROP_PAID_OFF_REASON,
 } from './lib/analyze-rate-drop';
+export * from './lib/validate-sensitivity';
+export * from './lib/sensitivity';
+export * from './lib/max-offer';

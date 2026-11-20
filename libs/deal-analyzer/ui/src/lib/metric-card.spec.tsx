@@ -1,5 +1,6 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
+import { GlossaryLink } from './glossary-link';
 import { MetricCard } from './metric-card';
 
 afterEach(cleanup);
@@ -58,5 +59,30 @@ describe('MetricCard (spec 011 US3)', () => {
     const card = screen.getByTestId('na');
     expect(card.textContent).toContain('N/A');
     expect(card.textContent).toContain('Enter rent to see the cap rate.');
+  });
+});
+
+describe('MetricCard glossary link (spec 015 US3)', () => {
+  const base = {
+    'data-testid': 'cap-rate',
+    label: 'Cap rate',
+    info: 'NOI ÷ price.',
+    value: '7.19%',
+    status: 'info' as const,
+    explanation: 'Independent of financing',
+  };
+
+  it('GlossaryLink points at /glossary#id', () => {
+    render(<GlossaryLink id="cap-rate" />);
+    expect(
+      screen.getByRole('link', { name: 'Full definition' }).getAttribute('href'),
+    ).toBe('/glossary#cap-rate');
+  });
+
+  it('still renders with and without glossaryId (the popover itself opens in a browser; see glossary.spec.ts e2e)', () => {
+    const { rerender } = render(<MetricCard {...base} />);
+    expect(screen.getByRole('button', { name: 'About the Cap rate' })).toBeTruthy();
+    rerender(<MetricCard {...base} glossaryId="cap-rate" />);
+    expect(screen.getByRole('button', { name: 'About the Cap rate' })).toBeTruthy();
   });
 });

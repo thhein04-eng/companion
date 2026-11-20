@@ -15,6 +15,7 @@ const PAGES = [
   '/pro-forma',
   '/sale',
   '/refinance',
+  '/sensitivity',
 ];
 
 /** The quickstart reference deal: price 450,000, 20% down, 6.5%, 30 yr, rent 3,200. */
@@ -263,6 +264,15 @@ test.describe('Scrub and relevance (spec 010 US5)', () => {
     ],
     ['/sale', ['homePrice', 'downPayment', 'annualInterestRatePct']],
     ['/refinance', ['homePrice', 'downPayment', 'annualInterestRatePct']],
+    [
+      '/sensitivity',
+      [
+        'annualInterestRatePct',
+        'homePrice',
+        'downPayment',
+        'rental.grossMonthlyRent',
+      ],
+    ],
   ] as const) {
     test(`${path} emphasizes the inputs it uses`, async ({ page }) => {
       await page.goto(path);

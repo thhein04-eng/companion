@@ -1,7 +1,9 @@
 import {
   BankIcon,
+  BookIcon,
   BuildingIcon,
   CalculatorIcon,
+  GridIcon,
   KeyIcon,
   RefreshIcon,
   TagIcon,
@@ -55,5 +57,17 @@ export const NAV_ITEMS: NavItem[] = [
     label: 'Refinance',
     href: '/refinance',
     icon: <RefreshIcon />,
+  },
+  {
+    id: 'sensitivity',
+    label: 'Sensitivity',
+    href: '/sensitivity',
+    icon: <GridIcon />,
+  },
+  {
+    id: 'glossary',
+    label: 'Glossary',
+    href: '/glossary',
+    icon: <BookIcon />,
   },
 ];

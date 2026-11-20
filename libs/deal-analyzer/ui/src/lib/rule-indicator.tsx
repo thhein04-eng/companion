@@ -1,6 +1,7 @@
 'use client';
 
 import { Popover, PopoverContent, PopoverTrigger } from '@ui-sdk/react/popover';
+import { GlossaryLink } from './glossary-link';
 
 export type RuleStatus = 'pass' | 'fail' | 'na';
 
@@ -40,6 +41,8 @@ export interface RuleIndicatorProps {
   detail: string;
   /** One sentence, shown in the info popover. */
   explanation: string;
+  /** Glossary entry id; adds a "Full definition" link (spec 015). */
+  glossaryId?: string;
 }
 
 const statusStyles: Record<
@@ -80,6 +83,7 @@ export function RuleIndicator({
   status,
   detail,
   explanation,
+  glossaryId,
 }: RuleIndicatorProps) {
   return (
     <div
@@ -103,6 +107,7 @@ export function RuleIndicator({
               className="max-w-xs rounded-md border border-line bg-surface px-3 py-2 text-xs text-fg shadow-float"
             >
               {explanation}
+              {glossaryId ? <GlossaryLink id={glossaryId} /> : null}
             </PopoverContent>
           </Popover>
         </div>

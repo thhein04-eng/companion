@@ -39,6 +39,22 @@ describe('DealEditsProvider (spec 010 R7, data-model §B)', () => {
     });
   });
 
+  it('records a page edit (spec 017 "Use this price") and undoes it', () => {
+    const { result } = renderHook(useBoth, { wrapper });
+    act(() => result.current.edits.editDeal('homePrice', 450_000, 'sheet'));
+    act(() => vi.advanceTimersByTime(1_000));
+    act(() => result.current.edits.editDeal('homePrice', 231_500, 'page'));
+    expect(result.current.store.activeScenario.homePrice).toBe(231_500);
+    expect(result.current.edits.lastChange).toMatchObject({
+      field: 'homePrice',
+      oldValue: 450_000,
+      newValue: 231_500,
+      source: 'page',
+    });
+    act(() => result.current.edits.undo());
+    expect(result.current.store.activeScenario.homePrice).toBe(450_000);
+  });
+
   it('coalesces edits to the same field within 800ms, keeping the first old value', () => {
     const { result } = renderHook(useBoth, { wrapper });
     act(() =>

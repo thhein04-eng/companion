@@ -26,8 +26,9 @@ import {
 } from 'shared-calculations';
 import { useScenarios } from './scenarios-provider';
 
+/** `'page'` is an edit made by a page's own control, e.g. the Sensitivity page's "Use this price". */
 export type DealEditSource =
-  'chip' | 'sheet' | 'sentence' | 'payment-bar' | 'scrub' | 'setup';
+  'chip' | 'sheet' | 'sentence' | 'payment-bar' | 'scrub' | 'setup' | 'page';
 
 /**
  * `'rental'` names a rental-panel change that touched no single-number field (e.g. custom

@@ -83,6 +83,18 @@ export interface SaleTaxAssumptions {
   recaptureRatePct?: number;
 }
 
+/**
+ * The target for the Sensitivity page's Max Allowable Offer (spec 017 data-model §A). A target is
+ * "set" once any field is saved. Each measure keeps its own value.
+ */
+export interface SensitivityAssumptions {
+  targetMeasure?: 'cashOnCash' | 'cashFlow';
+  /** 0 ≤ x ≤ 1000. Default 8. */
+  cashOnCashPct?: number;
+  /** Finite, |x| ≤ 1,000,000. Default 300. */
+  cashFlowMonthly?: number;
+}
+
 /** Which income a house-hacked deal shows (spec 012 FR-012). */
 export type OccupancyView = 'living' | 'afterMoveOut';
 
@@ -157,6 +169,8 @@ export interface RentalAssumptions {
   wealth?: WealthAssumptions | null;
   /** Hold & exit assumptions (spec 009). Optional; missing = defaults. */
   exit?: ExitAssumptions | null;
+  /** Sensitivity page target (spec 017). Optional; missing = no target set, defaults shown. */
+  sensitivity?: SensitivityAssumptions | null;
 }
 
 /** Wealth-projection assumptions (spec 008). Every field optional; missing = default (FR-015). */
@@ -249,6 +263,7 @@ export interface FieldError {
     | `rental.${keyof RentalAssumptions}`
     | `rental.customExpenses.${number}.monthlyAmount`
     | `rental.customExpenses.${number}.recoveryPct`
+    | `rental.sensitivity.${'cashOnCashPct' | 'cashFlowMonthly'}`
     | `rental.units.${number}.${'name' | 'rent' | 'vacancyPct' | 'rentAfterMoveOut'}`
     | `rental.dscrMinimum`
     | `rental.financing.${FinancingOptionId}.${string}`

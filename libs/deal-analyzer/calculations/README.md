@@ -61,6 +61,20 @@ Pure rental-analysis functions for the Rental Deal Analyzer.
     return `moveOutYear`.
   - NOI everywhere = income + reimbursements − expenses.
   - `golden-baseline.spec.ts` pins every pre-spec-012 result.
+- Spec 017 (Sensitivity page), all pure and built on `analyzeDeal`:
+  - `scenarioVariant(scenario, { ratePct, price, priceChangePct, rentChangePct })`: a copy with only
+    those changes. The loan moves by the part of a price change the down payment doesn't cover, so a
+    percentage or fixed-dollar down payment and a directly entered loan all stay right, and with no
+    change the copy equals the scenario. Every unit's rent scales together.
+  - `evaluateVariant(variant)`: both measures (`cashFlowMonthly`, `cashOnCash`) or why they are n/a.
+  - `rateRows`, `buildSensitivityGrid(scenario, options)`: the 5 × 5 grid (rates × price or rent
+    change). Its center cell equals the Deal Analyzer exactly.
+  - `maxAllowableOffer(scenario, target)`: the highest whole-dollar price that meets a target, by
+    bisection (cash flow never rises with price, and for a Cash-on-Cash target of 0 or more neither
+    does the return, so the passing prices are a prefix). Statuses: `found`, `unreachable`,
+    `invalid`. `meetsTarget` is the one "does it meet the target" rule.
+  - `resolveTarget`, `validateSensitivityTarget` (Cash-on-Cash 0–1000%, cash flow ±$1,000,000),
+    `DEFAULT_SENSITIVITY` (8% and $300/mo).
 - Moved to `shared-calculations` in spec 010 (still re-exported here): `validateRental`,
   `DEFAULT_RENTAL_ASSUMPTIONS`.
 
